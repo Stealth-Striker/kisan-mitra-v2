@@ -22,8 +22,8 @@ export default function AdminLayout() {
 
   if (checking) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-4 border-emerald-200 border-t-[hsl(var(--km-green))] rounded-full animate-spin" />
+      <div className="flex items-center justify-center min-h-screen bg-[#F7F9F7]">
+        <div className="w-8 h-8 border-4 border-[#E8F8F1] border-t-[#005A3C] rounded-full animate-spin" />
       </div>
     );
   }
@@ -32,12 +32,12 @@ export default function AdminLayout() {
   if (user.role !== "admin") return <Navigate to="/dashboard" replace />;
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-[#F7F9F7]">
       <div className="hidden lg:block">
         <AdminSidebar />
       </div>
       <div className="flex-1 flex flex-col min-w-0">
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-7xl w-full mx-auto">
+        <main className="flex-1 px-6 lg:px-8 py-6 w-full">
           <Outlet context={{ user }} />
         </main>
       </div>

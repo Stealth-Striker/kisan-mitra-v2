@@ -29,46 +29,49 @@ export default function AdminDashboard() {
   }, []);
 
   const cards = [
-    { label: "Total Farmers", value: metrics.totalFarmers ?? 0, icon: Users, color: "emerald" },
-    { label: "Total Farms", value: metrics.totalFarms ?? 0, icon: Sprout, color: "blue" },
+    { label: "Total Farmers", value: metrics.totalFarmers ?? 0, icon: Users, color: "green" },
+    { label: "Total Farms", value: metrics.totalFarms ?? 0, icon: Sprout, color: "mint" },
     { label: "Crop Diagnoses", value: metrics.diagnoses ?? 0, icon: Stethoscope, color: "amber" },
     { label: "Active Disease Alerts", value: metrics.activeAlerts ?? 0, icon: Bug, color: "red" },
-    { label: "Conversations", value: metrics.conversations ?? 0, icon: MessageSquare, color: "emerald" },
+    { label: "Conversations", value: metrics.conversations ?? 0, icon: MessageSquare, color: "green" },
     { label: "Market Data Points", value: metrics.marketPrices ?? 0, icon: TrendingUp, color: "blue" },
   ];
 
   const colors = {
-    emerald: "bg-emerald-50 text-emerald-600",
-    blue: "bg-blue-50 text-blue-600",
+    green: "bg-[#E8F8F1] text-[#005A3C]",
+    mint: "bg-emerald-50 text-emerald-600",
     amber: "bg-amber-50 text-amber-600",
     red: "bg-red-50 text-red-600",
+    blue: "bg-blue-50 text-blue-600",
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-6xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Welcome back, {user?.full_name || "Admin"}. Here's your platform overview.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-[#17201C]">Admin Dashboard</h1>
+        <p className="text-sm text-[#66736D] mt-1">Welcome back, {user?.full_name || "Admin"}. Here is your platform overview.</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         {cards.map((c) => (
-          <div key={c.label} className="km-card km-shadow p-5">
-            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center mb-3 ${colors[c.color]}`}>
-              <c.icon className="w-5 h-5" />
+          <div key={c.label} className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm p-6 space-y-2">
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${colors[c.color]}`}>
+              <c.icon className="w-6 h-6" />
             </div>
-            <p className="text-3xl font-bold">{c.value}</p>
-            <p className="text-sm text-muted-foreground mt-1">{c.label}</p>
+            <p className="text-3xl font-extrabold text-[#17201C] pt-1">{c.value}</p>
+            <p className="text-xs font-semibold text-[#66736D] uppercase tracking-wider">{c.label}</p>
           </div>
         ))}
       </div>
 
-      <div className="km-card km-shadow p-6">
-        <h3 className="font-semibold flex items-center gap-2 mb-3"><Activity className="w-4 h-4 text-[hsl(var(--km-green))]" /> System Status</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <StatusItem label="AI Service" status="Operational" color="emerald" />
-          <StatusItem label="Database" status="Connected" color="emerald" />
-          <StatusItem label="Demo Mode" status="Available" color="amber" />
+      <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm p-6 space-y-4">
+        <h3 className="font-bold text-[#17201C] text-sm uppercase tracking-wider flex items-center gap-2 border-b border-[#E1E8E4] pb-3">
+          <Activity className="w-4 h-4 text-[#005A3C]" /> System Infrastructure Status
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+          <StatusItem label="AI Service (Gemini API)" status="Operational" color="emerald" />
+          <StatusItem label="JSON File Database" status="Connected & Verified" color="emerald" />
+          <StatusItem label="Local File Storage" status="Ready (/uploads)" color="emerald" />
         </div>
       </div>
     </div>
@@ -77,11 +80,11 @@ export default function AdminDashboard() {
 
 function StatusItem({ label, status, color }) {
   return (
-    <div className="flex items-center gap-2 p-3 rounded-xl border border-border">
-      <span className={`w-2.5 h-2.5 rounded-full bg-${color}-500`} />
+    <div className="flex items-center gap-3 p-3.5 rounded-xl border border-[#E1E8E4] bg-[#F7F9F7]">
+      <span className={`w-3 h-3 rounded-full bg-${color}-500 shrink-0`} />
       <div>
-        <p className="text-sm font-medium">{label}</p>
-        <p className="text-xs text-muted-foreground">{status}</p>
+        <p className="text-sm font-bold text-[#17201C]">{label}</p>
+        <p className="text-xs text-[#66736D]">{status}</p>
       </div>
     </div>
   );

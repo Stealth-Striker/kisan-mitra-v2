@@ -4,66 +4,71 @@
 
 @layer base {
   :root {
-    --background: 120 14% 97%;
-    --foreground: 0 0% 12%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 12%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 12%;
-    --primary: 156 79% 20%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 144 32% 94%;
-    --secondary-foreground: 156 79% 20%;
-    --muted: 144 32% 94%;
-    --muted-foreground: 0 0% 40%;
-    --accent: 144 32% 94%;
-    --accent-foreground: 156 79% 20%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 120 14% 90%;
-    --input: 120 14% 90%;
-    --ring: 156 79% 20%;
-    --radius: 0.75rem;
-    --font-heading: ui-sans-serif, system-ui, sans-serif;
-    --font-body: ui-sans-serif, system-ui, sans-serif;
-    --font-display: ui-sans-serif, system-ui, sans-serif;
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    --km-green: 156 79% 20%;
-    --km-green-mid: 155 65% 25%;
-    --km-green-light: 144 32% 94%;
-    --km-orange: 32 95% 50%;
-    --km-red: 0 74% 52%;
-    --km-blue: 210 80% 48%;
-    --sidebar-background: 156 79% 20%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 144 32% 94%;
-    --sidebar-primary-foreground: 156 79% 20%;
-    --sidebar-accent: 156 60% 28%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 156 50% 30%;
-    --sidebar-ring: 144 32% 94%;
-  }
+    /* ── Kisan Mitra Design System ─────────────────── */
+    --km-forest:     #005A3C;
+    --km-dark:       #003F2B;
+    --km-accent:     #0B8F62;
+    --km-mint:       #E8F8F1;
+    --km-mint-mid:   #D1F0E3;
+    --km-bg:         #F7F9F7;
+    --km-text:       #17201C;
+    --km-secondary:  #66736D;
+    --km-border:     #E1E8E4;
+    --km-amber:      #F59E0B;
+    --km-red:        #DC2626;
+    --km-blue:       #3B82F6;
 
-  .dark {
-    --background: 156 40% 8%;
-    --foreground: 0 0% 98%;
-    --card: 156 35% 12%;
-    --card-foreground: 0 0% 98%;
-    --popover: 156 35% 12%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 144 50% 88%;
-    --primary-foreground: 156 79% 20%;
-    --secondary: 156 30% 18%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 156 30% 18%;
-    --muted-foreground: 0 0% 70%;
-    --accent: 156 30% 18%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62% 45%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 156 30% 22%;
-    --input: 156 30% 22%;
-    --ring: 144 50% 88%;
+    /* ── Tailwind CSS variables (HSL) ──────────────── */
+    --background: 120 12% 97%;        /* #F7F9F7 */
+    --foreground: 150 14% 11%;        /* #17201C */
+    --card: 0 0% 100%;
+    --card-foreground: 150 14% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 14% 11%;
+    --primary: 158 100% 18%;          /* #005A3C */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 145 50% 93%;         /* #E8F8F1 */
+    --secondary-foreground: 158 100% 18%;
+    --muted: 130 15% 94%;
+    --muted-foreground: 150 9% 44%;   /* #66736D */
+    --accent: 145 50% 93%;
+    --accent-foreground: 158 100% 18%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 130 18% 88%;            /* #E1E8E4 */
+    --input: 130 18% 88%;
+    --ring: 158 100% 18%;
+    --radius: 0.75rem;
+
+    /* ── Font ──────────────────────────────────────── */
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-heading: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+    /* ── Chart colors ─────────────────────────────── */
+    --chart-1: 158 100% 18%;
+    --chart-2: 145 60% 40%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 210 80% 48%;
+    --chart-5: 0 72% 51%;
+
+    /* ── Sidebar ─────────────────────────────────── */
+    --sidebar-background: 158 100% 18%;
+    --sidebar-foreground: 0 0% 97%;
+    --sidebar-primary: 145 50% 93%;
+    --sidebar-primary-foreground: 158 100% 18%;
+    --sidebar-accent: 157 75% 22%;
+    --sidebar-accent-foreground: 0 0% 97%;
+    --sidebar-border: 157 60% 24%;
+    --sidebar-ring: 145 50% 93%;
+
+    /* ── km-green legacy alias ───────────────────── */
+    --km-green: 158 100% 18%;
+    --km-green-mid: 155 65% 25%;
+    --km-green-light: 145 50% 93%;
+    --km-orange: 38 92% 50%;
   }
 }
 
@@ -71,35 +76,128 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  }
   body {
-    @apply bg-background text-foreground font-body antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    background-color: #F7F9F7;
+    color: #17201C;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
 @layer components {
+  /* ── Sidebar ─────────────────────────────────────── */
   .km-sidebar {
-    background: linear-gradient(180deg, hsl(156 79% 20%) 0%, hsl(155 65% 16%) 100%);
+    background: linear-gradient(180deg, #005A3C 0%, #003F2B 100%);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
+  .km-sidebar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ── Cards ───────────────────────────────────────── */
   .km-card {
-    @apply bg-card rounded-2xl border border-border shadow-sm;
+    @apply bg-white rounded-2xl border border-[#E1E8E4] shadow-sm;
   }
+  .km-card-hover {
+    @apply transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-[#0B8F62]/30;
+  }
+
+  /* ── Shadows ─────────────────────────────────────── */
   .km-shadow {
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0,90,60,0.04), 0 4px 16px rgba(0,90,60,0.06);
   }
-  .km-chat-scroll::-webkit-scrollbar {
-    width: 6px;
+  .km-shadow-md {
+    box-shadow: 0 2px 8px rgba(0,90,60,0.06), 0 8px 24px rgba(0,90,60,0.08);
   }
+
+  /* ── Icon containers ─────────────────────────────── */
+  .km-icon-box {
+    @apply w-11 h-11 rounded-xl flex items-center justify-center shrink-0;
+    background-color: #E8F8F1;
+  }
+  .km-icon-box-sm {
+    @apply w-9 h-9 rounded-lg flex items-center justify-center shrink-0;
+    background-color: #E8F8F1;
+  }
+
+  /* ── Badges ──────────────────────────────────────── */
+  .km-badge-green {
+    @apply inline-flex items-center gap-1.5 text-xs font-medium text-[#005A3C];
+  }
+  .km-badge-red {
+    @apply inline-flex items-center gap-1.5 text-xs font-medium text-[#DC2626];
+  }
+  .km-badge-amber {
+    @apply inline-flex items-center gap-1.5 text-xs font-medium text-[#F59E0B];
+  }
+  .km-badge-blue {
+    @apply inline-flex items-center gap-1.5 text-xs font-medium text-[#3B82F6];
+  }
+
+  /* ── Buttons ─────────────────────────────────────── */
+  .km-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-150;
+    background-color: #005A3C;
+  }
+  .km-btn-primary:hover {
+    background-color: #003F2B;
+  }
+  .km-btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-[#66736D] hover:bg-[#E8F8F1] hover:text-[#005A3C];
+  }
+  .km-btn-outline {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium border border-[#E1E8E4] bg-white transition-all duration-150 hover:border-[#0B8F62]/40 hover:bg-[#E8F8F1] text-[#17201C];
+  }
+
+  /* ── Inputs ──────────────────────────────────────── */
+  .km-input {
+    @apply w-full px-3.5 py-2.5 rounded-xl border border-[#E1E8E4] bg-white text-sm text-[#17201C] placeholder:text-[#66736D] focus:outline-none focus:ring-2 focus:ring-[#005A3C]/20 focus:border-[#0B8F62] transition-colors;
+  }
+
+  /* ── Section headers ─────────────────────────────── */
+  .km-section-label {
+    @apply text-[10px] uppercase tracking-widest font-semibold;
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* ── Sidebar nav item ────────────────────────────── */
+  .km-nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150;
+    color: rgba(255,255,255,0.7);
+  }
+  .km-nav-item:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+  }
+  .km-nav-item.active {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-weight: 500;
+  }
+
+  /* ── Chat / scroll ───────────────────────────────── */
+  .km-chat-scroll::-webkit-scrollbar { width: 4px; }
   .km-chat-scroll::-webkit-scrollbar-thumb {
-    background: hsl(120 14% 80%);
+    background: #E1E8E4;
     border-radius: 9999px;
   }
-  .input-base {
-    @apply w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--km-green))]/30;
+
+  /* ── Page header ─────────────────────────────────── */
+  .km-page-title {
+    @apply text-2xl font-bold tracking-tight text-[#17201C];
   }
-  .km-gradient-text {
-    background: linear-gradient(135deg, hsl(156 79% 20%), hsl(155 65% 30%));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+  .km-page-subtitle {
+    @apply text-sm text-[#66736D] mt-1;
+  }
+
+  /* ── Stat chip ───────────────────────────────────── */
+  .km-chip {
+    @apply inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#E1E8E4] km-shadow text-sm font-medium text-[#17201C];
   }
 }

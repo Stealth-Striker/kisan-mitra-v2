@@ -99,9 +99,10 @@ router.get('/me', requireAuth, (req, res) => {
 // ── PUT /api/auth/me ──────────────────────────────────────────────────────────
 router.put('/me', requireAuth, (req, res) => {
   try {
-    const { full_name, notification_prefs } = req.body;
+    const { full_name, notification_prefs, phone } = req.body;
     const updates = {};
     if (full_name !== undefined) updates.full_name = full_name;
+    if (phone !== undefined) updates.phone = phone;
     if (notification_prefs !== undefined) {
       updates.notification_prefs = typeof notification_prefs === 'object' ? JSON.stringify(notification_prefs) : notification_prefs;
     }

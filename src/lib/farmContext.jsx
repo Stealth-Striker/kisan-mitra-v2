@@ -6,7 +6,7 @@ const FarmContext = createContext(null);
 export function FarmProvider({ children }) {
   const [farm, setFarm] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [language, setLanguageState] = useState("English");
+  const [language, setLanguageState] = useState(() => localStorage.getItem("kisan_language") || "English");
   const [demoMode, setDemoMode] = useState(false);
 
   const loadFarm = useCallback(async () => {
@@ -16,7 +16,10 @@ export function FarmProvider({ children }) {
       const farms = await base44.entities.Farm.filter({ created_by_id: me.id });
       if (farms.length > 0) {
         setFarm(farms[0]);
-        setLanguageState(farms[0].language || "English");
+        if (farms[0].language) {
+          setLanguageState(farms[0].language);
+          localStorage.setItem("kisan_language", farms[0].language);
+        }
       } else {
         setFarm(null);
       }
@@ -32,6 +35,14 @@ export function FarmProvider({ children }) {
 
   const setLanguage = useCallback((lang) => {
     setLanguageState(lang);
+    localStorage.setItem("kisan_language", lang);
+    setFarm((prevFarm) => {
+      if (prevFarm) {
+        base44.entities.Farm.update(prevFarm.id, { language: lang }).catch(() => {});
+        return { ...prevFarm, language: lang };
+      }
+      return prevFarm;
+    });
   }, []);
 
   const refresh = useCallback(() => loadFarm(), [loadFarm]);

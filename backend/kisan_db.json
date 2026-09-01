@@ -19,22 +19,25 @@
       "otp": "732994",
       "otp_expires_at": 1788111748495,
       "is_verified": false,
-      "notification_prefs": "{\"harvest\":true,\"disease\":true,\"market\":true,\"diagnosis\":true}"
+      "notification_prefs": "{\"harvest\":true,\"disease\":true,\"market\":true,\"diagnosis\":true}",
+      "full_name": "Reuben",
+      "phone": "+91 98765 43210"
     }
   ],
   "farms": [
     {
       "id": "3f9a2af8-28cd-4cb1-acba-9f0d64b75a41",
       "created_date": "2026-08-30T17:32:46.414Z",
-      "location": "",
+      "location": "Varikoli",
       "state": "Kerala",
-      "district": "",
+      "district": "Ernakulam",
       "primary_crop": "Tomato",
       "farm_size": 2,
       "farm_size_unit": "Acres",
       "language": "English",
       "phone": "",
-      "created_by_id": "a209c6f0-b0de-4bea-9a2c-8688ea91fdde"
+      "created_by_id": "a209c6f0-b0de-4bea-9a2c-8688ea91fdde",
+      "farmer_since": "2018"
     },
     {
       "id": "0927dbde-55ee-409e-ba40-60fc65196a0c",
@@ -125,6 +128,34 @@
       "id": "c22a5ed7-d753-4dca-b5cf-8efe644d26a4",
       "created_date": "2026-08-31T10:05:48.349Z",
       "title": "Tomato black spots",
+      "language": "English",
+      "created_by_id": "ed60abd9-dd87-4444-a110-a27a30f4246d"
+    },
+    {
+      "id": "635f88d2-7310-4918-b34f-6ffd6579fc1c",
+      "created_date": "2026-08-31T16:30:26.649Z",
+      "title": "explain",
+      "language": "English",
+      "created_by_id": "ed60abd9-dd87-4444-a110-a27a30f4246d"
+    },
+    {
+      "id": "fcb95d45-7e57-4597-a1d6-a4b7bc00b0c2",
+      "created_date": "2026-08-31T17:54:09.440Z",
+      "title": "What disease is affecting my rice?",
+      "language": "English",
+      "created_by_id": "a209c6f0-b0de-4bea-9a2c-8688ea91fdde"
+    },
+    {
+      "id": "a0a2b34f-d07c-4742-a649-ea4cbfd43720",
+      "created_date": "2026-08-31T18:04:06.601Z",
+      "title": "What is today's rice price?",
+      "language": "English",
+      "created_by_id": "a209c6f0-b0de-4bea-9a2c-8688ea91fdde"
+    },
+    {
+      "id": "9c25d225-0f77-4826-b473-ec89f5369c3c",
+      "created_date": "2026-09-01T02:37:53.469Z",
+      "title": "What disease is affecting my rice?",
       "language": "English",
       "created_by_id": "ed60abd9-dd87-4444-a110-a27a30f4246d"
     }
@@ -265,6 +296,126 @@
       "role": "assistant",
       "content": "Hello! Black spots on tomatoes in Ernakulam's humid climate are usually caused by fungal diseases like Early Blight or Bacterial Spot. \n\nFirst, immediately pluck off infected leaves or fruits and burn/bury them away from your 1-acre field to stop the spread. Spray **Mancozeb 75% WP** (2 grams per liter of water) or **Copper Oxychloride** (3 grams per liter) thoroughly on the plants, repeating after 7–10 days if necessary. \n\nAvoid overhead watering to keep the leaves dry, and ensure good spacing between plants for proper airflow. If the black spots are only at the bottom of the fruit, it could be a calcium deficiency (Blossom End Rot)—let me know where the spots are appearing!",
       "language": "English"
+    },
+    {
+      "id": "a662d1a2-53b1-4101-abd8-e14f9b896edb",
+      "created_date": "2026-08-31T16:30:26.678Z",
+      "conversation_id": "635f88d2-7310-4918-b34f-6ffd6579fc1c",
+      "role": "user",
+      "content": "explain",
+      "language": "English"
+    },
+    {
+      "id": "28ce5a6b-3f1b-4cd4-a01c-8e476a9c17cd",
+      "created_date": "2026-08-31T16:30:31.950Z",
+      "conversation_id": "635f88d2-7310-4918-b34f-6ffd6579fc1c",
+      "role": "assistant",
+      "content": "Namaste! I am Kisan Mitra, your friendly AI farming assistant. I am here to help you get the best yield from your 1-acre paddy field in Varikoli, Ernakulam. You can ask me about controlling rice pests and diseases (like stem borer or blast), recommended fertilizer schedules, weather guidance, or current market prices in Kerala. How can I assist you with your rice crop today?",
+      "language": "English"
+    },
+    {
+      "id": "55e8b3d6-e8c5-4d4c-aaa6-990e9010e390",
+      "created_date": "2026-08-31T17:54:09.459Z",
+      "conversation_id": "fcb95d45-7e57-4597-a1d6-a4b7bc00b0c2",
+      "role": "user",
+      "content": "What disease is affecting my rice?",
+      "language": "English"
+    },
+    {
+      "id": "69f404f0-a9f8-46cf-a3f2-1aff71aa8492",
+      "created_date": "2026-08-31T17:54:15.270Z",
+      "conversation_id": "fcb95d45-7e57-4597-a1d6-a4b7bc00b0c2",
+      "role": "user",
+      "content": "When should I harvest?",
+      "language": "English"
+    },
+    {
+      "id": "a1ccd7c3-82a1-4a98-b39f-fda4b2831306",
+      "created_date": "2026-08-31T17:54:25.312Z",
+      "conversation_id": "fcb95d45-7e57-4597-a1d6-a4b7bc00b0c2",
+      "role": "assistant",
+      "content": "For your tomato crop, harvest when the fruits reach the \"breaker stage\"—when the bottom of the green tomato turns light pink or reddish. If you are selling to local markets around Varikoli, pick them when they are firm and mostly red. For distant markets, pick them at the pink stage so they do not overripe during transport. Always harvest during the cool morning or late afternoon hours by gently twisting the fruit while keeping the green cap (calyx) attached. \n\n*(Note: If you were asking about rice harvest instead, harvest when 80-85% of the grains turn golden yellow.)*",
+      "language": "English"
+    },
+    {
+      "id": "037ce6fa-f0d6-4e8b-96c8-f9a5692dd39e",
+      "created_date": "2026-08-31T17:54:30.846Z",
+      "conversation_id": "fcb95d45-7e57-4597-a1d6-a4b7bc00b0c2",
+      "role": "user",
+      "content": "What disease is affecting my rice?",
+      "language": "English"
+    },
+    {
+      "id": "d9c70e6c-50e7-4ef2-b84f-c9098e1ed56c",
+      "created_date": "2026-08-31T17:54:40.759Z",
+      "conversation_id": "fcb95d45-7e57-4597-a1d6-a4b7bc00b0c2",
+      "role": "assistant",
+      "content": "To help you identify the exact disease, could you please tell me what specific symptoms you are seeing on your rice plants? \n\nIn Kerala, rice is most commonly affected by **Rice Blast** (spindle-shaped brown spots on leaves), **Bacterial Leaf Blight** (leaves yellowing and drying from the tips), or **Sheath Blight** (greyish-green spots near the water line). Check whether the damage is on the leaves, lower stems, or grain heads. Once you share a quick description of the spots or color changes, I will give you the exact treatment!",
+      "language": "English"
+    },
+    {
+      "id": "70588a38-348d-464a-85a9-11e17008ee63",
+      "created_date": "2026-08-31T18:04:06.625Z",
+      "conversation_id": "a0a2b34f-d07c-4742-a649-ea4cbfd43720",
+      "role": "user",
+      "content": "What disease is affecting my rice?",
+      "language": "English"
+    },
+    {
+      "id": "d88f16ff-2ab2-4211-9454-835f1433c8df",
+      "created_date": "2026-08-31T18:04:15.010Z",
+      "conversation_id": "a0a2b34f-d07c-4742-a649-ea4cbfd43720",
+      "role": "assistant",
+      "content": "Namaste! To help me identify the exact disease affecting your rice crop, could you please describe the symptoms you are seeing on your plants? Check if there are brown or diamond-shaped spots on the leaves, yellowing, wilting, or rotting at the base of the stems. In Kerala, common rice diseases include Rice Blast, Bacterial Leaf Blight, and Sheath Blight. Once you share what the plants look like, I will suggest the right, easy-to-use treatment for you.",
+      "language": "English"
+    },
+    {
+      "id": "725525c7-b00b-4343-85ad-0dd154d567f5",
+      "created_date": "2026-08-31T18:04:25.386Z",
+      "conversation_id": "a0a2b34f-d07c-4742-a649-ea4cbfd43720",
+      "role": "user",
+      "content": "When should I harvest?",
+      "language": "English"
+    },
+    {
+      "id": "ad45c7da-6508-4411-bae4-a76c6a2f96ac",
+      "created_date": "2026-08-31T18:04:34.597Z",
+      "conversation_id": "a0a2b34f-d07c-4742-a649-ea4cbfd43720",
+      "role": "assistant",
+      "content": "Namaste! \n\nFor **tomatoes**, harvest when the bottom of the fruit turns light pink or red (breaker stage) if you are sending them to market, or when fully red for local sales. This is usually around 60–80 days after transplanting. \n\nIf you are asking about your **rice** crop, it is ready to harvest when 80–85% of the grains turn golden yellow and the panicles bend downward, typically 30–35 days after flowering. \n\nAlways harvest on a clear, dry day to protect your crop from rot and spoilage. Which of your crops are you getting ready to pick?",
+      "language": "English"
+    },
+    {
+      "id": "a9930ee1-b122-4624-872d-e4da8c055262",
+      "created_date": "2026-08-31T18:04:52.506Z",
+      "conversation_id": "a0a2b34f-d07c-4742-a649-ea4cbfd43720",
+      "role": "user",
+      "content": "What is today's rice price?",
+      "language": "English"
+    },
+    {
+      "id": "0bab141a-cf54-489b-9946-51f2b2d8f8c8",
+      "created_date": "2026-08-31T18:05:01.955Z",
+      "conversation_id": "a0a2b34f-d07c-4742-a649-ea4cbfd43720",
+      "role": "assistant",
+      "content": "Namaste! Paddy and rice prices in Kerala depend on whether you sell through government procurement (Supplyco) or in the private market. \n\nUnder the Kerala government's Supplyco procurement scheme, the current paddy price is set at **₹28.20 per kg**. In local open markets around Ernakulam district, raw paddy prices generally range between **₹20 to ₹24 per kg**, while processed wholesale rice (like Matta or Jyothi) sells for **₹40 to ₹52 per kg** depending on the quality. \n\nTo get the exact live mandi rates for nearby markets today, you can check the Agmarknet portal or contact your local Padasekhara Samiti / Krishi Bhavan. Are you planning to sell raw paddy or processed rice?",
+      "language": "English"
+    },
+    {
+      "id": "230fb665-c737-4e50-89ea-f47b8ac8661f",
+      "created_date": "2026-09-01T02:37:53.493Z",
+      "conversation_id": "9c25d225-0f77-4826-b473-ec89f5369c3c",
+      "role": "user",
+      "content": "What disease is affecting my rice?",
+      "language": "English"
+    },
+    {
+      "id": "4e4b2c85-f41f-4cc9-8e61-316843cd2df7",
+      "created_date": "2026-09-01T02:38:25.662Z",
+      "conversation_id": "9c25d225-0f77-4826-b473-ec89f5369c3c",
+      "role": "assistant",
+      "content": "Namaste! To give you the correct diagnosis, I need a little more detail about what is happening to your paddy crop. Are you seeing spindle-shaped brown spots, yellowing/drying starting from the leaf tips, or rotting near the lower stems? In Kerala, the most common issues are Rice Blast (brown spots on leaves/panicles) and Bacterial Leaf Blight (yellowish-white drying edges). \n\nPlease describe the symptoms you see, and I will immediately tell you how to treat it for your 1-acre farm!",
+      "language": "English"
     }
   ],
   "crop_diagnoses": [
@@ -364,6 +515,72 @@
       "prevention": "Avoid overwatering; allow the top layer of soil to dry out between waterings. Clean leaves periodically with a damp cloth to remove dust.",
       "severity": "Healthy",
       "language": "English",
+      "created_by_id": "ed60abd9-dd87-4444-a110-a27a30f4246d"
+    },
+    {
+      "id": "1c537f62-263c-41f0-be14-8413fdf0f92a",
+      "created_date": "2026-08-31T16:28:08.923Z",
+      "image_url": "/uploads/f0cce137-7aec-4b4f-a058-d561eebcb6c3.jpg",
+      "crop": "Rice",
+      "disease": "Late Blight (Phytophthora infestans)",
+      "confidence": 92,
+      "symptoms": "Large, dark brown to black water-soaked necrotic lesions spreading rapidly across the leaf surface, causing curling, distortion, and tissue death (Note: Plant shown is a tomato leaf).",
+      "recommended_actions": "Apply systemic fungicides such as Metalaxyl + Mancozeb (e.g., Ridomil Gold) or Copper Oxychloride immediately. Pluck and safely destroy severely affected leaves to minimize spore dispersion. Ensure foliage stays dry by avoiding overhead irrigation.",
+      "prevention": "Ensure good crop spacing for adequate airflow, practice crop rotation with non-solanaceous crops, avoid over-application of nitrogen fertilizers, and plant resistant varieties during humid seasons.",
+      "severity": "High",
+      "language": "English",
+      "created_by_id": "ed60abd9-dd87-4444-a110-a27a30f4246d"
+    },
+    {
+      "id": "cd7b6357-3cda-4558-9538-3b7c751af927",
+      "created_date": "2026-08-31T17:55:13.478Z",
+      "crop": "Tomato",
+      "image_url": "/uploads/3df7644f-611d-4115-baf2-78837c608678.jpg",
+      "disease_name": "Tomato Late Blight",
+      "confidence": 92,
+      "severity": "High",
+      "symptoms": "Large, irregular dark brown to purplish-black water-soaked lesions on the leaf tissue, causing severe leaf browning, shriveling, and tissue death.",
+      "recommended_actions": "1. Immediately prune and destroy infected leaves/plants away from the field. 2. Avoid overhead irrigation to keep leaves dry. 3. Spray systemic fungicides such as Metalaxyl + Mancozeb (2g/L of water) or Dimethomorph during cool, damp weather.",
+      "prevention": "Ensure adequate spacing between plants for ventilation, rotate crops with non-solanaceous crops, avoid late evening watering, and apply preventive copper-based fungicides before rainy periods.",
+      "created_by_id": "a209c6f0-b0de-4bea-9a2c-8688ea91fdde"
+    },
+    {
+      "id": "7b6d0cf7-adf0-4a57-be23-691455fe488a",
+      "created_date": "2026-08-31T18:11:37.838Z",
+      "crop": "Rice",
+      "image_url": "/uploads/caca9ea4-5f23-4c7a-af7a-3160564d2855.jpg",
+      "disease_name": "Late Blight (Phytophthora infestans)",
+      "confidence": 95,
+      "severity": "High",
+      "symptoms": "Large, dark brown to black water-soaked lesions starting near the leaf tips and edges, leading to extensive tissue necrosis and leaf wilting. Note: The image depicts a tomato/solanaceous leaf rather than a rice plant.",
+      "recommended_actions": "1. Remove and destroy heavily infected foliage immediately to prevent spore dispersal.\n2. Apply a fungicide containing Metalaxyl + Mancozeb (2g/L water) or Cymoxanil + Mancozeb.\n3. Avoid overhead irrigation to keep foliage dry.",
+      "prevention": "1. Practice crop rotation with non-solanaceous crops.\n2. Ensure adequate spacing between plants to improve air circulation.\n3. Apply protective copper oxychloride spray during cool, humid weather conditions.",
+      "created_by_id": "ed60abd9-dd87-4444-a110-a27a30f4246d"
+    },
+    {
+      "id": "acfaa9f2-9e9a-4475-9345-6432ecdd85c1",
+      "created_date": "2026-09-01T02:37:10.094Z",
+      "crop": "Rice",
+      "image_url": "/uploads/805e6986-3c5f-4124-bf5a-418f66d8f926.jpg",
+      "disease_name": "Tomato Late Blight (Phytophthora infestans)",
+      "confidence": 92,
+      "severity": "High",
+      "symptoms": "Large, dark brown to black water-soaked necrotic patches on the leaflet with leaf curling, wilting, and surrounding chlorosis (yellowing). Note: The uploaded image shows a Tomato leaf rather than a Rice leaf.",
+      "recommended_actions": "1. Immediately prune and burn/destroy severely infected leaves to reduce spore spread.\n2. Apply contact fungicides like Mancozeb 75% WP (2-2.5 g/L water) or Copper Oxychloride 50% WP (3 g/L water).\n3. In severe cases, use systemic fungicides like Cymoxanil + Mancozeb or Metalaxyl + Mancozeb.\n4. Avoid overhead irrigation and keep foliage dry.",
+      "prevention": "1. Practice crop rotation with non-solanaceous crops.\n2. Ensure proper row spacing for good air circulation.\n3. Avoid excess nitrogen fertilization.\n4. Apply preventative copper-based sprays during cool, wet weather.",
+      "created_by_id": "ed60abd9-dd87-4444-a110-a27a30f4246d"
+    },
+    {
+      "id": "8d2dbb2a-2e03-4f56-bdb4-ac67b69bffa7",
+      "created_date": "2026-09-01T03:26:59.205Z",
+      "crop": "Tomato",
+      "image_url": "/uploads/f9c8503e-a003-405f-92cc-16c24fc83c7d.jpg",
+      "disease_name": "Tomato Leaf Mold",
+      "confidence": 92,
+      "severity": "High",
+      "symptoms": "Pale yellow to light green spots on the upper leaf surface, accompanied by olive-green to dark brownish velvety fungal growth on the leaf underside. Affected leaves curl, turn brown, and wither prematurely.",
+      "recommended_actions": "1. Immediately prune and burn severely affected lower leaves to reduce spore spread.\n2. Apply recommended fungicides such as Mancozeb (2.5 g/L water) or Copper Oxychloride (3 g/L water).\n3. In severe cases, use systemic fungicides like Difenoconazole (1 mL/L water).\n4. Ensure adequate space and airflow around plants by proper staking and pruning.",
+      "prevention": "1. Avoid overhead watering; use drip irrigation to keep foliage dry.\n2. Maintain proper plant spacing for good ventilation.\n3. Practice 2-3 year crop rotation with non-solanaceous crops.\n4. Use leaf mold-resistant tomato varieties if available.",
       "created_by_id": "ed60abd9-dd87-4444-a110-a27a30f4246d"
     }
   ],

@@ -1,172 +1,203 @@
-import React from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Sprout, LayoutDashboard, Settings, MessageSquare, MapPin, Wheat, Ruler, Globe, Info, LogOut, ChevronDown, Shield } from "lucide-react";
-import { useFarm } from "@/lib/farmContext";
-import { t, LANGUAGES } from "@/lib/translations";
-import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
-const DEMO_PROMPTS = [
-  { num: "01", label: "Disease + Outbreak", text: "Tomato black spots" },
-  { num: "02", label: "Harvest Guardian", text: "When should I harvest?" },
-  { num: "03", label: "Market Copilot", text: "Trader offers ₹18/kg" },
-];
+  Sprout,
+  LayoutGrid,
+  Settings,
+  MessageSquare,
+  MapPin,
+  Calendar,
+  Globe,
+  LogOut,
+  ChevronDown,
+  Shield,
+  User as UserIcon,
+  Phone,
+  Users,
+} from "lucide-react";
+import { useFarm } from "@/lib/farmContext";
+import { LANGUAGES, t } from "@/lib/translations";
+import { base44 } from "@/api/base44Client";
 
 export default function Sidebar({ user }) {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { farm, language, setLanguage, demoMode } = useFarm();
-
-  const navItems = [
-    { to: "/dashboard", icon: LayoutDashboard, key: "overview" },
-    { to: "/preferences", icon: Settings, key: "preferences" },
-    { to: "/conversations", icon: MessageSquare, key: "conversationHistory" },
-  ];
+  const { farm, language, setLanguage } = useFarm();
+  const [langOpen, setLangOpen] = useState(false);
 
   const handleLogout = async () => {
     await base44.auth.logout();
     window.location.href = "/login";
   };
 
-  const sendPrompt = (text) => {
-    navigate(`/dashboard?prompt=${encodeURIComponent(text)}`);
-  };
+  const currentLangObj = LANGUAGES.find((l) => l.code === language) || LANGUAGES[0];
 
   return (
-    <aside className="km-sidebar flex flex-col w-72 shrink-0 h-screen sticky top-0 text-white">
+    <aside
+      className="km-sidebar flex flex-col w-64 shrink-0 h-screen sticky top-0 text-white z-30 select-none overflow-hidden"
+      style={{ background: "#002D1F" }}
+    >
       {/* Branding */}
-      <div className="px-6 pt-7 pb-5">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center ring-1 ring-white/20">
-            <Sprout className="w-6 h-6 text-emerald-100" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight leading-none">KISAN MITRA</h1>
-            <p className="text-[11px] text-emerald-200/80 mt-1">Your AI Farming Companion</p>
-          </div>
+      <div className="px-5 pt-5 pb-4 flex items-center gap-3.5 shrink-0">
+        <div className="w-11 h-11 rounded-full bg-[#0B8F62] flex items-center justify-center shrink-0 shadow-md">
+          <Sprout className="w-6 h-6 text-white" />
+        </div>
+        <div>
+          <h1 className="text-base font-bold tracking-wide text-white leading-none">KISAN MITRA</h1>
+          <p className="text-[11px] text-emerald-200/70 mt-1 font-medium">AI Farming Companion</p>
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="px-3 space-y-1">
-        {navItems.map((item) => {
-          const active = location.pathname === item.to;
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
-                active ? "bg-white/15 text-white font-medium" : "text-emerald-100/80 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              <item.icon className="w-[18px] h-[18px]" />
-              {t(language, item.key)}
-            </Link>
-          );
-        })}
-        {user?.role === 'admin' && (
+      {/* Overview Button */}
+      <div className="px-3 mb-3 shrink-0">
+        <Link
+          to="/dashboard"
+          className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all ${
+            location.pathname === "/dashboard"
+              ? "bg-[#0B8F62] text-white shadow-lg"
+              : "text-emerald-100/70 hover:bg-white/10 hover:text-white"
+          }`}
+        >
+          <LayoutGrid className="w-5 h-5 shrink-0" />
+          <span>{t(language, "overview")}</span>
+        </Link>
+      </div>
+
+      {/* MY PROFILE Section */}
+      <div className="px-5 mb-1.5 text-[10px] uppercase tracking-widest font-bold text-emerald-200/50 shrink-0">
+        MY PROFILE
+      </div>
+
+      {/* MY PROFILE Card Box */}
+      <div className="mx-3 p-3 rounded-2xl bg-white/[0.04] border border-white/10 space-y-2 text-xs text-white/90 font-medium shrink-0">
+        <div className="flex items-center gap-3 px-1">
+          <UserIcon className="w-3.5 h-3.5 text-white/70 shrink-0" />
+          <span className="truncate">{user?.full_name || "Ramesh"}</span>
+        </div>
+        <div className="flex items-center gap-3 px-1">
+          <Phone className="w-3.5 h-3.5 text-white/70 shrink-0" />
+          <span className="truncate">{user?.phone || "+91 98765 43210"}</span>
+        </div>
+        <div className="flex items-center gap-3 px-1">
+          <MapPin className="w-3.5 h-3.5 text-white/70 shrink-0" />
+          <span className="truncate">{farm ? `${farm.location || "Varikoli"}, ${farm.state || "Kerala"}` : "Varikoli, Kerala"}</span>
+        </div>
+        <div className="flex items-center gap-3 px-1">
+          <Calendar className="w-3.5 h-3.5 text-white/70 shrink-0" />
+          <span className="truncate">{farm ? `${farm.farm_size || 1} ${farm.farm_size_unit || "Acre"}` : "1 Acre"}</span>
+        </div>
+        <div className="flex items-center gap-3 px-1">
+          <Users className="w-3.5 h-3.5 text-white/70 shrink-0" />
+          <span className="truncate">Farmer since {farm?.farmer_since || "2018"}</span>
+        </div>
+
+        {/* Divider & Language Selector */}
+        <div className="border-t border-white/10 pt-2 relative">
+          <button
+            type="button"
+            onClick={() => setLangOpen(!langOpen)}
+            className="w-full flex items-center justify-between text-left hover:opacity-90 transition-opacity cursor-pointer"
+          >
+            <div className="flex items-center gap-3">
+              <Globe className="w-3.5 h-3.5 text-white/70 shrink-0" />
+              <div>
+                <p className="text-xs font-semibold text-white">{t(language, "language")}</p>
+                <p className="text-[11px] text-white/60">{currentLangObj.label}</p>
+              </div>
+            </div>
+            <ChevronDown className={`w-3.5 h-3.5 text-white/70 transition-transform ${langOpen ? "rotate-180" : ""}`} />
+          </button>
+
+          {/* Language Dropdown Menu */}
+          {langOpen && (
+            <div className="absolute left-0 right-0 bottom-full mb-2 bg-white rounded-xl shadow-2xl border border-[#E1E8E4] py-1 text-[#17201C] z-50 animate-in fade-in zoom-in-95 duration-150">
+              {LANGUAGES.map((l) => (
+                <button
+                  key={l.code}
+                  type="button"
+                  onClick={() => {
+                    setLanguage(l.code);
+                    setLangOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3.5 py-2 text-xs text-left hover:bg-[#E8F8F1] cursor-pointer transition-colors ${
+                    language === l.code ? "bg-[#E8F8F1] font-semibold text-[#005A3C]" : ""
+                  }`}
+                >
+                  <span className="font-medium text-[#17201C]">{l.native}</span>
+                  <span className="text-[10px] text-muted-foreground">{l.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ACTIVITY Section */}
+      <div className="px-5 mt-4 mb-1.5 text-[10px] uppercase tracking-widest font-bold text-emerald-200/50 shrink-0">
+        ACTIVITY
+      </div>
+      <div className="px-3 shrink-0">
+        <Link
+          to="/conversations"
+          className={`flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+            location.pathname === "/conversations"
+              ? "bg-[#0B8F62] text-white shadow-md"
+              : "text-emerald-100/70 hover:bg-white/10 hover:text-white"
+          }`}
+        >
+          <MessageSquare className="w-4 h-4 shrink-0" />
+          <span>{t(language, "conversationHistory")}</span>
+        </Link>
+      </div>
+
+      {/* SETTINGS Section */}
+      <div className="px-5 mt-3 mb-1.5 text-[10px] uppercase tracking-widest font-bold text-emerald-200/50 shrink-0">
+        SETTINGS
+      </div>
+      <div className="px-3 space-y-1 shrink-0">
+        <Link
+          to="/preferences"
+          className={`flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+            location.pathname === "/preferences"
+              ? "bg-[#0B8F62] text-white shadow-md"
+              : "text-emerald-100/70 hover:bg-white/10 hover:text-white"
+          }`}
+        >
+          <Settings className="w-4 h-4 shrink-0" />
+          <span>{t(language, "preferences")}</span>
+        </Link>
+        {user?.role === "admin" && (
           <Link
             to="/admin"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors text-emerald-100/80 hover:bg-white/10 hover:text-white"
+            className="flex items-center gap-3 px-4 py-2 rounded-xl text-sm text-emerald-100/70 hover:bg-white/10 hover:text-white transition-all font-medium"
           >
-            <Shield className="w-[18px] h-[18px]" />
-            Admin Panel
+            <Shield className="w-4 h-4 shrink-0" />
+            <span>Admin Panel</span>
           </Link>
         )}
-      </nav>
-
-      {/* Farm Profile */}
-      <div className="mx-4 mt-6 rounded-2xl bg-white/10 ring-1 ring-white/10 p-4">
-        <p className="text-[11px] uppercase tracking-wider text-emerald-200/70 font-semibold mb-3">{t(language, "farmProfile")}</p>
-        <div className="space-y-2.5 text-sm">
-          <div className="flex items-center gap-2.5">
-            <MapPin className="w-4 h-4 text-emerald-200 shrink-0" />
-            <span className="truncate">{farm ? `${farm.location || "—"}, ${farm.district || ""}` : "Kochi, Ernakulam"}</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <Wheat className="w-4 h-4 text-emerald-200 shrink-0" />
-            <span className="truncate">{farm?.primary_crop || "Tomato"}</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <Ruler className="w-4 h-4 text-emerald-200 shrink-0" />
-            <span className="truncate">{farm ? `${farm.farm_size || 2.5} ${farm.farm_size_unit || "Acres"}` : "2.5 Acres"}</span>
-          </div>
-        </div>
       </div>
 
-      {/* Language Selector */}
-      <div className="mx-4 mt-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-white/10 ring-1 ring-white/10 text-sm text-white hover:bg-white/15 transition-colors">
-              <span className="flex items-center gap-2.5">
-                <Globe className="w-4 h-4 text-emerald-200" />
-                {LANGUAGES.find((l) => l.code === language)?.native || "English"}
-              </span>
-              <ChevronDown className="w-4 h-4 opacity-70" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-60">
-            {LANGUAGES.map((l) => (
-              <DropdownMenuItem
-                key={l.code}
-                onClick={() => setLanguage(l.code)}
-                className={`flex items-center justify-between ${language === l.code ? "font-semibold" : ""}`}
-              >
-                <span>{l.native}</span>
-                <span className="text-xs text-muted-foreground">{l.label}</span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      {/* Quick Demo Prompts */}
-      <div className="mx-4 mt-5">
-        <p className="text-[11px] uppercase tracking-wider text-emerald-200/70 font-semibold mb-2.5">{t(language, "quickDemoPrompts")}</p>
-        <div className="space-y-2">
-          {DEMO_PROMPTS.map((p) => (
-            <button
-              key={p.num}
-              onClick={() => sendPrompt(p.text)}
-              className="w-full text-left rounded-xl bg-white/5 hover:bg-white/15 ring-1 ring-white/10 p-3 transition-colors group"
-            >
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[10px] font-bold text-emerald-200/80">{p.num}</span>
-                <span className="text-xs font-medium text-white">{p.label}</span>
-              </div>
-              <p className="text-[11px] text-emerald-100/70 italic">"{p.text}"</p>
-            </button>
-          ))}
+      {/* Bottom Landscape Image */}
+      <div className="mt-auto pt-2 relative shrink-0">
+        <div className="h-20 overflow-hidden relative">
+          <img
+            src="/sidebar-landscape.jpg"
+            alt="Agricultural Landscape"
+            className="w-full h-full object-cover opacity-80"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#002D1F]/60 via-transparent to-[#002D1F]" />
         </div>
-      </div>
 
-      {/* Footer / Demo Mode */}
-      <div className="mt-auto px-4 pb-5 pt-4">
-        <div className="rounded-xl bg-amber-400/15 ring-1 ring-amber-300/30 p-3 mb-3">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-2 h-2 rounded-full bg-amber-300 animate-pulse" />
-            <span className="text-xs font-bold tracking-wide text-amber-100">{demoMode ? t(language, "demoMode") : "LIVE MODE"}</span>
-          </div>
-          <p className="text-[11px] text-amber-100/70 flex items-center gap-1">
-            <Info className="w-3 h-3" />
-            {demoMode ? t(language, "usingSimulatedData") : "Connected to your farm data"}
-          </p>
+        {/* Logout */}
+        <div className="px-4 pb-3 pt-2 border-t border-white/10">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center gap-3 w-full px-2 py-1.5 rounded-xl text-sm font-medium text-white/80 hover:text-white transition-all text-left cursor-pointer"
+          >
+            <LogOut className="w-4 h-4 shrink-0" />
+            <span>{t(language, "logout")}</span>
+          </button>
         </div>
-        <Button
-          onClick={handleLogout}
-          variant="ghost"
-          className="w-full justify-start text-emerald-100/80 hover:bg-white/10 hover:text-white"
-        >
-          <LogOut className="w-4 h-4 mr-2.5" />
-          {t(language, "logout")}
-        </Button>
       </div>
     </aside>
   );

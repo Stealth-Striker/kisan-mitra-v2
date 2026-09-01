@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Paperclip, Mic, Send, Sprout, Volume2, Loader2, X } from "lucide-react";
+import { Paperclip, Mic, Send, Sprout, Volume2, Loader2, X, Image as ImageIcon } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useFarm } from "@/lib/farmContext";
 import { t } from "@/lib/translations";
@@ -9,10 +9,10 @@ import { Image } from "@/components/ui/image";
 import { useToast } from "@/components/ui/use-toast";
 
 const SUGGESTED = [
-  "Why are my tomato leaves turning yellow?",
-  "How to control early blight?",
-  "Best time to harvest tomatoes?",
-  "Current market price in Kochi?",
+  "What disease is affecting my rice?",
+  "When should I harvest?",
+  "What is today's rice price?",
+  "How to control stem borer?",
 ];
 
 function formatTime(iso) {
@@ -38,12 +38,12 @@ export default function ChatPanel({ user, initialPrompt }) {
   const fileRef = useRef(null);
   const recognitionRef = useRef(null);
 
-  const crop = farm?.primary_crop || "Tomato";
+  const crop = farm?.primary_crop || "Rice";
   const farmerContext = {
     crop,
-    location: farm ? `${farm.location || ""}, ${farm.district || ""}`.trim(", ") : "Kochi, Kerala",
-    farmSize: farm?.farm_size || 2.5,
-    farmSizeUnit: farm?.farm_size_unit || "Acres",
+    location: farm ? `${farm.location || "Varikoli"}, ${farm.state || "Kerala"}` : "Varikoli, Kerala",
+    farmSize: farm?.farm_size || 1,
+    farmSizeUnit: farm?.farm_size_unit || "Acre",
   };
 
   const ensureConversation = useCallback(async () => {
@@ -95,20 +95,19 @@ export default function ChatPanel({ user, initialPrompt }) {
       const title = content.slice(0, 40);
       await base44.entities.Conversation.update(convId, { title });
     } catch (e) {
-      const fallback = "I'm having trouble connecting to the AI service. In Demo Mode, here's a tip: check your crop for yellowing leaves and ensure proper irrigation. Please try again shortly.";
+      const fallback =
+        "I'm having trouble connecting to the AI service. Please check your crop for any visual symptoms or try again shortly.";
       setMessages((m) => [...m, { role: "assistant", content: fallback, created_date: new Date().toISOString() }]);
       toast({ title: "AI unavailable", description: "Showing a fallback response.", variant: "destructive" });
     }
     setLoading(false);
   };
 
-  // Handle prompt passed from sidebar quick prompts
   useEffect(() => {
     if (initialPrompt) {
       send(initialPrompt);
       navigate("/dashboard", { replace: true });
     }
-     
   }, [initialPrompt]);
 
   useEffect(() => {
@@ -139,11 +138,21 @@ export default function ChatPanel({ user, initialPrompt }) {
   const startListening = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
-      toast({ title: "Voice input unavailable", description: "Your browser doesn't support speech recognition. Please type instead." });
+      toast({
+        title: "Voice input unavailable",
+        description: "Your browser doesn't support speech recognition. Please type instead.",
+      });
       return;
     }
     const rec = new SR();
-    rec.lang = language === "Malayalam" ? "ml-IN" : language === "Hindi" ? "hi-IN" : language === "Tamil" ? "ta-IN" : "en-IN";
+    rec.lang =
+      language === "Malayalam"
+        ? "ml-IN"
+        : language === "Hindi"
+        ? "hi-IN"
+        : language === "Tamil"
+        ? "ta-IN"
+        : "en-IN";
     rec.interimResults = false;
     rec.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
@@ -159,140 +168,161 @@ export default function ChatPanel({ user, initialPrompt }) {
   const speak = (text) => {
     if (!window.speechSynthesis) return;
     const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = language === "Malayalam" ? "ml-IN" : language === "Hindi" ? "hi-IN" : language === "Tamil" ? "ta-IN" : "en-IN";
+    utter.lang =
+      language === "Malayalam"
+        ? "ml-IN"
+        : language === "Hindi"
+        ? "hi-IN"
+        : language === "Tamil"
+        ? "ta-IN"
+        : "en-IN";
     window.speechSynthesis.speak(utter);
   };
 
   return (
-    <div className="km-card km-shadow overflow-hidden flex flex-col">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-border bg-gradient-to-r from-emerald-50/60 to-transparent">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-[hsl(var(--km-green))] flex items-center justify-center">
-            <Sprout className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h2 className="text-base font-semibold text-foreground">{t(language, "askKisanMitra")}</h2>
-            <p className="text-xs text-muted-foreground">{t(language, "typeInAnyLanguage")}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Messages */}
-      <div ref={scrollRef} className="km-chat-scroll flex-1 overflow-y-auto px-6 py-5 space-y-4 min-h-[260px] max-h-[420px] bg-[hsl(var(--km-green-light))]/40">
-        {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center text-center py-8">
-            <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mb-3">
-              <Sprout className="w-10 h-10 text-[hsl(var(--km-green))]" />
+    <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm overflow-hidden flex flex-col">
+      {/* Top Header if messages exist */}
+      {messages.length > 0 && (
+        <div className="px-6 py-3.5 border-b border-[#E1E8E4] bg-[#E8F8F1] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-[#005A3C] flex items-center justify-center">
+              <Sprout className="w-4 h-4 text-white" />
             </div>
-            <p className="text-sm text-muted-foreground max-w-xs">
-              {t(language, "namaskaram")}, {user?.full_name || "Farmer"}! {t(language, "howCanIHelp", { crop })}
-            </p>
-          </div>
-        )}
-        {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[80%] ${m.role === "user" ? "items-end" : "items-start"} flex flex-col gap-1`}>
-              {m.image_url && (
-                <div className="w-32 h-32 rounded-xl overflow-hidden ring-1 ring-border mb-1">
-                  <Image src={m.image_url} className="w-full h-full object-cover" fittingType="fill" />
-                </div>
-              )}
-              <div
-                className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                  m.role === "user"
-                    ? "bg-[hsl(var(--km-green))] text-white rounded-br-md"
-                    : "bg-white text-foreground border border-border rounded-bl-md"
-                }`}
-              >
-                {m.content}
-                {m.role === "assistant" && (
-                  <button onClick={() => speak(m.content)} className="ml-2 align-middle opacity-60 hover:opacity-100">
-                    <Volume2 className="w-3.5 h-3.5 inline" />
-                  </button>
-                )}
-              </div>
-              <span className="text-[10px] text-muted-foreground px-1">{formatTime(m.created_date)}</span>
+            <div>
+              <h2 className="text-sm font-semibold text-[#17201C]">{t(language, "askKisanMitra")}</h2>
+              <p className="text-[11px] text-[#66736D]">Active conversation</p>
             </div>
           </div>
-        ))}
-        {loading && (
-          <div className="flex justify-start">
-            <div className="bg-white border border-border rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin text-[hsl(var(--km-green))]" />
-              <span className="text-sm text-muted-foreground">Kisan Mitra is thinking…</span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Suggested prompts */}
-      {messages.length === 0 && (
-        <div className="px-6 pb-4 flex flex-wrap items-center gap-2">
-          <span className="text-xs text-muted-foreground">{t(language, "tryAsking")}</span>
-          {SUGGESTED.map((q) => (
-            <button
-              key={q}
-              onClick={() => send(q)}
-              className="text-xs px-3 py-1.5 rounded-full bg-white border border-border text-foreground hover:border-[hsl(var(--km-green))] hover:text-[hsl(var(--km-green))] transition-colors"
-            >
-              {q}
-            </button>
-          ))}
+          <button
+            type="button"
+            onClick={() => {
+              setMessages([]);
+              setConversationId(null);
+            }}
+            className="text-xs text-[#005A3C] hover:underline font-medium cursor-pointer"
+          >
+            {t(language, "newConversation")}
+          </button>
         </div>
       )}
 
-      {/* Input */}
-      <div className="border-t border-border p-4 bg-white">
+      {/* Messages area */}
+      {messages.length > 0 && (
+        <div
+          ref={scrollRef}
+          className="km-chat-scroll flex-1 overflow-y-auto px-6 py-5 space-y-4 max-h-[380px] bg-[#F7F9F7]"
+        >
+          {messages.map((m, i) => (
+            <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[80%] ${m.role === "user" ? "items-end" : "items-start"} flex flex-col gap-1`}>
+                {m.image_url && (
+                  <div className="w-32 h-32 rounded-xl overflow-hidden ring-1 ring-border mb-1">
+                    <Image src={m.image_url} className="w-full h-full object-cover" fittingType="fill" />
+                  </div>
+                )}
+                <div
+                  className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                    m.role === "user"
+                      ? "bg-[#005A3C] text-white rounded-br-md"
+                      : "bg-white text-[#17201C] border border-[#E1E8E4] rounded-bl-md shadow-sm"
+                  }`}
+                >
+                  {m.content}
+                  {m.role === "assistant" && (
+                    <button onClick={() => speak(m.content)} className="ml-2 align-middle opacity-60 hover:opacity-100 cursor-pointer">
+                      <Volume2 className="w-3.5 h-3.5 inline" />
+                    </button>
+                  )}
+                </div>
+                <span className="text-[10px] text-[#66736D] px-1">{formatTime(m.created_date)}</span>
+              </div>
+            </div>
+          ))}
+          {loading && (
+            <div className="flex justify-start">
+              <div className="bg-white border border-[#E1E8E4] rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-2 shadow-sm">
+                <Loader2 className="w-4 h-4 animate-spin text-[#005A3C]" />
+                <span className="text-sm text-[#66736D]">Kisan Mitra is thinking…</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Input section matching reference exact layout */}
+      <div className="p-4 sm:p-5 bg-white">
         {attachedImage && (
-          <div className="mb-2 inline-flex items-center gap-2 bg-muted rounded-lg p-1.5 pr-3">
-            <div className="w-10 h-10 rounded overflow-hidden">
+          <div className="mb-3 inline-flex items-center gap-2 bg-[#E8F8F1] border border-[#E1E8E4] rounded-xl p-1.5 pr-3">
+            <div className="w-9 h-9 rounded-lg overflow-hidden">
               <Image src={attachedImage} className="w-full h-full object-cover" fittingType="fill" />
             </div>
-            <span className="text-xs text-muted-foreground">Photo attached</span>
-            <button onClick={() => setAttachedImage(null)} className="text-muted-foreground hover:text-foreground">
+            <span className="text-xs text-[#005A3C] font-medium">Photo attached</span>
+            <button onClick={() => setAttachedImage(null)} className="text-[#66736D] hover:text-[#17201C]">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
-        <div className="flex items-end gap-2">
-          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleUpload} />
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="w-10 h-10 rounded-xl border border-border flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-[hsl(var(--km-green))] transition-colors shrink-0"
-            title={t(language, "uploadPhoto")}
-          >
-            <Paperclip className="w-4 h-4" />
-          </button>
-          <button
-            onClick={startListening}
-            className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-colors shrink-0 ${
-              listening ? "bg-red-50 border-red-200 text-red-500" : "border-border text-muted-foreground hover:bg-muted hover:text-[hsl(var(--km-green))]"
-            }`}
-            title="Voice input"
-          >
-            <Mic className="w-4 h-4" />
-          </button>
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                send(input);
-              }
-            }}
-            placeholder={t(language, "typeYourQuestion")}
-            rows={1}
-            className="flex-1 resize-none px-4 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--km-green))]/30 max-h-32"
-          />
-          <Button
-            onClick={() => send(input)}
-            disabled={loading || !input.trim()}
-            className="bg-[hsl(var(--km-green))] hover:bg-[hsl(var(--km-green-mid))] rounded-xl h-10 w-10 p-0 shrink-0"
-          >
-            <Send className="w-4 h-4" />
-          </Button>
+
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-full bg-[#005A3C] flex items-center justify-center shrink-0 shadow-sm">
+            <Sprout className="w-7 h-7 text-white" />
+          </div>
+
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  send(input);
+                }
+              }}
+              placeholder={t(language, "askKisanMitra")}
+              className="w-full pl-0 pr-4 py-1 text-base font-semibold text-[#17201C] placeholder:text-[#17201C] placeholder:font-bold bg-transparent focus:outline-none"
+            />
+            <p className="text-xs text-[#66736D] hidden sm:block font-medium">
+              {t(language, "typeInAnyLanguage")}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              type="button"
+              onClick={startListening}
+              className={`w-11 h-11 rounded-2xl border flex items-center justify-center transition-colors cursor-pointer ${
+                listening
+                  ? "bg-red-50 border-red-200 text-red-500"
+                  : "border-[#E1E8E4] text-[#66736D] hover:bg-[#E8F8F1] hover:text-[#005A3C]"
+              }`}
+              title="Voice input"
+            >
+              <Mic className="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => send(input)}
+              disabled={loading || !input.trim()}
+              className="w-11 h-11 rounded-full bg-[#005A3C] hover:bg-[#003F2B] text-white flex items-center justify-center transition-colors disabled:opacity-50 cursor-pointer shadow-md"
+            >
+              <Send className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Suggested Prompts Pills */}
+        <div className="mt-4 pt-3 border-t border-[#E1E8E4]/60 flex flex-wrap items-center gap-2">
+          {SUGGESTED.map((q) => (
+            <button
+              key={q}
+              type="button"
+              onClick={() => send(q)}
+              className="text-xs px-3.5 py-1.5 rounded-full border border-[#E1E8E4] bg-white text-[#17201C] hover:border-[#005A3C] hover:text-[#005A3C] hover:bg-[#E8F8F1] transition-all font-medium cursor-pointer"
+            >
+              {q}
+            </button>
+          ))}
         </div>
       </div>
     </div>

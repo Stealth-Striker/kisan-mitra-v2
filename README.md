@@ -49,7 +49,7 @@ This project runs completely standalone without any external platform dependency
      ```bash
      npm run dev
      ```
-     This runs the backend server at `http://localhost:3001` and initializes a local SQLite database (`kisan.db`).
+     This runs the backend server at `http://localhost:3001` and initializes the local JSON database (`backend/kisan_db.json`).
 
    - **Start Frontend** (from the project root directory):
      ```bash
@@ -68,7 +68,7 @@ When the database is created for the first time, it is pre-populated with a defa
 - **Email**: `admin@kisanmitra.local`
 - **Password**: `admin123`
 
-You can register new farmer accounts directly through the registration page. By default, email verification OTPs are printed directly to the **backend terminal console** for local convenience.
+You can register new farmer accounts directly through the registration page (instant access with JWT session).
 
 ---
 
@@ -76,6 +76,6 @@ You can register new farmer accounts directly through the registration page. By 
 
 - **Frontend**: React, Vite, Tailwind CSS, Shadcn UI, Recharts, Lucide Icons, Leaflet
 - **Backend**: Node.js, Express, Multer (local file storage)
-- **Database**: SQLite via `better-sqlite3`
+- **Database**: Pure JS JSON Database (`backend/kisan_db.json`)
 - **AI Service**: Google Gemini API (`@google/generative-ai`)
 - **Authentication**: JWT (`jsonwebtoken` + `bcryptjs`)
