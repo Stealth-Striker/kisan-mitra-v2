@@ -8,7 +8,8 @@
       "role": "admin",
       "notification_prefs": "{\"harvest\":true,\"disease\":true,\"market\":true,\"diagnosis\":true}",
       "is_verified": true,
-      "created_date": "2026-08-30T17:01:13.272Z"
+      "created_date": "2026-08-30T17:01:13.272Z",
+      "phone": "+91 98765 43210"
     },
     {
       "id": "a209c6f0-b0de-4bea-9a2c-8688ea91fdde",
@@ -50,7 +51,8 @@
       "farm_size_unit": "Acres",
       "language": "English",
       "phone": "789456123",
-      "created_by_id": "ed60abd9-dd87-4444-a110-a27a30f4246d"
+      "created_by_id": "ed60abd9-dd87-4444-a110-a27a30f4246d",
+      "farmer_since": "2018"
     }
   ],
   "conversations": [
@@ -158,6 +160,13 @@
       "title": "What disease is affecting my rice?",
       "language": "English",
       "created_by_id": "ed60abd9-dd87-4444-a110-a27a30f4246d"
+    },
+    {
+      "id": "00acc997-9017-4280-908e-4391c18a2527",
+      "created_date": "2026-09-01T12:11:45.221Z",
+      "title": "What disease is affecting my rice?",
+      "language": "English",
+      "created_by_id": "a209c6f0-b0de-4bea-9a2c-8688ea91fdde"
     }
   ],
   "messages": [
@@ -415,6 +424,30 @@
       "conversation_id": "9c25d225-0f77-4826-b473-ec89f5369c3c",
       "role": "assistant",
       "content": "Namaste! To give you the correct diagnosis, I need a little more detail about what is happening to your paddy crop. Are you seeing spindle-shaped brown spots, yellowing/drying starting from the leaf tips, or rotting near the lower stems? In Kerala, the most common issues are Rice Blast (brown spots on leaves/panicles) and Bacterial Leaf Blight (yellowish-white drying edges). \n\nPlease describe the symptoms you see, and I will immediately tell you how to treat it for your 1-acre farm!",
+      "language": "English"
+    },
+    {
+      "id": "a7ca1828-43cc-4bab-94de-6fad5c11318b",
+      "created_date": "2026-09-01T12:11:45.249Z",
+      "conversation_id": "00acc997-9017-4280-908e-4391c18a2527",
+      "role": "user",
+      "content": "What disease is affecting my rice?",
+      "language": "English"
+    },
+    {
+      "id": "59de3cbc-f64b-4544-b8d7-c57aa526b451",
+      "created_date": "2026-09-01T12:11:48.854Z",
+      "conversation_id": "00acc997-9017-4280-908e-4391c18a2527",
+      "role": "user",
+      "content": "What disease is affecting my rice?",
+      "language": "English"
+    },
+    {
+      "id": "75887de1-bb14-4711-9031-4da7052722ee",
+      "created_date": "2026-09-01T12:12:38.312Z",
+      "conversation_id": "00acc997-9017-4280-908e-4391c18a2527",
+      "role": "assistant",
+      "content": "Namaste! To give you the exact diagnosis, I need a little more detail about what is happening to your rice crop. \n\nIn Kerala, rice is commonly affected by diseases like **Rice Blast** (spindle-shaped brown spots on leaves), **Sheath Blight** (greyish-brown lesions on stems), or **Bacterial Leaf Blight** (yellowing starting from leaf tips). \n\nAre you noticing leaf spots, yellowing, stem rotting, or problems on the grain heads? Please describe the visual symptoms you see, and I will suggest the best solution for you!",
       "language": "English"
     }
   ],
