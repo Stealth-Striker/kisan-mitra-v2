@@ -14,20 +14,30 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
   filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
+    let ext = path.extname(file.originalname).toLowerCase();
+    if (!ext) {
+      if (file.mimetype.includes('webm')) ext = '.webm';
+      else if (file.mimetype.includes('ogg')) ext = '.ogg';
+      else if (file.mimetype.includes('mp4') || file.mimetype.includes('m4a')) ext = '.m4a';
+      else if (file.mimetype.includes('wav')) ext = '.wav';
+      else ext = '.jpg';
+    }
     cb(null, `${uuidv4()}${ext}`);
   },
 });
 
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 15 * 1024 * 1024 }, // 15MB
   fileFilter: (_req, file, cb) => {
-    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (allowed.includes(file.mimetype)) {
+    const allowed = [
+      'image/jpeg', 'image/jpg', 'image/png', 'image/webp',
+      'audio/webm', 'audio/ogg', 'audio/mp4', 'audio/wav', 'audio/mpeg', 'audio/x-m4a'
+    ];
+    if (allowed.includes(file.mimetype) || file.mimetype.startsWith('audio/')) {
       cb(null, true);
     } else {
-      cb(new Error('Only JPG, PNG, and WEBP images are allowed'));
+      cb(new Error('Only JPG, PNG, WEBP images and audio files are allowed'));
     }
   },
 });

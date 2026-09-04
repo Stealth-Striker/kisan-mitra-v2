@@ -19,9 +19,10 @@ import { useFarm } from "@/lib/farmContext";
 import { LANGUAGES, t } from "@/lib/translations";
 import { base44 } from "@/api/base44Client";
 
-export default function Sidebar({ user }) {
+export default function Sidebar({ user: propUser }) {
   const location = useLocation();
-  const { farm, language, setLanguage } = useFarm();
+  const { farm, user: contextUser, language, setLanguage } = useFarm();
+  const user = propUser || contextUser;
   const [langOpen, setLangOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -47,7 +48,7 @@ export default function Sidebar({ user }) {
         </div>
       </div>
 
-      {/* Overview Button */}
+      {/* Dashboard Button */}
       <div className="px-3 mb-3 shrink-0">
         <Link
           to="/dashboard"
@@ -58,7 +59,7 @@ export default function Sidebar({ user }) {
           }`}
         >
           <LayoutGrid className="w-5 h-5 shrink-0" />
-          <span>{t(language, "overview")}</span>
+          <span>{t(language, "dashboard")}</span>
         </Link>
       </div>
 

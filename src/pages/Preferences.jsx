@@ -11,8 +11,10 @@ const CROPS = ["Rice", "Tomato", "Wheat", "Cotton", "Onion", "Banana", "Pepper",
 const UNITS = ["Acre", "Acres", "Hectares", "Bigha", "Cents"];
 
 export default function Preferences() {
-  const { user } = useOutletContext();
-  const { farm, language, setLanguage, refresh } = useFarm();
+  const context = useOutletContext() || {};
+  const { farm, user: farmUser, setUser: setFarmUser, language, setLanguage, refresh } = useFarm();
+  const user = context.user || farmUser;
+  const setUser = context.setUser || setFarmUser;
   const { toast } = useToast();
   const [form, setForm] = useState(null);
   const [fullName, setFullName] = useState("");
@@ -24,7 +26,18 @@ export default function Preferences() {
     if (user) {
       setFullName(user.full_name || "Ramesh");
       setPhone(user.phone || "+91 98765 43210");
+      if (user.notification_prefs) {
+        try {
+          const parsed = typeof user.notification_prefs === "string" ? JSON.parse(user.notification_prefs) : user.notification_prefs;
+          if (parsed && typeof parsed === "object") {
+            setNotifPrefs((prev) => ({ ...prev, ...parsed }));
+          }
+        } catch (_) {}
+      }
     }
+  }, [user]);
+
+  useEffect(() => {
     if (farm) {
       setForm({
         location: farm.location || "Varikoli",
@@ -48,7 +61,7 @@ export default function Preferences() {
         farmer_since: "2018",
       });
     }
-  }, [farm, user]);
+  }, [farm]);
 
   const save = async () => {
     setSaving(true);
@@ -59,7 +72,12 @@ export default function Preferences() {
         await base44.entities.Farm.create(form);
       }
       setLanguage(form.language);
-      await base44.auth.updateMe({ full_name: fullName, phone, notification_prefs: notifPrefs });
+      const updatedUser = await base44.auth.updateMe({ full_name: fullName, phone, notification_prefs: notifPrefs });
+      if (updatedUser) {
+        if (setUser) setUser(updatedUser);
+        setFullName(updatedUser.full_name || fullName);
+        setPhone(updatedUser.phone || phone);
+      }
       refresh();
       toast({ title: "Preferences Saved Successfully" });
     } catch (e) {
@@ -84,14 +102,32 @@ export default function Preferences() {
         canonicalPath="/preferences"
       />
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-[#17201C] flex items-center gap-2.5">
-          <Settings className="w-6 h-6 text-[#005A3C]" />
-          Preferences &amp; Settings
-        </h1>
-        <p className="text-sm text-[#66736D] mt-1">
-          Manage your personal farmer identity, farm parameters, and alert notification settings.
-        </p>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-[#17201C] flex items-center gap-2.5">
+            <Settings className="w-6 h-6 text-[#005A3C]" />
+            Preferences &amp; Settings
+          </h1>
+          <p className="text-sm text-[#66736D] mt-1">
+            Manage your personal farmer identity, farm parameters, and alert notification settings.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={save}
+          disabled={saving}
+          className="bg-[#005A3C] hover:bg-[#003F2B] text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+        >
+          {saving ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" /> Saving Changes...
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4" /> Save All Preferences
+            </>
+          )}
+        </button>
       </div>
 
       {/* Personal Identity Card */}
@@ -230,23 +266,6 @@ export default function Preferences() {
           ))}
         </div>
       </div>
-
-      {/* Save Button */}
-      <button
-        onClick={save}
-        disabled={saving}
-        className="bg-[#005A3C] hover:bg-[#003F2B] text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
-      >
-        {saving ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" /> Saving Changes...
-          </>
-        ) : (
-          <>
-            <Save className="w-4 h-4" /> Save All Preferences
-          </>
-        )}
-      </button>
     </div>
   );
 }

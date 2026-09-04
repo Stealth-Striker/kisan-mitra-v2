@@ -10,7 +10,8 @@ export const LANGUAGES = [
 
 export const translations = {
   English: {
-    overview: "Overview",
+    dashboard: "Dashboard",
+    overview: "Dashboard",
     preferences: "Preferences",
     conversationHistory: "Conversation History",
     cropDoctor: "Crop Doctor",
@@ -57,7 +58,8 @@ export const translations = {
     saved: "Saved",
   },
   Malayalam: {
-    overview: "അവലോകനം",
+    dashboard: "ഡാഷ്‌ബോർഡ്",
+    overview: "ഡാഷ്‌ബോർഡ്",
     preferences: "മുൻഗണനകൾ",
     conversationHistory: "സംഭാഷണ ചരിത്രം",
     cropDoctor: "ക്രോപ്പ് ഡോക്ടർ",
@@ -104,7 +106,8 @@ export const translations = {
     saved: "സേവ് ചെയ്തു",
   },
   Hindi: {
-    overview: "ओवरव्यू",
+    dashboard: "डैशबोर्ड",
+    overview: "डैशबोर्ड",
     preferences: "प्राथमिकताएँ",
     conversationHistory: "वार्तालाप इतिहास",
     cropDoctor: "क्रॉप डॉक्टर",
@@ -151,7 +154,8 @@ export const translations = {
     saved: "सहेजा गया",
   },
   Tamil: {
-    overview: "மேற்பார்வை",
+    dashboard: "டாஷ்போர்டு",
+    overview: "டாஷ்போர்டு",
     preferences: "விருப்பத்தேர்வுகள்",
     conversationHistory: "உரையாடல் வரலாறு",
     cropDoctor: "கிராப் டாக்டர்",

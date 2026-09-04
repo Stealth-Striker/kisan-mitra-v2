@@ -62,7 +62,7 @@ export default function FarmerDashboard() {
         </div>
 
         {/* Content area */}
-        <div className="relative z-20 space-y-4 max-w-xl">
+        <div className="relative space-y-4 max-w-xl">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#17201C]">
               {t(language, "namaskaram")}, {user?.full_name || "Ramesh"}

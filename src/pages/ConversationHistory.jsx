@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { MessageSquare, Search, Trash2, Plus, ArrowLeft } from "lucide-react";
+import { MessageSquare, Search, Trash2, ArrowLeft, AlertTriangle, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useFarm } from "@/lib/farmContext";
 import { useToast } from "@/components/ui/use-toast";
@@ -9,12 +8,12 @@ import SEO from "@/components/SEO";
 export default function ConversationHistory() {
   const { language } = useFarm();
   const { toast } = useToast();
-  const navigate = useNavigate();
   const [conversations, setConversations] = useState([]);
   const [search, setSearch] = useState("");
   const [activeConv, setActiveConv] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loadingMsgs, setLoadingMsgs] = useState(false);
+  const [confirmModal, setConfirmModal] = useState(null);
 
   const load = () => {
     base44.entities.Conversation.filter({}, "-created_date", 50).then(setConversations).catch(() => {});
@@ -35,21 +34,70 @@ export default function ConversationHistory() {
     setLoadingMsgs(false);
   };
 
-  const deleteConv = async (conv) => {
-    if (!confirm("Delete this conversation and all its messages?")) return;
-    try {
-      await base44.entities.Message.deleteMany({ conversation_id: conv.id });
-      await base44.entities.Conversation.delete(conv.id);
-      if (activeConv?.id === conv.id) {
-        setActiveConv(null);
-        setMessages([]);
-      }
-      load();
-      toast({ title: "Conversation deleted" });
-    } catch (e) {
-      toast({ title: "Delete failed", description: e.message, variant: "destructive" });
-    }
+  const confirmDeleteConv = (conv) => {
+    setConfirmModal({
+      title: "Delete Conversation?",
+      description: `Are you sure you want to delete "${conv.title || "Untitled Chat"}" and its messages? This action cannot be undone.`,
+      confirmLabel: "Delete",
+      onConfirm: async () => {
+        try {
+          await base44.entities.Message.deleteMany({ conversation_id: conv.id });
+          await base44.entities.Conversation.delete(conv.id);
+          if (activeConv?.id === conv.id) {
+            setActiveConv(null);
+            setMessages([]);
+          }
+          load();
+          toast({ title: "Conversation deleted" });
+        } catch (e) {
+          toast({ title: "Delete failed", description: e.message, variant: "destructive" });
+        } finally {
+          setConfirmModal(null);
+        }
+      },
+    });
   };
+
+  const confirmClearAll = () => {
+    if (conversations.length === 0) return;
+    setConfirmModal({
+      title: "Clear All Conversations?",
+      description: "Are you sure you want to delete your entire consultation history? All past conversations and messages will be permanently removed. This action cannot be undone.",
+      confirmLabel: "Clear All",
+      onConfirm: async () => {
+        try {
+          await Promise.all(
+            conversations.map(async (c) => {
+              try {
+                await base44.entities.Message.deleteMany({ conversation_id: c.id });
+              } catch (_) {}
+              try {
+                await base44.entities.Conversation.delete(c.id);
+              } catch (_) {}
+            })
+          );
+          setActiveConv(null);
+          setMessages([]);
+          load();
+          toast({ title: "History cleared", description: "All past consultations have been deleted." });
+        } catch (e) {
+          toast({ title: "Clear failed", description: e.message, variant: "destructive" });
+        } finally {
+          setConfirmModal(null);
+        }
+      },
+    });
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && confirmModal) {
+        setConfirmModal(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [confirmModal]);
 
   const filtered = conversations.filter((c) => (c.title || "").toLowerCase().includes(search.toLowerCase()));
 
@@ -78,12 +126,16 @@ export default function ConversationHistory() {
           </h1>
           <p className="text-sm text-[#66736D] mt-1">Search, reopen, and manage your past AI farming consultations.</p>
         </div>
-        <button
-          onClick={() => navigate("/dashboard")}
-          className="bg-[#005A3C] hover:bg-[#003F2B] text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2 shadow-sm"
-        >
-          <Plus className="w-4 h-4" /> New Consultation
-        </button>
+        {conversations.length > 0 && (
+          <button
+            type="button"
+            onClick={confirmClearAll}
+            className="border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2 shadow-xs cursor-pointer"
+            title="Clear all conversation history"
+          >
+            <Trash2 className="w-4 h-4 text-red-600" /> Clear All
+          </button>
+        )}
       </div>
 
       <div className="relative">
@@ -126,11 +178,13 @@ export default function ConversationHistory() {
                         <p className="text-xs text-[#66736D] mt-0.5">{c.language}</p>
                       </div>
                       <button
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          deleteConv(c);
+                          confirmDeleteConv(c);
                         }}
-                        className="text-[#66736D] hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                        className="text-[#66736D] hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+                        title="Delete conversation"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -201,6 +255,60 @@ export default function ConversationHistory() {
           )}
         </div>
       </div>
+
+      {/* Themed Confirmation Modal */}
+      {confirmModal && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setConfirmModal(null);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150"
+        >
+          <div
+            className="bg-white border border-[#E1E8E4] rounded-2xl shadow-xl max-w-md w-full p-6 space-y-5 animate-in zoom-in-95 duration-150"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-11 h-11 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center shrink-0 text-red-600">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-bold text-[#17201C]">{confirmModal.title}</h3>
+                <p className="text-sm text-[#66736D] mt-1.5 leading-relaxed">
+                  {confirmModal.description}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConfirmModal(null)}
+                className="text-[#66736D] hover:text-[#17201C] p-1 rounded-lg hover:bg-[#F7F9F7] transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E1E8E4]/70">
+              <button
+                type="button"
+                onClick={() => setConfirmModal(null)}
+                className="px-4 py-2.5 rounded-xl border border-[#E1E8E4] bg-white text-sm font-medium text-[#17201C] hover:bg-[#F7F9F7] hover:border-[#CED7D2] transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmModal.onConfirm}
+                className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
+              >
+                <Trash2 className="w-4 h-4" />
+                {confirmModal.confirmLabel || "Confirm"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

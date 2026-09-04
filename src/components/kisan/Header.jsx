@@ -65,7 +65,7 @@ export default function Header({ user }) {
   const alertCount = alerts.length;
 
   return (
-    <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-[#E1E8E4] transition-all">
+    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#E1E8E4] transition-all">
       <div className="flex items-center justify-between px-6 lg:px-8 h-16">
         {/* Left Branding & Breadcrumb */}
         <div className="flex items-center gap-4 sm:gap-6">

@@ -20,8 +20,18 @@ async function loadImageAsBase64(imageUrl) {
   const path = require('path');
   const fs = require('fs');
 
+  if (!imageUrl || typeof imageUrl !== 'string') return null;
+
+  if (imageUrl.startsWith('data:image/')) {
+    const match = imageUrl.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,(.+)$/);
+    if (match) {
+      return { mimeType: match[1], data: match[2] };
+    }
+  }
+
   if (imageUrl.startsWith('/uploads/') || imageUrl.startsWith('uploads/')) {
-    const filePath = path.join(__dirname, '..', imageUrl.startsWith('/') ? imageUrl.slice(1) : imageUrl);
+    const cleanPath = imageUrl.startsWith('/') ? imageUrl.slice(1) : imageUrl;
+    const filePath = path.join(__dirname, '..', cleanPath);
     if (fs.existsSync(filePath)) {
       const data = fs.readFileSync(filePath).toString('base64');
       const ext = path.extname(filePath).toLowerCase();
@@ -67,40 +77,89 @@ function extractJson(text) {
   throw new Error('Could not parse JSON from model response: ' + text.slice(0, 200));
 }
 
-// ── Gemini helper ─────────────────────────────────────────────────────────────
-async function callGemini({ prompt, imageBase64, imageMimeType, jsonSchema }) {
+// ── Gemini helper & Client Cache ─────────────────────────────────────────────
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+let cachedGenAI = null;
+let cachedApiKey = null;
+
+function getGenAI() {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY is not configured');
+  if (!cachedGenAI || cachedApiKey !== apiKey) {
+    cachedGenAI = new GoogleGenerativeAI(apiKey);
+    cachedApiKey = apiKey;
+  }
+  return cachedGenAI;
+}
 
-  const { GoogleGenerativeAI } = require('@google/generative-ai');
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const modelName = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
-  const model = genAI.getGenerativeModel({ model: modelName });
+async function callGemini({ prompt, imageBase64, imageMimeType, jsonSchema, maxTokens = 600, temperature = 0.7 }) {
+  const genAI = getGenAI();
+  const primaryModel = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
+  // Pool of high-quota, verified models for seamless automatic failover
+  const fallbackPool = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.7-flash', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
+  const modelsToTry = [primaryModel, ...fallbackPool.filter(m => m !== primaryModel)];
 
-  // Build prompt text — embed JSON schema instructions inline
-  let promptText = prompt;
-  if (jsonSchema) {
-    promptText += '\n\nRespond ONLY with a valid JSON object exactly matching this schema (no markdown, no extra text):\n' +
-      JSON.stringify(jsonSchema, null, 2);
+  let lastError = null;
+
+  for (const modelName of modelsToTry) {
+    try {
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: {
+          maxOutputTokens: maxTokens,
+          temperature: temperature,
+        },
+      });
+
+      // Build prompt text — embed JSON schema instructions inline
+      let promptText = prompt;
+      if (jsonSchema) {
+        promptText += '\n\nRespond ONLY with a valid JSON object exactly matching this schema (no markdown, no extra text):\n' +
+          JSON.stringify(jsonSchema, null, 2);
+      }
+
+      const parts = [{ text: promptText }];
+
+      if (imageBase64) {
+        parts.push({ inlineData: { mimeType: imageMimeType || 'image/jpeg', data: imageBase64 } });
+      }
+
+      console.log(`[functions] Calling Gemini model: ${modelName}, parts: ${parts.length}, maxTokens: ${maxTokens}`);
+
+      const result = await model.generateContent(parts);
+      const text = result.response.text().trim();
+
+      console.log(`[functions] Gemini response received from ${modelName}, length:`, text.length);
+
+      if (jsonSchema) {
+        return extractJson(text);
+      }
+      return text;
+    } catch (err) {
+      lastError = err;
+      const errMsg = err.message || '';
+      const isTransientOrQuota = (
+        errMsg.includes('429') ||
+        errMsg.includes('Quota exceeded') ||
+        errMsg.includes('RESOURCE_EXHAUSTED') ||
+        errMsg.includes('503') ||
+        errMsg.includes('Service Unavailable') ||
+        errMsg.includes('high demand') ||
+        errMsg.includes('500') ||
+        errMsg.includes('404')
+      );
+
+      if (isTransientOrQuota) {
+        console.warn(`[functions] Model ${modelName} encountered error: ${errMsg.slice(0, 100)}. Failing over to next model in pool...`);
+        continue;
+      }
+      // Re-throw fatal client errors (e.g. invalid syntax)
+      throw err;
+    }
   }
 
-  const parts = [{ text: promptText }];
-
-  if (imageBase64) {
-    parts.push({ inlineData: { mimeType: imageMimeType || 'image/jpeg', data: imageBase64 } });
-  }
-
-  console.log(`[functions] Calling Gemini model: ${modelName}, parts:`, parts.length);
-
-  const result = await model.generateContent(parts);
-  const text = result.response.text().trim();
-
-  console.log('[functions] Gemini raw response (first 300 chars):', text.slice(0, 300));
-
-  if (jsonSchema) {
-    return extractJson(text);
-  }
-  return text;
+  throw lastError;
 }
 
 // All function routes require auth
@@ -140,6 +199,8 @@ router.post('/analyzeCrop', async (req, res) => {
       imageBase64: imageData.data,
       imageMimeType: imageData.mimeType,
       jsonSchema,
+      maxTokens: 2048,
+      temperature: 0.2,
     });
 
     console.log('[functions/analyzeCrop] diagnosis:', JSON.stringify(diagnosis).slice(0, 200));
@@ -155,14 +216,20 @@ router.post('/askKisanMitra', async (req, res) => {
   try {
     const {
       question,
+      image_url,
       language = 'English',
       farmerContext = {},
       history = [],
     } = req.body;
 
-    if (!question || !question.trim()) {
-      return res.status(400).json({ error: 'question is required' });
+    if ((!question || !question.trim()) && !image_url) {
+      return res.status(400).json({ error: 'question or image_url is required' });
     }
+
+    const isFirstTurn = !history || history.length === 0;
+    const greetingRule = isFirstTurn
+      ? 'Start with a warm traditional greeting like "Namaste!" only once at the beginning of this new conversation.'
+      : 'CRITICAL RULE: This is an ongoing conversation. Do NOT say "Namaste!", "Hello!", or any greetings. Answer directly without any introductory greeting.';
 
     const ctxParts = [];
     if (farmerContext.crop) ctxParts.push(`Primary crop: ${farmerContext.crop}`);
@@ -171,18 +238,36 @@ router.post('/askKisanMitra', async (req, res) => {
     const contextStr = ctxParts.length ? `Farmer context: ${ctxParts.join(', ')}.` : '';
 
     const langInstr = LANG_INSTRUCTIONS[language] || LANG_INSTRUCTIONS.English;
-    const systemPrompt = `You are Kisan Mitra, a friendly, knowledgeable AI farming assistant for Indian farmers. Give practical, actionable advice on crops, diseases, pests, harvest timing, market prices, and farming practices. Keep answers concise (3-6 sentences) unless the farmer asks for detail. ${langInstr} ${contextStr}`;
+    const systemPrompt = `You are Kisan Mitra, a friendly, knowledgeable AI farming assistant for Indian farmers. Give practical, actionable advice on crops, diseases, pests, harvest timing, market prices, and farming practices. Keep answers concise (3-6 sentences) unless the farmer asks for detail. ${greetingRule} ${langInstr} ${contextStr}`;
+
+    let imageData = null;
+    if (image_url) {
+      imageData = await loadImageAsBase64(image_url);
+      if (!imageData) {
+        console.warn('[functions/askKisanMitra] Could not process image_url:', image_url);
+      }
+    }
 
     const historyText = history
-      .slice(-10)
+      .slice(-6)
       .map(m => `${m.role === 'assistant' ? 'assistant' : 'user'}: ${m.content}`)
       .join('\n\n');
 
-    const fullPrompt = [systemPrompt, historyText, `user: ${question.slice(0, 2000)}`]
+    const promptQuestion = question && question.trim()
+      ? question.slice(0, 2000)
+      : (imageData ? 'Please inspect this attached crop/leaf photo and provide your farming diagnosis and recommendations.' : '');
+
+    const fullPrompt = [systemPrompt, historyText, `user: ${promptQuestion}`]
       .filter(Boolean)
       .join('\n\n');
 
-    const answer = await callGemini({ prompt: fullPrompt });
+    const answer = await callGemini({
+      prompt: fullPrompt,
+      imageBase64: imageData ? imageData.data : undefined,
+      imageMimeType: imageData ? imageData.mimeType : undefined,
+      maxTokens: 1500,
+      temperature: 0.7,
+    });
     res.json({ answer });
   } catch (err) {
     console.error('[functions/askKisanMitra] ERROR:', err.message);

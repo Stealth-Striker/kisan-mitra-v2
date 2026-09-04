@@ -84,9 +84,27 @@ app.use((err, req, res, _next) => {
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 if (require.main === module) {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`[kisan-mitra] Backend running at http://localhost:${PORT}`);
   });
+
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`[kisan-mitra] Port ${PORT} is already in use. Please terminate any process on port ${PORT}.`);
+      process.exit(1);
+    } else {
+      console.error('[kisan-mitra] Server error:', err);
+    }
+  });
+
+  const handleShutdown = () => {
+    server.close(() => {
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGINT', handleShutdown);
+  process.on('SIGTERM', handleShutdown);
 }
 
 module.exports = app;

@@ -5,6 +5,7 @@ const FarmContext = createContext(null);
 
 export function FarmProvider({ children }) {
   const [farm, setFarm] = useState(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [language, setLanguageState] = useState(() => localStorage.getItem("kisan_language") || "English");
   const [demoMode, setDemoMode] = useState(false);
@@ -13,6 +14,7 @@ export function FarmProvider({ children }) {
     setLoading(true);
     try {
       const me = await base44.auth.me();
+      setUser(me);
       const farms = await base44.entities.Farm.filter({ created_by_id: me.id });
       if (farms.length > 0) {
         setFarm(farms[0]);
@@ -25,6 +27,7 @@ export function FarmProvider({ children }) {
       }
     } catch (e) {
       setFarm(null);
+      setUser(null);
     }
     setLoading(false);
   }, []);
@@ -48,7 +51,7 @@ export function FarmProvider({ children }) {
   const refresh = useCallback(() => loadFarm(), [loadFarm]);
 
   return (
-    <FarmContext.Provider value={{ farm, loading, language, setLanguage, demoMode, setDemoMode, refresh }}>
+    <FarmContext.Provider value={{ farm, user, setUser, loading, language, setLanguage, demoMode, setDemoMode, refresh }}>
       {children}
     </FarmContext.Provider>
   );
