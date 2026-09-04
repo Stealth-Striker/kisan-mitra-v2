@@ -178,7 +178,7 @@ router.post('/analyzeCrop', async (req, res) => {
     }
 
     const langInstr = LANG_INSTRUCTIONS_CROP[language] || LANG_INSTRUCTIONS_CROP.English;
-    const prompt = `You are Kisan Mitra's Crop Doctor, an expert plant pathologist for Indian farmers. Analyze the uploaded leaf/crop image (crop: ${crop}). Identify the most likely disease or condition, or state if the plant looks healthy. ${langInstr} Be realistic and practical. If the image is unclear or not a plant, say so in the disease field.`;
+    const prompt = `You are Kisan Mitra's Crop Doctor, an expert plant pathologist for Indian farmers. Analyze the uploaded leaf/crop image (crop: ${crop}). Identify the most likely disease or condition, or state if the plant looks healthy. ${langInstr} Be realistic and practical. Do not include meta-notes, disclaimers, or parenthetical commentary like '(Note: Image shows ...)' in the disease name. Only return the pure disease name (e.g. 'Late Blight' or 'Healthy Plant'). If the image is unclear or not a plant, say so in the disease field.`;
 
     const jsonSchema = {
       type: 'object',
@@ -202,6 +202,13 @@ router.post('/analyzeCrop', async (req, res) => {
       maxTokens: 2048,
       temperature: 0.2,
     });
+
+    if (diagnosis && typeof diagnosis.disease === 'string') {
+      diagnosis.disease = diagnosis.disease
+        .replace(/\s*\([^)]*note:[^)]*\)/gi, '')
+        .replace(/\s*note:.*$/gi, '')
+        .trim();
+    }
 
     console.log('[functions/analyzeCrop] diagnosis:', JSON.stringify(diagnosis).slice(0, 200));
     res.json({ diagnosis });

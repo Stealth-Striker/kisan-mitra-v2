@@ -21,6 +21,7 @@ const CropDoctor = lazy(() => import('@/pages/CropDoctor'));
 const OutbreakRadar = lazy(() => import('@/pages/OutbreakRadar'));
 const HarvestGuardian = lazy(() => import('@/pages/HarvestGuardian'));
 const MarketCopilot = lazy(() => import('@/pages/MarketCopilot'));
+const AskKisanMitra = lazy(() => import('@/pages/AskKisanMitra'));
 const ConversationHistory = lazy(() => import('@/pages/ConversationHistory'));
 const Preferences = lazy(() => import('@/pages/Preferences'));
 
@@ -79,6 +80,8 @@ const AuthenticatedApp = () => {
             <Route path="/outbreak-radar" element={<OutbreakRadar />} />
             <Route path="/harvest-guardian" element={<HarvestGuardian />} />
             <Route path="/market-copilot" element={<MarketCopilot />} />
+            <Route path="/chat" element={<AskKisanMitra />} />
+            <Route path="/ask-kisan-mitra" element={<Navigate to="/chat" replace />} />
             <Route path="/conversations" element={<ConversationHistory />} />
             <Route path="/preferences" element={<Preferences />} />
           </Route>

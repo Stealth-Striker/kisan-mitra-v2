@@ -14,6 +14,7 @@ import {
   User as UserIcon,
   Phone,
   Users,
+  Bot,
 } from "lucide-react";
 import { useFarm } from "@/lib/farmContext";
 import { LANGUAGES, t } from "@/lib/translations";
@@ -48,8 +49,8 @@ export default function Sidebar({ user: propUser }) {
         </div>
       </div>
 
-      {/* Dashboard Button */}
-      <div className="px-3 mb-3 shrink-0">
+      {/* Primary Navigation Buttons */}
+      <div className="px-3 mb-3 space-y-1.5 shrink-0">
         <Link
           to="/dashboard"
           className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all ${
@@ -60,6 +61,17 @@ export default function Sidebar({ user: propUser }) {
         >
           <LayoutGrid className="w-5 h-5 shrink-0" />
           <span>{t(language, "dashboard")}</span>
+        </Link>
+        <Link
+          to="/chat"
+          className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all ${
+            location.pathname === "/chat" || location.pathname === "/ask-kisan-mitra"
+              ? "bg-[#0B8F62] text-white shadow-lg"
+              : "text-emerald-100/70 hover:bg-white/10 hover:text-white"
+          }`}
+        >
+          <Bot className="w-5 h-5 shrink-0" />
+          <span>Ask Kisan Mitra</span>
         </Link>
       </div>
 

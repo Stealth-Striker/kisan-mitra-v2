@@ -13,6 +13,8 @@ import {
 
 const ROUTE_LABELS = {
   "/dashboard": "Dashboard",
+  "/chat": "Ask Kisan Mitra",
+  "/ask-kisan-mitra": "Ask Kisan Mitra",
   "/crop-doctor": "Crop Doctor",
   "/outbreak-radar": "Outbreak Radar",
   "/harvest-guardian": "Harvest Guardian",
@@ -21,7 +23,7 @@ const ROUTE_LABELS = {
   "/preferences": "Preferences",
 };
 
-export default function Header({ user }) {
+export default function Header({ user: _user }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [alerts, setAlerts] = useState([]);

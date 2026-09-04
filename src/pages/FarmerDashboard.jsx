@@ -5,7 +5,6 @@ import { useFarm } from "@/lib/farmContext";
 import { t } from "@/lib/translations";
 import FeatureCard from "@/components/kisan/FeatureCard";
 import HarvestAlert from "@/components/kisan/HarvestAlert";
-import ChatPanel from "@/components/kisan/ChatPanel";
 import { base44 } from "@/api/base44Client";
 import SEO from "@/components/SEO";
 
@@ -34,8 +33,6 @@ export default function FarmerDashboard() {
       })
       .catch(() => {});
   }, [crop]);
-
-  const prompt = new URLSearchParams(window.location.search).get("prompt");
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -138,9 +135,6 @@ export default function FarmerDashboard() {
           to={() => navigate("/market-copilot")}
         />
       </div>
-
-      {/* ASK KISAN MITRA AI Assistant input card */}
-      <ChatPanel user={user} initialPrompt={prompt} />
     </div>
   );
 }
