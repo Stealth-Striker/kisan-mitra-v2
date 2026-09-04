@@ -1,6 +1,7 @@
 import React from "react";
 import { CalendarClock, CheckCircle2, SunMedium, Thermometer, Droplets } from "lucide-react";
 import { useFarm } from "@/lib/farmContext";
+import SEO from "@/components/SEO";
 
 export default function HarvestGuardian() {
   const { farm } = useFarm();
@@ -16,6 +17,11 @@ export default function HarvestGuardian() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
+      <SEO 
+        title="Harvest Guardian - Meteorological & Crop Maturity Planning" 
+        description="Predictive maturity modeling and ideal harvest window tracking for maximum crop yield."
+        canonicalPath="/harvest-guardian"
+      />
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-[#17201C] flex items-center gap-2.5">

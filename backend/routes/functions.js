@@ -74,7 +74,8 @@ async function callGemini({ prompt, imageBase64, imageMimeType, jsonSchema }) {
 
   const { GoogleGenerativeAI } = require('@google/generative-ai');
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
+  const modelName = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+  const model = genAI.getGenerativeModel({ model: modelName });
 
   // Build prompt text — embed JSON schema instructions inline
   let promptText = prompt;
@@ -89,7 +90,7 @@ async function callGemini({ prompt, imageBase64, imageMimeType, jsonSchema }) {
     parts.push({ inlineData: { mimeType: imageMimeType || 'image/jpeg', data: imageBase64 } });
   }
 
-  console.log('[functions] Calling Gemini model: gemini-3.6-flash, parts:', parts.length);
+  console.log(`[functions] Calling Gemini model: ${modelName}, parts:`, parts.length);
 
   const result = await model.generateContent(parts);
   const text = result.response.text().trim();

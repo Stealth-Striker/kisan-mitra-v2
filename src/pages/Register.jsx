@@ -4,10 +4,11 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus, Lock, Loader2 } from "lucide-react";
+import { UserPlus, Lock, Loader2, Mail } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 
 import { safeReturnTo } from "@/lib/authReturnTo";
+import SEO from "@/components/SEO";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -43,9 +44,14 @@ export default function Register() {
     <AuthLayout
       icon={UserPlus}
       title="Create your account"
-      subtitle="Sign up to get started"
+      subtitle="Sign up to start using Kisan Mitra"
       footer={
         <>
+          <SEO 
+            title="Create Account - Join Kisan Mitra" 
+            description="Register for a free Kisan Mitra account to access AI crop diagnosis, regional disease surveillance, and harvest window planning."
+            canonicalPath="/register"
+          />
           Already have an account?{" "}
           <Link
             to={"/login" + (safeReturnTo() !== "/" ? "?returnTo=" + encodeURIComponent(safeReturnTo()) : "")}

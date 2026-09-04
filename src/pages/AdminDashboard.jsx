@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Users, Bug, TrendingUp, MessageSquare, Stethoscope, Activity, Sprout } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import SEO from "@/components/SEO";
 
 export default function AdminDashboard() {
   const { user } = useOutletContext();
@@ -47,6 +48,11 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
+      <SEO 
+        title="Admin Dashboard - Platform Operations" 
+        description="Administrative overview, active farmer accounts, and regional disease metrics."
+        canonicalPath="/admin"
+      />
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-[#17201C]">Admin Dashboard</h1>
         <p className="text-sm text-[#66736D] mt-1">Welcome back, {user?.full_name || "Admin"}. Here is your platform overview.</p>

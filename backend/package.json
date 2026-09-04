@@ -6,11 +6,13 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "test": "node --test test/api.test.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
     "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^13.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",

@@ -42,8 +42,8 @@ export default function AdminSidebar() {
           <Shield className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h1 className="text-base font-bold tracking-wide text-white leading-none">ADMIN</h1>
-          <p className="text-[11px] text-emerald-200/70 mt-1 font-medium">Kisan Mitra Console</p>
+          <div className="text-base font-bold tracking-wide text-white leading-none">ADMIN</div>
+          <p className="text-[11px] text-emerald-200/70 mt-1 font-medium">Kisan Mitra Control</p>
         </div>
       </div>
 

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="km-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#005A3C"/>
+      <stop offset="100%" stop-color="#0B8F62"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded Badge Background -->
+  <rect width="64" height="64" rx="16" fill="url(#km-grad)"/>
+  <!-- Sprout Icon -->
+  <path d="M32 48V34" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M19 28C19 21.3726 24.3726 16 31 16C31 22.6274 25.6274 28 19 28Z" fill="#A7F3D0" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M45 23C45 17.4772 40.5228 13 35 13C35 18.5228 39.4772 23 45 23Z" fill="#6EE7B7" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round"/>
+  <circle cx="32" cy="48" r="3" fill="#FFFFFF"/>
+</svg>

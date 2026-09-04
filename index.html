@@ -2,13 +2,82 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kisan Mitra - AI-Powered Smart Farming Companion</title>
+    <meta name="description" content="Kisan Mitra is an AI farming intelligence platform providing instant visual crop disease diagnosis, real-time outbreak radars, harvest window forecasting, and live APMC mandi pricing in regional Indian languages." />
+    <meta name="keywords" content="Kisan Mitra, AI farming, crop doctor, plant disease diagnosis, mandi prices, APMC market rates, harvest advisory, agriculture India" />
+    <meta name="author" content="Kisan Mitra Agritech" />
+    <meta name="theme-color" content="#005A3C" />
+    
+    <!-- Canonical & Favicon -->
+    <link rel="canonical" href="https://kisanmitra.in/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="icon" type="image/svg+xml" href="https://base44.com/logo_v2.svg" />
-    <title>Kisan Mitra</title>
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://kisanmitra.in/" />
+    <meta property="og:site_name" content="Kisan Mitra" />
+    <meta property="og:title" content="Kisan Mitra - AI-Powered Smart Farming Companion" />
+    <meta property="og:description" content="Empowering Indian farmers with instant AI crop pathology diagnostics, meteorological harvest planning, and real-time APMC mandi intelligence." />
+    <meta property="og:image" content="https://kisanmitra.in/hero-landscape.png" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Kisan Mitra - AI-Powered Smart Farming Companion" />
+    <meta name="twitter:description" content="Empowering Indian farmers with instant AI crop pathology diagnostics, meteorological harvest planning, and real-time APMC mandi intelligence." />
+    <meta name="twitter:image" content="https://kisanmitra.in/hero-landscape.png" />
+
+    <!-- Structured Data (Schema.org JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "@id": "https://kisanmitra.in/#webapp",
+          "name": "Kisan Mitra",
+          "url": "https://kisanmitra.in",
+          "applicationCategory": "AgricultureApplication, BusinessApplication",
+          "operatingSystem": "All modern browsers (Desktop, Tablet, Mobile)",
+          "description": "AI-powered agricultural copilot providing crop disease diagnosis, real-time outbreak radars, harvest window forecasting, and live APMC mandi price intelligence.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "INR"
+          },
+          "featureList": [
+            "AI Crop Disease Doctor & Pathologist",
+            "Geospatial Outbreak Radar Surveillance",
+            "Harvest Guardian Weather & Harvest Planning",
+            "Market Copilot Real-Time APMC Mandi Prices",
+            "Multilingual Voice & Chat Assistance in English, Hindi, Malayalam, and Tamil"
+          ]
+        },
+        {
+          "@type": "LocalBusiness",
+          "@id": "https://kisanmitra.in/#organization",
+          "name": "Kisan Mitra Agritech",
+          "url": "https://kisanmitra.in",
+          "logo": "https://kisanmitra.in/favicon.svg",
+          "image": "https://kisanmitra.in/hero-landscape.png",
+          "description": "Empowering farmers across India with cutting-edge agronomic AI, disease prevention, and transparent market economics.",
+          "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "IN"
+          },
+          "priceRange": "Free"
+        }
+      ]
+    }
+    </script>
   </head>
-  <body>
+  <body class="antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

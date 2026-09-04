@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Lock, Loader2, AlertTriangle } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
+import SEO from "@/components/SEO";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -41,9 +42,16 @@ export default function ResetPassword() {
         title="Invalid reset link"
         subtitle="This password reset link is missing or invalid"
         footer={
-          <Link to="/forgot-password" className="text-primary font-medium hover:underline">
-            Request a new link
-          </Link>
+          <>
+            <SEO 
+              title="Reset Password" 
+              description="Reset your Kisan Mitra account password."
+              canonicalPath="/reset-password"
+            />
+            <Link to="/forgot-password" className="text-primary font-medium hover:underline">
+              Request a new link
+            </Link>
+          </>
         }
       >
         <p className="text-sm text-foreground text-center">
@@ -58,6 +66,13 @@ export default function ResetPassword() {
       icon={Lock}
       title="New password"
       subtitle="Enter your new password below"
+      footer={
+        <SEO 
+          title="Set New Password" 
+          description="Enter a new secure password for your Kisan Mitra account."
+          canonicalPath="/reset-password"
+        />
+      }
     >
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">

@@ -12,7 +12,7 @@ import {
 } from "./image-helpers"
 
 const FALLBACK_IMAGE_URL =
-  "https://static.wixstatic.com/media/12d367_4f26ccd17f8f4e3a8958306ea08c2332~mv2.png"
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='%23E8F8F1'%3E%3Crect width='200' height='200' rx='16' fill='%23F0FDF4'/%3E%3Cpath d='M100 140V100M70 85c0-16.5 13.5-30 30-30 0 16.5-13.5 30-30 30zm60-12c0-13.8-11.2-25-25-25 0 13.8 11.2 25 25 25z' stroke='%23005A3C' stroke-width='6' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Ccircle cx='100' cy='140' r='6' fill='%23005A3C'/%3E%3C/svg%3E";
 
 const ImageWrapper = React.forwardRef(({ aspectRatio, className, style, children }, ref) => (
   <span

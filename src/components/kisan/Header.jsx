@@ -1,13 +1,34 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Sprout, Bell, Bug, ArrowRight, Check, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+
+const ROUTE_LABELS = {
+  "/dashboard": "Dashboard",
+  "/crop-doctor": "Crop Doctor",
+  "/outbreak-radar": "Outbreak Radar",
+  "/harvest-guardian": "Harvest Guardian",
+  "/market-copilot": "Market Copilot",
+  "/conversations": "Conversations",
+  "/preferences": "Preferences",
+};
 
 export default function Header({ user }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [alerts, setAlerts] = useState([]);
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  const currentPageLabel = ROUTE_LABELS[location.pathname] || (location.pathname.startsWith("/admin") ? "Admin" : "Overview");
 
   useEffect(() => {
     base44.entities.DiseaseAlert.filter({ active: true })
@@ -46,20 +67,35 @@ export default function Header({ user }) {
   return (
     <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-[#E1E8E4] transition-all">
       <div className="flex items-center justify-between px-6 lg:px-8 h-16">
-        {/* Left Branding */}
-        <div className="flex items-center gap-6">
+        {/* Left Branding & Breadcrumb */}
+        <div className="flex items-center gap-4 sm:gap-6">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#005A3C] flex items-center justify-center lg:hidden shadow-sm">
               <Sprout className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-base sm:text-lg font-bold tracking-tight text-[#005A3C] leading-none">
+            <div className="text-base sm:text-lg font-bold tracking-tight text-[#005A3C] leading-none lg:hidden">
               KISAN MITRA
-            </h1>
+            </div>
           </div>
-          <span className="hidden md:inline-block w-px h-5 bg-[#E1E8E4]" />
-          <p className="hidden md:block text-xs font-medium text-[#66736D]">
-            Multilingual Voice &amp; Chat Farming Intelligence
-          </p>
+
+          {/* Breadcrumb Navigation */}
+          <Breadcrumb className="hidden sm:flex">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/dashboard" className="text-[#66736D] hover:text-[#005A3C] transition-colors font-medium text-xs sm:text-sm">
+                    Home
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="text-[#17201C] font-semibold text-xs sm:text-sm">
+                  {currentPageLabel}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
 
         {/* Right Notification Bell Dropdown */}

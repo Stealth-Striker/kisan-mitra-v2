@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Radar, MapPin, Filter } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useFarm } from "@/lib/farmContext";
+import SEO from "@/components/SEO";
 
 export default function OutbreakRadar() {
   const { farm } = useFarm();
@@ -27,6 +28,11 @@ export default function OutbreakRadar() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
+      <SEO 
+        title="Outbreak Radar - Geospatial Pest & Disease Monitoring" 
+        description="Real-time agricultural pest and disease monitoring map in your surrounding district."
+        canonicalPath="/outbreak-radar"
+      />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

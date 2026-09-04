@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Paperclip, Mic, Send, Sprout, Volume2, Loader2, X, Image as ImageIcon } from "lucide-react";
+import { Mic, Send, Sprout, Volume2, Loader2, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useFarm } from "@/lib/farmContext";
 import { t } from "@/lib/translations";
-import { Button } from "@/components/ui/button";
 import { Image } from "@/components/ui/image";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -217,7 +216,7 @@ export default function ChatPanel({ user, initialPrompt }) {
               <div className={`max-w-[80%] ${m.role === "user" ? "items-end" : "items-start"} flex flex-col gap-1`}>
                 {m.image_url && (
                   <div className="w-32 h-32 rounded-xl overflow-hidden ring-1 ring-border mb-1">
-                    <Image src={m.image_url} className="w-full h-full object-cover" fittingType="fill" />
+                    <Image src={m.image_url} alt={m.content || "Uploaded crop condition photo"} className="w-full h-full object-cover" fittingType="fill" />
                   </div>
                 )}
                 <div
@@ -254,7 +253,7 @@ export default function ChatPanel({ user, initialPrompt }) {
         {attachedImage && (
           <div className="mb-3 inline-flex items-center gap-2 bg-[#E8F8F1] border border-[#E1E8E4] rounded-xl p-1.5 pr-3">
             <div className="w-9 h-9 rounded-lg overflow-hidden">
-              <Image src={attachedImage} className="w-full h-full object-cover" fittingType="fill" />
+              <Image src={attachedImage} alt="Attached crop leaf sample" className="w-full h-full object-cover" fittingType="fill" />
             </div>
             <span className="text-xs text-[#005A3C] font-medium">Photo attached</span>
             <button onClick={() => setAttachedImage(null)} className="text-[#66736D] hover:text-[#17201C]">

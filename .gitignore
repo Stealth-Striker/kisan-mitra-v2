@@ -1,5 +1,6 @@
-#env
+# Environment
 .env
+*.local
 
 # Logs
 /logs
@@ -10,15 +11,27 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# SQLite runtime files (WAL mode temp files — merged on clean shutdown)
+backend/kisan.db-shm
+backend/kisan.db-wal
+
+# Legacy JSON database (replaced by SQLite)
+backend/kisan_db.json
+
+# User-uploaded files (runtime data, not source)
+backend/uploads/
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
@@ -26,6 +39,5 @@ dist-ssr
 *.sln
 *.sw?
 
-.env
-.vite
-base44/.app.jsonc
+# Vite cache
+.vite/

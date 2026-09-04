@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { useFarm } from "@/lib/farmContext";
 import { LANGUAGES } from "@/lib/translations";
 import { useToast } from "@/components/ui/use-toast";
+import SEO from "@/components/SEO";
 
 const CROPS = ["Rice", "Tomato", "Wheat", "Cotton", "Onion", "Banana", "Pepper", "Mango", "Other"];
 const UNITS = ["Acre", "Acres", "Hectares", "Bigha", "Cents"];
@@ -77,6 +78,11 @@ export default function Preferences() {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
+      <SEO 
+        title="Settings & Farm Preferences" 
+        description="Configure your farm size, crop selection, regional language, and notification alerts."
+        canonicalPath="/preferences"
+      />
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-[#17201C] flex items-center gap-2.5">

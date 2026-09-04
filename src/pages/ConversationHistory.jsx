@@ -4,6 +4,7 @@ import { MessageSquare, Search, Trash2, Plus, ArrowLeft } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useFarm } from "@/lib/farmContext";
 import { useToast } from "@/components/ui/use-toast";
+import SEO from "@/components/SEO";
 
 export default function ConversationHistory() {
   const { language } = useFarm();
@@ -64,6 +65,11 @@ export default function ConversationHistory() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
+      <SEO 
+        title="Consultation History - AI Farming Assistant" 
+        description="Search, reopen, and manage your past AI farming consultations with Kisan Mitra."
+        canonicalPath="/conversations"
+      />
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-[#17201C] flex items-center gap-2.5">

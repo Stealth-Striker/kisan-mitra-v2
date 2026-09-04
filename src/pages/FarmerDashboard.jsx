@@ -7,6 +7,7 @@ import FeatureCard from "@/components/kisan/FeatureCard";
 import HarvestAlert from "@/components/kisan/HarvestAlert";
 import ChatPanel from "@/components/kisan/ChatPanel";
 import { base44 } from "@/api/base44Client";
+import SEO from "@/components/SEO";
 
 export default function FarmerDashboard() {
   const { user } = useOutletContext();
@@ -38,6 +39,11 @@ export default function FarmerDashboard() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
+      <SEO 
+        title="Smart Farming Dashboard" 
+        description="Daily farming dashboard with personalized crop weather advisories, disease detection status, and real-time APMC mandi rates."
+        canonicalPath="/dashboard"
+      />
       {/* Top Greeting section with seamless right-side landscape artwork */}
       <div className="relative rounded-2xl p-4 sm:p-6 min-h-[170px] flex flex-col justify-between overflow-hidden">
         {/* Right side landscape artwork */}
@@ -48,14 +54,18 @@ export default function FarmerDashboard() {
               background: "linear-gradient(90deg, #F7F9F7 0%, rgba(247,249,247,0.85) 25%, transparent 80%)",
             }}
           />
-          <img src="/hero-landscape.png" alt="Agricultural Landscape" className="w-full h-full object-cover" />
+          <img 
+            src="/hero-landscape.png" 
+            alt="Fertile Indian agricultural terraced paddy fields with lush green crops" 
+            className="w-full h-full object-cover" 
+          />
         </div>
 
         {/* Content area */}
         <div className="relative z-20 space-y-4 max-w-xl">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#17201C]">
-              {t(language, "namaskaram")}, {user?.full_name || "Ramesh"} 👋
+              {t(language, "namaskaram")}, {user?.full_name || "Ramesh"}
             </h1>
             <p className="text-[#66736D] text-sm sm:text-base mt-1.5 font-normal">
               {t(language, "howCanIHelp", { crop })}

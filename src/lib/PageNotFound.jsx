@@ -1,75 +1,100 @@
-import { useLocation } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Sprout, ArrowLeft, Home, Stethoscope, Radar, TrendingUp } from "lucide-react";
+import SEO from "@/components/SEO";
 
+export default function PageNotFound() {
+  const location = useLocation();
+  const path = location.pathname;
 
-export default function PageNotFound({}) {
-    const location = useLocation();
-    const pageName = location.pathname.substring(1);
-
-    const { data: authData, isFetched } = useQuery({
-        queryKey: ['user'],
-        queryFn: async () => {
-            try {
-                const user = await base44.auth.me();
-                return { user, isAuthenticated: true };
-            } catch (error) {
-                return { user: null, isAuthenticated: false };
-            }
-        }
-    });
-    
-    return (
-        <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
-            <div className="max-w-md w-full">
-                <div className="text-center space-y-6">
-                    {/* 404 Error Code */}
-                    <div className="space-y-2">
-                        <h1 className="text-7xl font-light text-slate-300">404</h1>
-                        <div className="h-0.5 w-16 bg-slate-200 mx-auto"></div>
-                    </div>
-                    
-                    {/* Main Message */}
-                    <div className="space-y-3">
-                        <h2 className="text-2xl font-medium text-slate-800">
-                            Page Not Found
-                        </h2>
-                        <p className="text-slate-600 leading-relaxed">
-                            The page <span className="font-medium text-slate-700">"{pageName}"</span> could not be found in this application.
-                        </p>
-                    </div>
-                    
-                    {/* Admin Note */}
-                    {isFetched && authData.isAuthenticated && authData.user?.role === 'admin' && (
-                        <div className="mt-8 p-4 bg-slate-100 rounded-lg border border-slate-200">
-                            <div className="flex items-start space-x-3">
-                                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center mt-0.5">
-                                    <div className="w-2 h-2 rounded-full bg-orange-400"></div>
-                                </div>
-                                <div className="text-left space-y-1">
-                                    <p className="text-sm font-medium text-slate-700">Admin Note</p>
-                                    <p className="text-sm text-slate-600 leading-relaxed">
-                                        This could mean that the AI hasn't implemented this page yet. Ask it to implement it in the chat.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                    
-                    {/* Action Button */}
-                    <div className="pt-6">
-                        <button 
-                            onClick={() => window.location.href = '/'} 
-                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
-                        >
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                            Go Home
-                        </button>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div className="min-h-screen flex items-center justify-center p-6 bg-[#F7F9F7]">
+      <SEO 
+        title="404 - Page Not Found" 
+        description="The requested page could not be found on Kisan Mitra. Navigate back to your smart farming dashboard."
+      />
+      <div className="max-w-xl w-full text-center">
+        {/* Badge */}
+        <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-[#E8F8F1] text-[#005A3C] shadow-sm mb-6">
+          <Sprout className="w-10 h-10" />
         </div>
-    )
+
+        {/* 404 Header */}
+        <h1 className="text-6xl sm:text-7xl font-extrabold text-[#005A3C] tracking-tight mb-3">
+          404
+        </h1>
+        <h2 className="text-2xl font-bold text-[#17201C] mb-2">
+          Page Not Found
+        </h2>
+        <p className="text-[#66736D] text-sm sm:text-base max-w-md mx-auto mb-8">
+          The field you are looking for at <code className="bg-emerald-50 text-[#005A3C] px-2 py-0.5 rounded text-xs font-mono">{path}</code> does not exist or has been moved.
+        </p>
+
+        {/* Quick Navigation Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8 text-left">
+          <Link
+            to="/dashboard"
+            className="p-4 bg-white rounded-2xl border border-[#E1E8E4] hover:border-[#0B8F62] hover:shadow-sm transition-all flex items-center gap-3 group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#E8F8F1] text-[#005A3C] flex items-center justify-center shrink-0 group-hover:bg-[#005A3C] group-hover:text-white transition-colors">
+              <Home className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-[#17201C]">Farmer Dashboard</div>
+              <div className="text-xs text-[#66736D]">Overview and daily farm metrics</div>
+            </div>
+          </Link>
+
+          <Link
+            to="/crop-doctor"
+            className="p-4 bg-white rounded-2xl border border-[#E1E8E4] hover:border-[#0B8F62] hover:shadow-sm transition-all flex items-center gap-3 group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#E8F8F1] text-[#005A3C] flex items-center justify-center shrink-0 group-hover:bg-[#005A3C] group-hover:text-white transition-colors">
+              <Stethoscope className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-[#17201C]">Crop Doctor</div>
+              <div className="text-xs text-[#66736D]">AI visual diagnosis for plant health</div>
+            </div>
+          </Link>
+
+          <Link
+            to="/outbreak-radar"
+            className="p-4 bg-white rounded-2xl border border-[#E1E8E4] hover:border-[#0B8F62] hover:shadow-sm transition-all flex items-center gap-3 group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#E8F8F1] text-[#005A3C] flex items-center justify-center shrink-0 group-hover:bg-[#005A3C] group-hover:text-white transition-colors">
+              <Radar className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-[#17201C]">Outbreak Radar</div>
+              <div className="text-xs text-[#66736D]">Regional pest and disease alert map</div>
+            </div>
+          </Link>
+
+          <Link
+            to="/market-copilot"
+            className="p-4 bg-white rounded-2xl border border-[#E1E8E4] hover:border-[#0B8F62] hover:shadow-sm transition-all flex items-center gap-3 group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#E8F8F1] text-[#005A3C] flex items-center justify-center shrink-0 group-hover:bg-[#005A3C] group-hover:text-white transition-colors">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-[#17201C]">Market Copilot</div>
+              <div className="text-xs text-[#66736D]">Live APMC mandi prices and trends</div>
+            </div>
+          </Link>
+        </div>
+
+        {/* Return Button */}
+        <div>
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#005A3C] hover:bg-[#0B8F62] text-white font-semibold text-sm transition-all shadow-md hover:shadow-lg"
+          >
+            <ArrowLeft className="w-4 h-4" /> Return to Dashboard
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
 }

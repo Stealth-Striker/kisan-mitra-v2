@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { LineChart, TrendingUp, MapPin, Sparkles } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useFarm } from "@/lib/farmContext";
+import SEO from "@/components/SEO";
 
 export default function MarketCopilot() {
   const { farm } = useFarm();
@@ -43,6 +44,11 @@ export default function MarketCopilot() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
+      <SEO 
+        title="Market Copilot - Real-Time Mandi Prices & APMC Trends" 
+        description="Real-time wholesale market prices, trend analysis, and trader offer negotiation advice."
+        canonicalPath="/market-copilot"
+      />
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-[#17201C] flex items-center gap-2.5">

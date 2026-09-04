@@ -8,6 +8,7 @@ import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 
 import { safeReturnTo } from "@/lib/authReturnTo";
+import SEO from "@/components/SEO";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -32,8 +33,6 @@ export default function Login() {
     }
   };
 
-
-
   return (
     <AuthLayout
       icon={LogIn}
@@ -41,6 +40,11 @@ export default function Login() {
       subtitle="Log in to your account"
       footer={
         <>
+          <SEO 
+            title="Log In - Access Smart Farming Intelligence" 
+            description="Log in to Kisan Mitra to access your personalized farming copilot, disease diagnostic history, and live APMC market data."
+            canonicalPath="/login"
+          />
           Don't have an account?{" "}
           <Link
             to={"/register" + (returnTo !== "/" ? "?returnTo=" + encodeURIComponent(returnTo) : "")}

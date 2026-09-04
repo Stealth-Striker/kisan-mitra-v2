@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { useFarm } from "@/lib/farmContext";
 import { Image } from "@/components/ui/image";
 import { useToast } from "@/components/ui/use-toast";
+import SEO from "@/components/SEO";
 
 const CROPS = ["Tomato", "Rice", "Wheat", "Cotton", "Onion", "Banana", "Pepper", "Mango", "Other"];
 
@@ -74,6 +75,11 @@ export default function CropDoctor() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
+      <SEO 
+        title="Crop Doctor - AI Plant Pathology Diagnosis" 
+        description="Upload a leaf photo to diagnose diseases, assess severity, and get actionable treatment plans with Kisan Mitra AI."
+        canonicalPath="/crop-doctor"
+      />
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-[#17201C] flex items-center gap-2.5">
@@ -121,7 +127,7 @@ export default function CropDoctor() {
               {image ? (
                 <div className="space-y-3 w-full flex flex-col items-center">
                   <div className="w-44 h-44 rounded-xl overflow-hidden shadow-sm border border-[#E1E8E4] relative group">
-                    <Image src={image} className="w-full h-full object-cover" fittingType="fill" />
+                    <Image src={image} alt="Uploaded crop leaf sample for AI diagnosis" className="w-full h-full object-cover" fittingType="fill" />
                   </div>
                   <p className="text-xs text-[#005A3C] font-semibold">Click to change leaf photo</p>
                 </div>

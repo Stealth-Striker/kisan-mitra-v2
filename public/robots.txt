@@ -1,0 +1,17 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /register
+Allow: /forgot-password
+Allow: /crop-doctor
+Allow: /outbreak-radar
+Allow: /harvest-guardian
+Allow: /market-copilot
+Allow: /llms.txt
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /api/
+Disallow: /uploads/
+
+Sitemap: https://kisanmitra.in/sitemap.xml
