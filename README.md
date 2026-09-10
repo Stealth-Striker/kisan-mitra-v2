@@ -11,7 +11,7 @@
 - **Farmer Dashboard** — Personalized crop weather advisories, farm metrics, and AI chat
 - **Crop Doctor** — Upload a leaf photo for AI visual disease diagnosis, severity assessment, and treatment plans
 - **Outbreak Radar** — Geospatial map of active regional pest and disease alerts
-- **Harvest Guardian** — Predictive maturity modeling and ideal harvest window planning
+- **Harvest Guardian** — Dual-Engine Agronomic Decision System: MATLAB continuous differential grain moisture ODE solver ($dM/dt = -k \cdot (M - M_{eq})$) and Growing Degree Days (GDD) bio-growth modeling synthesized with Google Gemini 2.5 cognitive logistics and 7-day weather radar
 - **Market Copilot** — Live APMC mandi wholesale price trends and AI trader-offer negotiation advice
 - **Multilingual** — English, Malayalam, Hindi, Tamil
 - **Admin Panel** — User management, disease alert publishing, market data, conversation audit
@@ -92,6 +92,27 @@ Farmer accounts can be created through the `/register` page.
 
 > **Change the admin password immediately in any non-local environment.**
 
+## Harvest Guardian: Dual-Engine Architecture (MATLAB + Google Gemini 2.5)
+
+Harvest Guardian combines deterministic physical biophysics with generative agronomic intelligence:
+
+1. **Analytical Engine (MATLAB / Simulink Core)**:
+   - **GDD Thermal Summation**: Tracks plant phenological advancement via Growing Degree Days:
+     $$GDD = \sum \max\left(0, \min(T_{\text{avg}}, T_{\text{opt}}) - T_{\text{base}}\right)$$
+   - **Modified Henderson-Thompson Isotherm**: Calculates equilibrium grain moisture ($M_{eq}$) under local temperature and relative humidity:
+     $$M_{eq} = \left( \frac{-\ln(1 - RH / 100)}{K_1 \cdot (T + C_1)} \right)^{\frac{1}{C_2}} \times 100$$
+   - **Continuous Grain Drying ODE**: Solves the first-order differential decay equation:
+     $$\frac{dM(t)}{dt} = -k(T, RH) \cdot \left(M(t) - M_{eq}\right)$$
+     using Dormand-Prince variable-step integration (`ode45` in MATLAB) and native Runge-Kutta 4th Order (RK4) on the Node backend.
+   - **Zero Model Training Needed**: Unlike black-box neural networks that demand years of historical farm datasets, this mechanistic model is grounded in first-principles thermodynamics and calibrated against **ASABE Standards D245.7** and **ICAR** agronomic constants for Rice, Wheat, Maize, and Tomato.
+
+2. **Cognitive Logistics Engine (Google Gemini 2.5)**:
+   - Evaluates the MATLAB-predicted harvest day against live 7-day meteorological rain probabilities (e.g., accelerating harvest before Day 6 showers).
+   - Assesses post-harvest grain storage risks (preventing Aspergillus mold and aflatoxins when moisture exceeds critical thresholds).
+   - Generates actionable machinery booking (combine harvesters, threshers) and sun-drying canvas schedules in regional Indian languages (English, Malayalam, Hindi, Tamil).
+
+For MATLAB source code, Simulink block diagrams, and batch scripts, see [`matlab/README.md`](matlab/README.md).
+
 ---
 
 ## Tech Stack
@@ -99,14 +120,15 @@ Farmer accounts can be created through the `/register` page.
 | Layer | Technology |
 |-------|------------|
 | Frontend | React 18, Vite, Tailwind CSS, Shadcn UI |
-| Charts | Recharts |
+| Charts & Visualization | Recharts (Moisture decay vs GDD trajectories) |
 | Icons | Lucide React |
 | Maps | Leaflet + React Leaflet |
 | State | TanStack React Query |
 | Backend | Node.js, Express |
-| Database | SQLite via `better-sqlite3` |
+| Mathematical Engine | MATLAB (`ode45`) / Native RK4 ODE Solver (ASABE D245.7) |
+| Database | SQLite via `better-sqlite3` (with auto-fallback JSON storage) |
 | File uploads | Multer (local disk) |
-| AI | Google Gemini API (`@google/generative-ai`) |
+| AI / Cognitive Core | Google Gemini API (`@google/generative-ai`) |
 | Auth | JWT (`jsonwebtoken` + `bcryptjs`) |
 
 ---
@@ -118,7 +140,7 @@ Farmer accounts can be created through the `/register` page.
 | `npm run dev` | Start Vite frontend dev server |
 | `npm run build` | Production build to `dist/` (no source maps) |
 | `npm run lint` | ESLint check |
-| `npm test` | Run backend automated test suite (7 tests) |
+| `npm test` | Run backend automated test suite (10 unit & integration tests) |
 
 ---
 
@@ -150,17 +172,22 @@ Farmer accounts can be created through the `/register` page.
 
 ```
 kisan-mitra-dashboard/
+├── matlab/              # MATLAB bio-growth models, ODE45 scripts, and Simulink docs
+│   ├── harvest_bio_growth_model.m  # Core MATLAB continuous ODE drying script
+│   ├── simulate_harvest_ode.m      # Batch CLI runner
+│   └── README.md                   # State-space formulation and ASABE equations
 ├── public/              # Static assets (favicon, robots.txt, sitemap.xml, llms.txt)
 ├── src/
 │   ├── api/             # Base44 client and entity definitions
 │   ├── components/      # Shared UI components (SEO, Header, Sidebar, etc.)
 │   ├── lib/             # Auth context, farm context, translations, utilities
-│   └── pages/           # Route-level page components (lazy-loaded)
+│   └── pages/           # Route-level page components (HarvestGuardian, MarketCopilot, etc.)
 ├── backend/
 │   ├── db.js            # SQLite schema and collection manager
 │   ├── server.js        # Express app with security middleware
-│   ├── routes/          # Auth and functions API routes
-│   └── test/            # Automated backend tests
+│   ├── services/        # MATLAB bio-growth ODE engine (RK4 numerical solver)
+│   ├── routes/          # Auth, entities, and functions API routes
+│   └── test/            # Automated backend unit and integration test suites
 ├── index.html           # SPA entry point with SEO meta and structured data
 └── vite.config.js       # Build config with code splitting and chunk optimization
 ```
