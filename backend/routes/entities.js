@@ -160,9 +160,32 @@ router.get('/:entity', (req, res) => {
   }
 });
 
+// Access check helper to prevent IDOR and enforce ownership
+function checkItemAccess(req, item) {
+  const { entityName, entityConfig, user } = req;
+  const { userField, adminOnly } = entityConfig;
+
+  if (adminOnly && user.role !== 'admin') {
+    return false;
+  }
+  if (user.role === 'admin') {
+    return true;
+  }
+  if (userField && item[userField] !== user.id) {
+    return false;
+  }
+  if (entityName === 'Message') {
+    const conv = db.conversations.findOne(c => c.id === item.conversation_id);
+    if (!conv || conv.created_by_id !== user.id) {
+      return false;
+    }
+  }
+  return true;
+}
+
 // ── POST /api/entities/:entity (create) ───────────────────────────────────────
 router.post('/:entity', (req, res) => {
-  const { entityConfig, user } = req;
+  const { entityName, entityConfig, user } = req;
   const { collection, userField, adminWrite } = entityConfig;
 
   if (adminWrite && user.role !== 'admin') {
@@ -171,6 +194,18 @@ router.post('/:entity', (req, res) => {
 
   try {
     const data = { ...req.body };
+
+    // Prevent non-admin from inserting messages into other users' conversations
+    if (entityName === 'Message' && user.role !== 'admin') {
+      if (!data.conversation_id) {
+        return res.status(400).json({ error: 'conversation_id is required' });
+      }
+      const conv = db.conversations.findOne(c => c.id === data.conversation_id);
+      if (!conv || conv.created_by_id !== user.id) {
+        return res.status(403).json({ error: 'Forbidden: Cannot post to conversation owned by another user' });
+      }
+    }
+
     data.id = data.id || uuidv4();
     data.created_date = new Date().toISOString();
     
@@ -187,18 +222,14 @@ router.post('/:entity', (req, res) => {
 
 // ── GET /api/entities/:entity/:id ─────────────────────────────────────────────
 router.get('/:entity/:id', (req, res) => {
-  const { entityConfig, user } = req;
-  const { collection, userField, adminOnly } = entityConfig;
-
-  if (adminOnly && user.role !== 'admin') {
-    return res.status(403).json({ error: 'Admin access required' });
-  }
+  const { entityConfig } = req;
+  const { collection } = entityConfig;
 
   try {
     const item = db[collection].findOne(i => i.id === req.params.id);
     if (!item) return res.status(404).json({ error: 'Not found' });
 
-    if (userField && user.role !== 'admin' && item[userField] !== user.id) {
+    if (!checkItemAccess(req, item)) {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
@@ -211,7 +242,7 @@ router.get('/:entity/:id', (req, res) => {
 // ── PUT /api/entities/:entity/:id ─────────────────────────────────────────────
 router.put('/:entity/:id', (req, res) => {
   const { entityConfig, user } = req;
-  const { collection, userField, adminWrite } = entityConfig;
+  const { collection, adminWrite } = entityConfig;
 
   if (adminWrite && user.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
@@ -221,7 +252,7 @@ router.put('/:entity/:id', (req, res) => {
     const item = db[collection].findOne(i => i.id === req.params.id);
     if (!item) return res.status(404).json({ error: 'Not found' });
 
-    if (userField && user.role !== 'admin' && item[userField] !== user.id) {
+    if (!checkItemAccess(req, item)) {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
@@ -235,7 +266,7 @@ router.put('/:entity/:id', (req, res) => {
 // ── DELETE /api/entities/:entity/:id ──────────────────────────────────────────
 router.delete('/:entity/:id', (req, res) => {
   const { entityConfig, user } = req;
-  const { collection, userField, adminWrite } = entityConfig;
+  const { collection, adminWrite } = entityConfig;
 
   if (adminWrite && user.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
@@ -245,7 +276,7 @@ router.delete('/:entity/:id', (req, res) => {
     const item = db[collection].findOne(i => i.id === req.params.id);
     if (!item) return res.status(404).json({ error: 'Not found' });
 
-    if (userField && user.role !== 'admin' && item[userField] !== user.id) {
+    if (!checkItemAccess(req, item)) {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
@@ -265,7 +296,7 @@ router.delete('/:entity/:id', (req, res) => {
 // ── POST /api/entities/:entity/delete-many ────────────────────────────────────
 router.post('/:entity/delete-many', (req, res) => {
   const { entityConfig, user } = req;
-  const { collection, userField, adminWrite } = entityConfig;
+  const { collection, adminWrite } = entityConfig;
 
   if (adminWrite && user.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
@@ -275,7 +306,7 @@ router.post('/:entity/delete-many', (req, res) => {
     const filters = req.body || {};
     const deleteFn = (item) => {
       // Access check
-      if (userField && user.role !== 'admin' && item[userField] !== user.id) {
+      if (!checkItemAccess(req, item)) {
         return false;
       }
       

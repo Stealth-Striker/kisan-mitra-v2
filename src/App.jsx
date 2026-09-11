@@ -24,6 +24,7 @@ const MarketCopilot = lazy(() => import('@/pages/MarketCopilot'));
 const AskKisanMitra = lazy(() => import('@/pages/AskKisanMitra'));
 const ConversationHistory = lazy(() => import('@/pages/ConversationHistory'));
 const Preferences = lazy(() => import('@/pages/Preferences'));
+const Profile = lazy(() => import('@/pages/Profile'));
 
 // Lazy-loaded Admin pages
 const AdminDashboard = lazy(() => import('@/pages/AdminDashboard'));
@@ -54,13 +55,8 @@ const AuthenticatedApp = () => {
     );
   }
 
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      navigateToLogin();
-      return null;
-    }
+  if (authError && authError.type === 'user_not_registered') {
+    return <UserNotRegisteredError />;
   }
 
   return (
@@ -84,6 +80,7 @@ const AuthenticatedApp = () => {
             <Route path="/ask-kisan-mitra" element={<Navigate to="/chat" replace />} />
             <Route path="/conversations" element={<ConversationHistory />} />
             <Route path="/preferences" element={<Preferences />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
           {/* Protected admin routes */}
           <Route element={<AdminLayout />}>

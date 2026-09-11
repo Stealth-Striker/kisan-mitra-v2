@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const DEFAULT_TITLE = 'Kisan Mitra - AI-Powered Smart Farming Companion';
-const DEFAULT_DESC = 'Empowering Indian farmers with instant AI crop disease diagnosis, regional outbreak radars, meteorological harvest planning, and live APMC mandi prices.';
+const DEFAULT_DESC = 'Empowering Indian farmers with instant AI crop disease diagnosis, regional outbreak radars, meteorological harvest planning, and live APMC market prices.';
 const SITE_URL = 'https://kisanmitra.in';
 const DEFAULT_OG_IMAGE = `${SITE_URL}/hero-landscape.png`;
 

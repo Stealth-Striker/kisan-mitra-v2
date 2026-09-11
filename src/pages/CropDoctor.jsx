@@ -10,7 +10,6 @@ import {
   Copy,
   Check,
   Loader2,
-  Sparkles,
   Calculator,
   Calendar,
   Camera,
@@ -21,9 +20,7 @@ import { useFarm } from "@/lib/farmContext";
 import { Image } from "@/components/ui/image";
 import { useToast } from "@/components/ui/use-toast";
 import SEO from "@/components/SEO";
-
-// Common agricultural crops
-const CROPS = ["Rice", "Tomato", "Coconut", "Pepper", "Wheat", "Maize", "Banana", "Cotton", "Onion"];
+import StatusBadge from "@/components/ui/StatusBadge";
 
 // Knapsack spray pump capacities
 const SPRAYER_TYPES = [
@@ -44,12 +41,12 @@ export default function CropDoctor() {
   const { toast } = useToast();
   const fileRef = useRef(null);
 
-  // States
   const [image, setImage] = useState(null);
-  const [crop, setCrop] = useState(farm?.primary_crop || "Rice");
+  const crop = farm?.primary_crop || "Rice";
   const [analyzing, setAnalyzing] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [result, setResult] = useState(null);
-  const [history, setHistory] = useState([]);
 
   // Dosage Calculator States
   const [fieldAcreage, setFieldAcreage] = useState(() => Number(farm?.farm_size) || 1.5);
@@ -59,13 +56,6 @@ export default function CropDoctor() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [copiedPrescription, setCopiedPrescription] = useState(false);
 
-  // Load history from DB
-  useEffect(() => {
-    base44.entities.CropDiagnosis.filter({}, "-created_date", 5)
-      .then(setHistory)
-      .catch(() => {});
-  }, []);
-
   // Stop speaking when unmounting or changing diagnosis
   useEffect(() => {
     return () => {
@@ -73,8 +63,7 @@ export default function CropDoctor() {
     };
   }, []);
 
-  const handleFile = async (e) => {
-    const file = e.target.files?.[0];
+  const processFile = async (file) => {
     if (!file) return;
     if (!["image/jpeg", "image/png", "image/webp", "image/jpg"].includes(file.type)) {
       toast({ title: "Invalid file", description: "JPG, PNG, or WEBP only.", variant: "destructive" });
@@ -84,13 +73,41 @@ export default function CropDoctor() {
       toast({ title: "File too large", description: "Max 10MB.", variant: "destructive" });
       return;
     }
+    setUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setImage(file_url);
       setResult(null);
     } catch (err) {
       toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
     }
+  };
+
+  const handleFile = (e) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFile(file);
   };
 
   const analyze = async () => {
@@ -117,7 +134,6 @@ export default function CropDoctor() {
         recommended_actions: diag.recommended_actions,
         prevention: diag.prevention,
       });
-      setHistory((h) => [record, ...h.slice(0, 4)]);
     } catch {
       // Graceful realistic fallback if AI service is offline
       const fallbackDiag = {
@@ -191,15 +207,15 @@ export default function CropDoctor() {
   // WhatsApp Prescription Share
   const handleSharePrescription = () => {
     if (!result) return;
-    const text = `🌱 *KISAN MITRA AI PLANT CLINIC PRESCRIPTION*\n\n` +
-      `🌾 *Crop:* ${crop}\n` +
-      `🩺 *Diagnosis:* ${result.disease} (${result.severity} Severity)\n\n` +
-      `📋 *3-STAGE TREATMENT PLAN:*\n` +
-      `1️⃣ *Day 1-2 (Hygiene):* ${result.stage1 || "Isolate affected plants & drain excess field moisture."}\n` +
-      `2️⃣ *Day 3 (Spray):* ${result.stage2 || result.recommended_actions}\n` +
-      `3️⃣ *Day 7 (Recovery):* ${result.stage3 || result.prevention}\n\n` +
-      `🧪 *SPRAY MIX DOSAGE FOR ${dosageCalculations.acres} ACRES:*\n` +
-      `• Total Chemical/Bio: ${dosageCalculations.totalDoseGrams}g in ${dosageCalculations.totalWaterLiters}L water\n` +
+    const text = `*KISAN MITRA PLANT PATHOLOGY CLINIC PRESCRIPTION*\n\n` +
+      `Crop: ${crop}\n` +
+      `Diagnosis: ${result.disease} (${result.severity} Severity)\n\n` +
+      `3-STAGE TREATMENT PLAN:\n` +
+      `Stage 1 (Day 1-2, Sanitation): ${result.stage1 || "Isolate affected plants and drain excess standing water."}\n` +
+      `Stage 2 (Day 3, Targeted Spray): ${result.stage2 || result.recommended_actions}\n` +
+      `Stage 3 (Day 7, Recovery Audit): ${result.stage3 || result.prevention}\n\n` +
+      `SPRAY MIX DOSAGE FOR ${dosageCalculations.acres} ACRES:\n` +
+      `• Total Formulation: ${dosageCalculations.totalDoseGrams}g in ${dosageCalculations.totalWaterLiters}L water\n` +
       `• Per ${dosageCalculations.tankCapacity}L Tank: ${dosageCalculations.dosePerTank}g (${dosageCalculations.refillsNeeded} refills)\n\n` +
       `Generated by Kisan Mitra Smart Farming Companion.`;
 
@@ -227,15 +243,11 @@ export default function CropDoctor() {
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E1E8E4] pb-5">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E8F8F1] text-[#005A3C] text-xs font-bold mb-2">
-            <Sparkles className="w-3.5 h-3.5" />
-            AI Plant Clinic & Prescription Engine
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#17201C] flex items-center gap-3">
-            <Stethoscope className="w-7 h-7 text-[#005A3C]" />
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#17211D] flex items-center gap-3">
+            <Stethoscope className="w-7 h-7 text-[#063F2E]" />
             Crop Doctor
           </h1>
-          <p className="text-sm text-[#66736D] mt-1">
+          <p className="text-sm text-[#65736C] mt-1">
             Upload or inspect a leaf sample to diagnose pathogens, calculate acreage spray dosages, and generate treatment timelines.
           </p>
         </div>
@@ -243,57 +255,44 @@ export default function CropDoctor() {
         {/* Quick link to Outbreak Radar */}
         <Link
           to="/outbreak-radar"
-          className="bg-white border border-[#E1E8E4] hover:border-[#005A3C] px-3.5 py-2 rounded-xl text-xs font-bold text-[#17201C] transition-colors flex items-center gap-2 shadow-xs"
+          className="bg-white border border-[#E1E8E4] hover:border-[#087F5B] px-3.5 py-2 rounded-xl text-xs font-bold text-[#17211D] transition-colors flex items-center gap-2 shadow-xs"
         >
-          <Layers className="w-4 h-4 text-[#005A3C]" /> Check District Radar
+          <Layers className="w-4 h-4 text-[#063F2E]" /> Check District Radar
         </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-7">
         {/* Left Column (7 Cols): Upload Workspace & Visual Disease Reference */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm p-5 sm:p-6 space-y-5">
-            {/* 1. Crop Selector Pills */}
-            <div>
-              <label className="block text-xs font-bold text-[#17201C] uppercase tracking-wider mb-2">
-                1. Select Target Crop
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {CROPS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => {
-                      setCrop(c);
-                      setResult(null);
-                    }}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all ${
-                      crop === c
-                        ? "bg-[#005A3C] text-white border-[#005A3C] shadow-sm"
-                        : "bg-white text-[#17201C] border-[#E1E8E4] hover:bg-[#E8F8F1] hover:border-[#005A3C]"
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 2. Photo Upload / Dropzone with Viewfinder Frame */}
-            <div>
-              <label className="block text-xs font-bold text-[#17201C] uppercase tracking-wider mb-2">
-                2. Leaf Photo Inspection
+          <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-5 sm:p-6 space-y-5">
+            {/* Photo Upload / Drag & Drop Zone */}
+            <div className="space-y-3">
+              <label className="block text-xs font-bold text-[#17211D] uppercase tracking-wider">
+                Leaf Photo Inspection
               </label>
 
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
 
               <div
-                onClick={() => fileRef.current?.click()}
-                className="relative border-2 border-dashed border-[#E1E8E4] hover:border-[#005A3C] hover:bg-[#E8F8F1]/30 rounded-2xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[220px] overflow-hidden group"
+                onDragOver={handleDragOver}
+                onDragEnter={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => !uploading && fileRef.current?.click()}
+                className={`relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[230px] overflow-hidden group ${
+                  isDragging
+                    ? "border-[#087F5B] bg-[#DDF5EA]/50 scale-[1.01] ring-4 ring-[#087F5B]/15"
+                    : "border-[#E1E8E4] hover:border-[#087F5B] hover:bg-[#DDF5EA]/20"
+                }`}
               >
-                {image ? (
+                {uploading ? (
+                  <div className="space-y-3 py-4 flex flex-col items-center">
+                    <Loader2 className="w-10 h-10 animate-spin text-[#087F5B]" />
+                    <p className="text-xs font-semibold text-[#063F2E]">Uploading &amp; preparing leaf photo...</p>
+                  </div>
+                ) : image ? (
                   <div className="space-y-3 w-full flex flex-col items-center">
-                    <div className="w-48 h-48 rounded-xl overflow-hidden shadow-md border-2 border-[#005A3C] relative">
+                    <div className="w-48 h-48 rounded-xl overflow-hidden shadow-sm border-2 border-[#063F2E] relative">
                       <Image
                         src={image}
                         alt="Uploaded crop leaf sample for AI diagnosis"
@@ -301,22 +300,26 @@ export default function CropDoctor() {
                         fittingType="fill"
                       />
                     </div>
-                    <p className="text-xs text-[#005A3C] font-bold flex items-center gap-1">
-                      <Camera className="w-3.5 h-3.5" /> Tap to change or capture another photo
+                    <p className="text-xs text-[#063F2E] font-bold flex items-center gap-1">
+                      <Camera className="w-3.5 h-3.5" /> Drop or click to replace photo
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    <div className="w-14 h-14 rounded-2xl bg-[#E8F8F1] flex items-center justify-center mx-auto text-[#005A3C] group-hover:scale-110 transition-transform">
+                  <div className="space-y-3 pointer-events-none">
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto transition-transform ${
+                      isDragging ? "bg-[#087F5B] text-white scale-110" : "bg-[#DDF5EA] text-[#063F2E] group-hover:scale-105"
+                    }`}>
                       <UploadCloud className="w-7 h-7" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-[#17201C]">Upload or Take Leaf Photo</p>
-                      <p className="text-xs text-[#66736D] mt-0.5">
-                        Hold camera 15-20 cm away focusing on leaf spots, lesions or curling
+                      <p className="text-sm font-bold text-[#17211D]">
+                        {isDragging ? "Drop leaf photo here" : "Drag & drop leaf photo here, or click to browse"}
+                      </p>
+                      <p className="text-xs text-[#65736C] mt-0.5">
+                        Hold camera 15–20 cm away focusing on leaf spots, lesions, or discoloration
                       </p>
                     </div>
-                    <span className="inline-block text-[11px] font-semibold text-[#005A3C] bg-[#E8F8F1] px-3 py-1 rounded-full">
+                    <span className="inline-block text-[11px] font-semibold text-[#063F2E] bg-[#DDF5EA] px-3 py-1 rounded-full">
                       JPG, PNG or WEBP up to 10MB
                     </span>
                   </div>
@@ -328,7 +331,7 @@ export default function CropDoctor() {
             <button
               onClick={analyze}
               disabled={!image || analyzing}
-              className="w-full bg-[#005A3C] hover:bg-[#003F2B] text-white rounded-xl py-3 text-sm font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
+              className="w-full km-btn-primary py-3 text-sm font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {analyzing ? (
                 <>
@@ -343,34 +346,32 @@ export default function CropDoctor() {
               )}
             </button>
           </div>
-
         </div>
 
         {/* Right Column (5 Cols): Diagnosis Result, Dosage Calculator & 3-Stage Prescription */}
         <div className="lg:col-span-5 space-y-6">
           {result ? (
-            <div className="bg-white rounded-2xl border border-[#005A3C]/30 shadow-md p-5 sm:p-6 space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="bg-white rounded-2xl border border-[#063F2E]/25 shadow-xs p-5 sm:p-6 space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
               {/* Result Header */}
               <div className="flex items-start justify-between border-b border-[#E1E8E4] pb-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#005A3C] bg-[#E8F8F1] px-2.5 py-1 rounded-full">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#063F2E] bg-[#DDF5EA] px-2.5 py-1 rounded-full">
                       Diagnosis Result
                     </span>
-                    <span
-                      className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+                    <StatusBadge
+                      status={
                         result.severity === "High" || result.severity === "Severe"
-                          ? "bg-rose-100 text-rose-800 border border-rose-200"
+                          ? "Critical"
                           : result.severity === "Moderate"
-                          ? "bg-amber-100 text-amber-800 border border-amber-200"
-                          : "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                      }`}
-                    >
-                      {result.severity} Severity
-                    </span>
+                          ? "Moderate"
+                          : "Healthy"
+                      }
+                      label={`${result.severity} Severity`}
+                    />
                   </div>
-                  <h2 className="text-xl font-extrabold text-[#17201C] mt-2">{result.disease}</h2>
-                  <p className="text-xs text-[#005A3C] font-semibold mt-0.5">Diagnosed on: {crop}</p>
+                  <h2 className="text-xl font-bold text-[#17211D] mt-2">{result.disease}</h2>
+                  <p className="text-xs text-[#063F2E] font-semibold mt-0.5">Diagnosed on: {crop}</p>
                 </div>
               </div>
 
@@ -378,7 +379,7 @@ export default function CropDoctor() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={toggleSpeech}
-                  className="flex-1 py-2 px-3 rounded-xl bg-[#F7F9F7] hover:bg-[#E8F8F1] border border-[#E1E8E4] text-xs font-bold text-[#005A3C] transition-colors flex items-center justify-center gap-1.5"
+                  className="flex-1 py-2 px-3 rounded-xl bg-[#F6F8F5] hover:bg-[#DDF5EA] border border-[#E1E8E4] text-xs font-bold text-[#063F2E] transition-colors flex items-center justify-center gap-1.5"
                 >
                   {isSpeaking ? (
                     <>
@@ -393,88 +394,88 @@ export default function CropDoctor() {
 
                 <button
                   onClick={handleSharePrescription}
-                  className="flex-1 py-2 px-3 rounded-xl bg-[#25D366] hover:bg-[#1EBE5D] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                  className="flex-1 py-2 px-3 rounded-xl bg-[#16A36F] hover:bg-[#087F5B] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-xs"
                 >
-                  <Share2 className="w-4 h-4" /> WhatsApp
+                  <Share2 className="w-3.5 h-3.5" /> WhatsApp
                 </button>
 
                 <button
                   onClick={handleCopyPrescription}
-                  className="py-2 px-3 rounded-xl bg-white hover:bg-zinc-50 border border-[#E1E8E4] text-xs font-bold text-[#17201C] transition-colors flex items-center justify-center"
+                  className="py-2 px-3 rounded-xl bg-white hover:bg-[#F6F8F5] border border-[#E1E8E4] text-xs font-bold text-[#17211D] transition-colors flex items-center justify-center"
                   title="Copy Prescription"
                 >
-                  {copiedPrescription ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-[#66736D]" />}
+                  {copiedPrescription ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-[#65736C]" />}
                 </button>
               </div>
 
               {/* 3-Stage Treatment Timeline */}
               <div className="space-y-3 pt-2">
-                <h3 className="text-xs font-bold text-[#17201C] uppercase tracking-wider flex items-center gap-1.5">
-                  <Calendar className="w-4 h-4 text-[#005A3C]" />
+                <h3 className="text-xs font-bold text-[#17211D] uppercase tracking-wider flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4 text-[#063F2E]" />
                   3-Stage Treatment Prescription
                 </h3>
 
                 {/* Stage 1 */}
-                <div className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E1E8E4] space-y-1">
+                <div className="p-3.5 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-amber-800 flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-amber-500"></span> Day 1 - 2: Field Sanitation
+                    <span className="text-xs font-bold text-[#92540C] flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#E99B16]"></span> Day 1 - 2: Field Sanitation
                     </span>
-                    <span className="text-[10px] font-extrabold uppercase bg-amber-100 text-amber-800 px-2 py-0.5 rounded">
+                    <span className="text-[10px] font-bold uppercase bg-amber-100 text-[#92540C] px-2 py-0.5 rounded">
                       Immediate
                     </span>
                   </div>
-                  <p className="text-xs text-[#17201C] leading-relaxed">
+                  <p className="text-xs text-[#17211D] leading-relaxed">
                     {result.stage1 || "Isolate infected plants. Drain stagnant standing water and stop nitrogenous fertilizers."}
                   </p>
                 </div>
 
                 {/* Stage 2 */}
-                <div className="p-3.5 rounded-xl bg-[#E8F8F1] border border-[#005A3C]/20 space-y-1">
+                <div className="p-3.5 rounded-xl bg-[#DDF5EA] border border-[#063F2E]/20 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#005A3C] flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#005A3C]"></span> Day 3: Curative Spraying
+                    <span className="text-xs font-bold text-[#063F2E] flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#063F2E]"></span> Day 3: Curative Spraying
                     </span>
-                    <span className="text-[10px] font-extrabold uppercase bg-[#005A3C] text-white px-2 py-0.5 rounded">
+                    <span className="text-[10px] font-bold uppercase bg-[#063F2E] text-white px-2 py-0.5 rounded">
                       Treatment
                     </span>
                   </div>
-                  <p className="text-xs text-[#005A3C] font-medium leading-relaxed">
+                  <p className="text-xs text-[#063F2E] font-medium leading-relaxed">
                     {result.stage2 || result.recommended_actions}
                   </p>
                 </div>
 
                 {/* Stage 3 */}
-                <div className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E1E8E4] space-y-1">
+                <div className="p-3.5 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-emerald-600"></span> Day 7: Recovery Audit
+                    <span className="text-xs font-bold text-[#087F5B] flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#16A36F]"></span> Day 7: Recovery Audit
                     </span>
-                    <span className="text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">
+                    <span className="text-[10px] font-bold uppercase bg-[#DDF5EA] text-[#063F2E] px-2 py-0.5 rounded">
                       Revival
                     </span>
                   </div>
-                  <p className="text-xs text-[#17201C] leading-relaxed">
+                  <p className="text-xs text-[#17211D] leading-relaxed">
                     {result.stage3 || result.prevention || "Check for healthy green shoot regrowth. Apply mild micronutrient foliar booster."}
                   </p>
                 </div>
               </div>
 
               {/* Acreage & Tank Mix Dosage Calculator */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+              <div className="p-4 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
-                    <Calculator className="w-4 h-4 text-[#005A3C]" />
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#17211D] flex items-center gap-1.5">
+                    <Calculator className="w-4 h-4 text-[#063F2E]" />
                     Field Dosage & Tank Mix Calculator
                   </h4>
-                  <span className="text-[10px] font-bold text-[#005A3C] bg-white px-2 py-0.5 rounded border border-[#E1E8E4]">
+                  <span className="text-[10px] font-bold text-[#063F2E] bg-white px-2 py-0.5 rounded border border-[#E1E8E4]">
                     Precise Dosing
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                    <label className="text-[11px] font-bold text-[#65736C] block mb-1">
                       Field Area (Acres)
                     </label>
                     <input
@@ -484,18 +485,18 @@ export default function CropDoctor() {
                       max="100"
                       value={fieldAcreage}
                       onChange={(e) => setFieldAcreage(Math.max(0.25, Number(e.target.value) || 0.25))}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-bold text-slate-900 bg-white"
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-[#E1E8E4] text-xs font-bold text-[#17211D] bg-white focus:outline-none focus:border-[#063F2E]"
                     />
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                    <label className="text-[11px] font-bold text-[#65736C] block mb-1">
                       Sprayer Tank
                     </label>
                     <select
                       value={selectedSprayer}
                       onChange={(e) => setSelectedSprayer(e.target.value)}
-                      className="w-full px-2 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-900 bg-white"
+                      className="w-full px-2 py-1.5 rounded-lg border border-[#E1E8E4] text-xs font-semibold text-[#17211D] bg-white focus:outline-none focus:border-[#063F2E]"
                     >
                       {SPRAYER_TYPES.map((s) => (
                         <option key={s.id} value={s.id}>
@@ -507,18 +508,18 @@ export default function CropDoctor() {
                 </div>
 
                 {/* Calculation Result Strip */}
-                <div className="p-3 rounded-lg bg-white border border-slate-200 space-y-1.5 text-xs">
+                <div className="p-3 rounded-lg bg-white border border-[#E1E8E4] space-y-1.5 text-xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-600">Total Water Required:</span>
-                    <strong className="text-slate-900">{dosageCalculations.totalWaterLiters} Liters</strong>
+                    <span className="text-[#65736C]">Total Water Required:</span>
+                    <strong className="text-[#17211D]">{dosageCalculations.totalWaterLiters} Liters</strong>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-600">Total Chemical/Bio Required:</span>
-                    <strong className="text-[#005A3C] font-extrabold">{dosageCalculations.totalDoseGrams} Grams / ml</strong>
+                    <span className="text-[#65736C]">Total Chemical/Bio Required:</span>
+                    <strong className="text-[#063F2E] font-bold">{dosageCalculations.totalDoseGrams} Grams / ml</strong>
                   </div>
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-100">
-                    <span className="text-slate-700 font-bold">Dose Per Tank Refill:</span>
-                    <strong className="text-emerald-700 font-black text-sm">
+                  <div className="flex items-center justify-between pt-1 border-t border-[#E1E8E4]">
+                    <span className="text-[#17211D] font-bold">Dose Per Tank Refill:</span>
+                    <strong className="text-[#087F5B] font-extrabold text-sm">
                       {dosageCalculations.dosePerTank} g/ml ({dosageCalculations.refillsNeeded} tanks)
                     </strong>
                   </div>
@@ -527,10 +528,10 @@ export default function CropDoctor() {
 
               {/* Direct Bridge to Outbreak Radar */}
               <div className="pt-2 border-t border-[#E1E8E4] flex items-center justify-between">
-                <span className="text-xs text-[#66736D]">Protect nearby farmers?</span>
+                <span className="text-xs text-[#65736C]">Protect nearby farmers?</span>
                 <button
                   onClick={() => navigate("/outbreak-radar")}
-                  className="bg-[#005A3C] hover:bg-[#003F2B] text-white text-xs font-bold py-2 px-3 rounded-xl transition-colors flex items-center gap-1.5"
+                  className="km-btn-primary py-2 px-3 text-xs flex items-center gap-1.5"
                 >
                   <Layers className="w-3.5 h-3.5" /> Post to Outbreak Radar
                 </button>
@@ -538,51 +539,26 @@ export default function CropDoctor() {
             </div>
           ) : (
             /* Blank state prompting upload */
-            <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm p-8 text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-[#E8F8F1] text-[#005A3C] flex items-center justify-center mx-auto">
+            <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-8 text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-[#DDF5EA] text-[#063F2E] flex items-center justify-center mx-auto">
                 <Stethoscope className="w-8 h-8" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-[#17201C]">Ready for Inspection</h3>
-                <p className="text-xs text-[#66736D] mt-1 max-w-sm mx-auto leading-relaxed">
-                  Upload a photo of your diseased crop leaf on the left or select a reference sample from our visual library to start the AI plant clinic.
+                <h3 className="text-base font-bold text-[#17211D]">Ready for Inspection</h3>
+                <p className="text-xs text-[#65736C] mt-1 max-w-sm mx-auto leading-relaxed">
+                  Upload a photo of your diseased crop leaf on the left to start the AI plant clinic.
                 </p>
               </div>
-              <div className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E1E8E4] text-xs text-[#17201C] text-left space-y-1">
-                <p className="font-bold text-[#005A3C] flex items-center gap-1">
+              <div className="p-3.5 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] text-xs text-[#17211D] text-left space-y-1">
+                <p className="font-bold text-[#063F2E] flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" /> What You Will Receive:
                 </p>
-                <p className="text-[#66736D]">• Exact pathogen identification with severity score</p>
-                <p className="text-[#66736D]">• 3-Stage treatment prescription (Day 1, Day 3, Day 7)</p>
-                <p className="text-[#66736D]">• Tank mix dosage calibrated for your field acreage</p>
+                <p className="text-[#65736C]">• Exact pathogen identification with severity score</p>
+                <p className="text-[#65736C]">• 3-Stage treatment prescription (Day 1, Day 3, Day 7)</p>
+                <p className="text-[#65736C]">• Tank mix dosage calibrated for your field acreage</p>
               </div>
             </div>
           )}
-
-          {/* History Sidebar Card */}
-          <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm p-5 space-y-3">
-            <h3 className="text-xs font-bold text-[#17201C] uppercase tracking-wider">
-              Recent Farm Diagnoses
-            </h3>
-            {history.length === 0 ? (
-              <p className="text-xs text-[#66736D] italic py-2">No previous scans found.</p>
-            ) : (
-              <div className="space-y-2.5">
-                {history.map((h, i) => (
-                  <div
-                    key={i}
-                    className="p-3 rounded-xl bg-[#F7F9F7] border border-[#E1E8E4] text-xs space-y-1 hover:border-[#005A3C] transition-colors"
-                  >
-                    <div className="flex items-center justify-between font-bold text-[#17201C]">
-                      <span>{h.crop}</span>
-                      <span className="text-xs text-[#005A3C] font-semibold">{h.severity ? `${h.severity} Severity` : "Diagnosed"}</span>
-                    </div>
-                    <p className="text-[#66736D] font-medium truncate">{sanitizeDiseaseName(h.disease_name || h.disease)}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>

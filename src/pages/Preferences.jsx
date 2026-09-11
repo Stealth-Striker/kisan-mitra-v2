@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { useOutletContext } from "react-router-dom";
-import { Settings, Save, Loader2, Bell, User, MapPin } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { useOutletContext, Link } from "react-router-dom";
+import { Settings, Save, Loader2, Bell, User, MapPin, Camera, Trash2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useFarm } from "@/lib/farmContext";
 import { LANGUAGES } from "@/lib/translations";
@@ -12,13 +12,16 @@ const UNITS = ["Acre", "Acres", "Hectares", "Bigha", "Cents"];
 
 export default function Preferences() {
   const context = useOutletContext() || {};
-  const { farm, user: farmUser, setUser: setFarmUser, language, setLanguage, refresh } = useFarm();
+  const { farm, user: farmUser, setUser: setFarmUser, setLanguage, refresh } = useFarm();
   const user = context.user || farmUser;
   const setUser = context.setUser || setFarmUser;
   const { toast } = useToast();
+  const photoFileRef = useRef(null);
   const [form, setForm] = useState(null);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [saving, setSaving] = useState(false);
   const [notifPrefs, setNotifPrefs] = useState({ harvest: true, disease: true, market: true, diagnosis: true });
 
@@ -26,6 +29,7 @@ export default function Preferences() {
     if (user) {
       setFullName(user.full_name || "Ramesh");
       setPhone(user.phone || "+91 98765 43210");
+      setAvatarUrl(user.avatar_url || user.photo_url || "");
       if (user.notification_prefs) {
         try {
           const parsed = typeof user.notification_prefs === "string" ? JSON.parse(user.notification_prefs) : user.notification_prefs;
@@ -63,6 +67,47 @@ export default function Preferences() {
     }
   }, [farm]);
 
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp", "image/jpg"].includes(file.type)) {
+      toast({ title: "Invalid file", description: "Please upload a JPG, PNG, or WEBP image.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Profile photo must be less than 5MB.", variant: "destructive" });
+      return;
+    }
+    setUploadingPhoto(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setAvatarUrl(file_url);
+      const updatedUser = await base44.auth.updateMe({ avatar_url: file_url });
+      if (updatedUser && setUser) setUser(updatedUser);
+      refresh();
+      toast({ title: "Photo Updated", description: "Profile photo uploaded and saved successfully." });
+    } catch (err) {
+      toast({ title: "Upload Failed", description: err.message || "Failed to upload photo", variant: "destructive" });
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    setUploadingPhoto(true);
+    try {
+      setAvatarUrl("");
+      const updatedUser = await base44.auth.updateMe({ avatar_url: "" });
+      if (updatedUser && setUser) setUser(updatedUser);
+      refresh();
+      toast({ title: "Photo Removed", description: "Profile photo reset to initials avatar." });
+    } catch (err) {
+      toast({ title: "Failed to remove photo", description: err.message || "Could not remove photo", variant: "destructive" });
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
   const save = async () => {
     setSaving(true);
     try {
@@ -72,11 +117,17 @@ export default function Preferences() {
         await base44.entities.Farm.create(form);
       }
       setLanguage(form.language);
-      const updatedUser = await base44.auth.updateMe({ full_name: fullName, phone, notification_prefs: notifPrefs });
+      const updatedUser = await base44.auth.updateMe({
+        full_name: fullName,
+        phone,
+        avatar_url: avatarUrl,
+        notification_prefs: notifPrefs,
+      });
       if (updatedUser) {
         if (setUser) setUser(updatedUser);
         setFullName(updatedUser.full_name || fullName);
         setPhone(updatedUser.phone || phone);
+        setAvatarUrl(updatedUser.avatar_url || avatarUrl);
       }
       refresh();
       toast({ title: "Preferences Saved Successfully" });
@@ -89,52 +140,120 @@ export default function Preferences() {
   if (!form) {
     return (
       <div className="flex justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-[#005A3C]" />
+        <Loader2 className="w-6 h-6 animate-spin text-[#063F2E]" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto pb-12">
       <SEO 
         title="Settings & Farm Preferences" 
         description="Configure your farm size, crop selection, regional language, and notification alerts."
         canonicalPath="/preferences"
       />
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex items-center justify-between flex-wrap gap-4 border-b border-[#E1E8E4] pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#17201C] flex items-center gap-2.5">
-            <Settings className="w-6 h-6 text-[#005A3C]" />
+          <h1 className="text-2xl font-bold tracking-tight text-[#17211D] flex items-center gap-2.5">
+            <Settings className="w-6 h-6 text-[#063F2E]" />
             Preferences &amp; Settings
           </h1>
-          <p className="text-sm text-[#66736D] mt-1">
+          <p className="text-sm text-[#65736C] mt-1">
             Manage your personal farmer identity, farm parameters, and alert notification settings.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={save}
-          disabled={saving}
-          className="bg-[#005A3C] hover:bg-[#003F2B] text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm cursor-pointer"
-        >
-          {saving ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" /> Saving Changes...
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4" /> Save All Preferences
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/profile"
+            className="px-4 py-2.5 rounded-xl border border-[#E1E8E4] bg-white hover:bg-[#F6F8F5] text-xs font-bold text-[#17211D] transition-colors"
+          >
+            Farmer Profile
+          </Link>
+          <button
+            type="button"
+            onClick={save}
+            disabled={saving}
+            className="km-btn-primary px-5 py-2.5 text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {saving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Saving Changes...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" /> Save All Preferences
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Personal Identity Card */}
-      <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm p-6 space-y-4">
-        <h3 className="font-bold text-[#17201C] text-sm uppercase tracking-wider flex items-center gap-2 border-b border-[#E1E8E4] pb-3">
-          <User className="w-4 h-4 text-[#005A3C]" /> Personal Farmer Identity
+      <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-6 space-y-5">
+        <h3 className="font-bold text-[#17211D] text-sm uppercase tracking-wider flex items-center gap-2 border-b border-[#E1E8E4] pb-3">
+          <User className="w-4 h-4 text-[#063F2E]" /> Personal Farmer Identity
         </h3>
+
+        {/* Profile Photo Upload Zone */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4]">
+          <div className="relative shrink-0">
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt="Farmer Profile"
+                className="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow-xs ring-2 ring-[#DDF5EA]"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-2xl bg-[#087F5B] text-white flex items-center justify-center text-2xl font-bold border-2 border-white shadow-xs ring-2 ring-[#DDF5EA]">
+                {(fullName || "F").charAt(0).toUpperCase()}
+              </div>
+            )}
+            {uploadingPhoto && (
+              <div className="absolute inset-0 bg-black/40 rounded-2xl flex items-center justify-center">
+                <Loader2 className="w-5 h-5 text-white animate-spin" />
+              </div>
+            )}
+          </div>
+
+          <div className="flex-1 min-w-0 space-y-1">
+            <h4 className="text-xs font-bold text-[#17211D]">Profile Photo</h4>
+            <p className="text-[11px] text-[#65736C] leading-relaxed">
+              Upload a clear photo of yourself. JPG, PNG, or WEBP up to 5MB.
+            </p>
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                ref={photoFileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePhotoUpload}
+              />
+              <button
+                type="button"
+                onClick={() => !uploadingPhoto && photoFileRef.current?.click()}
+                disabled={uploadingPhoto}
+                className="px-3 py-1.5 rounded-lg bg-[#DDF5EA] hover:bg-[#cceede] text-[#063F2E] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <Camera className="w-3.5 h-3.5 text-[#087F5B]" />
+                <span>{avatarUrl ? "Change Photo" : "Upload Photo"}</span>
+              </button>
+
+              {avatarUrl && (
+                <button
+                  type="button"
+                  onClick={handleRemovePhoto}
+                  disabled={uploadingPhoto}
+                  className="px-3 py-1.5 rounded-lg border border-[#E1E8E4] hover:bg-red-50 text-red-600 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Remove</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
           <Field label="Farmer Full Name">
             <input
@@ -156,9 +275,9 @@ export default function Preferences() {
       </div>
 
       {/* Farm Profile Card */}
-      <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm p-6 space-y-4">
-        <h3 className="font-bold text-[#17201C] text-sm uppercase tracking-wider flex items-center gap-2 border-b border-[#E1E8E4] pb-3">
-          <MapPin className="w-4 h-4 text-[#005A3C]" /> Farm Information
+      <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-6 space-y-4">
+        <h3 className="font-bold text-[#17211D] text-sm uppercase tracking-wider flex items-center gap-2 border-b border-[#E1E8E4] pb-3">
+          <MapPin className="w-4 h-4 text-[#063F2E]" /> Farm Information
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
           <Field label="Location / Village">
@@ -240,9 +359,9 @@ export default function Preferences() {
       </div>
 
       {/* Notifications Card */}
-      <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm p-6 space-y-4">
-        <h3 className="font-bold text-[#17201C] text-sm uppercase tracking-wider flex items-center gap-2 border-b border-[#E1E8E4] pb-3">
-          <Bell className="w-4 h-4 text-[#005A3C]" /> Notification Preferences
+      <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-6 space-y-4">
+        <h3 className="font-bold text-[#17211D] text-sm uppercase tracking-wider flex items-center gap-2 border-b border-[#E1E8E4] pb-3">
+          <Bell className="w-4 h-4 text-[#063F2E]" /> Notification Preferences
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
           {[
@@ -253,14 +372,14 @@ export default function Preferences() {
           ].map((n) => (
             <label
               key={n.key}
-              className="flex items-center justify-between p-3.5 rounded-xl border border-[#E1E8E4] hover:bg-[#E8F8F1]/40 cursor-pointer transition-colors"
+              className="flex items-center justify-between p-3.5 rounded-xl border border-[#E1E8E4] hover:bg-[#DDF5EA]/30 cursor-pointer transition-colors"
             >
-              <span className="text-sm font-medium text-[#17201C]">{n.label}</span>
+              <span className="text-sm font-medium text-[#17211D]">{n.label}</span>
               <input
                 type="checkbox"
                 checked={notifPrefs[n.key]}
                 onChange={(e) => setNotifPrefs({ ...notifPrefs, [n.key]: e.target.checked })}
-                className="w-4 h-4 accent-[#005A3C] rounded cursor-pointer"
+                className="w-4 h-4 accent-[#063F2E] rounded cursor-pointer"
               />
             </label>
           ))}
@@ -273,7 +392,7 @@ export default function Preferences() {
 function Field({ label, children }) {
   return (
     <div>
-      <label className="text-xs font-semibold text-[#17201C] uppercase tracking-wider mb-1.5 block">{label}</label>
+      <label className="text-xs font-semibold text-[#17211D] uppercase tracking-wider mb-1.5 block">{label}</label>
       {children}
     </div>
   );

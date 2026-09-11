@@ -5,7 +5,8 @@ import { base44 } from "@/api/base44Client";
 import SEO from "@/components/SEO";
 
 export default function AdminDashboard() {
-  const { user } = useOutletContext();
+  const context = useOutletContext() || {};
+  const user = context.user;
   const [metrics, setMetrics] = useState({});
 
   useEffect(() => {

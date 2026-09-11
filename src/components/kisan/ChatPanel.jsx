@@ -931,17 +931,17 @@ export default function ChatPanel({ user, initialPrompt }) {
   speakRef.current = speak;
 
   return (
-    <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm overflow-hidden flex flex-col">
+    <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs overflow-hidden flex flex-col">
       {/* Top Header if messages exist */}
       {messages.length > 0 && (
-        <div className="px-6 py-3.5 border-b border-[#E1E8E4] bg-[#E8F8F1] flex items-center justify-between">
+        <div className="px-6 py-3.5 border-b border-[#E1E8E4] bg-[#DDF5EA] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#005A3C] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-[#063F2E] flex items-center justify-center">
               <Sprout className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-[#17201C]">{t(language, "askKisanMitra")}</h2>
-              <p className="text-[11px] text-[#66736D]">Active conversation</p>
+              <h2 className="text-sm font-semibold text-[#17211D]">{t(language, "askKisanMitra")}</h2>
+              <p className="text-[11px] text-[#65736C]">Active conversation</p>
             </div>
           </div>
           <button
@@ -951,7 +951,7 @@ export default function ChatPanel({ user, initialPrompt }) {
               setMessages([]);
               setConversationId(null);
             }}
-            className="text-xs text-[#005A3C] hover:underline font-medium cursor-pointer"
+            className="text-xs text-[#063F2E] hover:underline font-medium cursor-pointer"
           >
             {t(language, "newConversation")}
           </button>
@@ -962,7 +962,7 @@ export default function ChatPanel({ user, initialPrompt }) {
       {messages.length > 0 && (
         <div
           ref={scrollRef}
-          className="km-chat-scroll flex-1 overflow-y-auto px-6 py-5 space-y-4 max-h-[380px] bg-[#F7F9F7]"
+          className="km-chat-scroll flex-1 overflow-y-auto px-6 py-5 space-y-4 max-h-[380px] bg-[#F6F8F5]"
         >
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -974,7 +974,7 @@ export default function ChatPanel({ user, initialPrompt }) {
                 )}
                 {m.audioUrl ? (
                   <div className="flex flex-col items-end gap-1">
-                    <div className="rounded-2xl rounded-br-md p-2.5 sm:p-3 bg-[#005A3C] text-white shadow-sm border border-[#004A31]">
+                    <div className="rounded-2xl rounded-br-md p-2.5 sm:p-3 bg-[#063F2E] text-white shadow-xs border border-[#032C21]">
                       <VoiceMessageBubble
                         audioUrl={m.audioUrl}
                         content={m.content}
@@ -983,7 +983,7 @@ export default function ChatPanel({ user, initialPrompt }) {
                       />
                     </div>
                     {m.content && m.content !== "Voice Consultation" && m.content !== "ശബ്ദ സന്ദേശം" && (
-                      <span className="text-[11px] text-[#66736D] max-w-[280px] text-right italic px-1">
+                      <span className="text-[11px] text-[#65736C] max-w-[280px] text-right italic px-1">
                         "{m.content}"
                       </span>
                     )}
@@ -992,8 +992,8 @@ export default function ChatPanel({ user, initialPrompt }) {
                   <div
                     className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
                       m.role === "user"
-                        ? "bg-[#005A3C] text-white rounded-br-md"
-                        : "bg-white text-[#17201C] border border-[#E1E8E4] rounded-bl-md shadow-sm"
+                        ? "bg-[#063F2E] text-white rounded-br-md"
+                        : "bg-white text-[#17211D] border border-[#E1E8E4] rounded-bl-md shadow-xs"
                     }`}
                   >
                     {m.content}
@@ -1016,7 +1016,7 @@ export default function ChatPanel({ user, initialPrompt }) {
                       <button
                         type="button"
                         onClick={() => speak(m.content, i)}
-                        className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#E8F8F1] text-[#005A3C] hover:bg-[#d0f0e0] transition-colors cursor-pointer shadow-xs"
+                        className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#DDF5EA] text-[#063F2E] hover:bg-[#c8edd9] transition-colors cursor-pointer shadow-xs"
                         title="Read aloud"
                       >
                         <Volume2 className="w-3.5 h-3.5" />
@@ -1025,17 +1025,17 @@ export default function ChatPanel({ user, initialPrompt }) {
                     )}
                   </div>
                 )}
-                <span className="text-[10px] text-[#66736D] px-1">{formatTime(m.created_date)}</span>
+                <span className="text-[10px] text-[#65736C] px-1">{formatTime(m.created_date)}</span>
               </div>
             </div>
           ))}
           {loading && (
             <div className="flex justify-start">
-              <div className="bg-white border border-[#E1E8E4] rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-3 shadow-sm">
+              <div className="bg-white border border-[#E1E8E4] rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-3 shadow-xs">
                 <span className="flex gap-1 items-center">
-                  <span className="w-2 h-2 rounded-full bg-[#005A3C] animate-bounce [animation-delay:0ms]" />
-                  <span className="w-2 h-2 rounded-full bg-[#005A3C] animate-bounce [animation-delay:150ms]" />
-                  <span className="w-2 h-2 rounded-full bg-[#005A3C] animate-bounce [animation-delay:300ms]" />
+                  <span className="w-2 h-2 rounded-full bg-[#063F2E] animate-bounce [animation-delay:0ms]" />
+                  <span className="w-2 h-2 rounded-full bg-[#063F2E] animate-bounce [animation-delay:150ms]" />
+                  <span className="w-2 h-2 rounded-full bg-[#063F2E] animate-bounce [animation-delay:300ms]" />
                 </span>
               </div>
             </div>
@@ -1046,34 +1046,34 @@ export default function ChatPanel({ user, initialPrompt }) {
       {/* Input section */}
       <div className="p-4 sm:p-5 bg-white">
         {attachedImage && (
-          <div className="mb-3 inline-flex items-center gap-2 bg-[#E8F8F1] border border-[#E1E8E4] rounded-xl p-1.5 pr-3">
+          <div className="mb-3 inline-flex items-center gap-2 bg-[#DDF5EA] border border-[#E1E8E4] rounded-xl p-1.5 pr-3">
             <div className="w-9 h-9 rounded-lg overflow-hidden">
               <Image src={attachedImage} alt="Attached crop leaf sample" className="w-full h-full object-cover" fittingType="fill" />
             </div>
-            <span className="text-xs text-[#005A3C] font-medium">Photo attached</span>
-            <button onClick={() => setAttachedImage(null)} className="text-[#66736D] hover:text-[#17201C] cursor-pointer">
+            <span className="text-xs text-[#063F2E] font-medium">Photo attached</span>
+            <button onClick={() => setAttachedImage(null)} className="text-[#65736C] hover:text-[#17211D] cursor-pointer">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
 
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#005A3C] flex items-center justify-center shrink-0 shadow-sm">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#063F2E] flex items-center justify-center shrink-0 shadow-xs">
             <Sprout className="w-6 h-6 text-white" />
           </div>
 
           {listening ? (
-            <div className="flex-1 flex items-center justify-between gap-2.5 bg-[#E8F8F1] border border-[#005A3C]/30 rounded-xl px-3.5 py-2 animate-pulse">
+            <div className="flex-1 flex items-center justify-between gap-2.5 bg-[#DDF5EA] border border-[#063F2E]/30 rounded-xl px-3.5 py-2 animate-pulse">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#005A3C] animate-ping" />
-                <span className="text-xs sm:text-sm font-semibold text-[#005A3C]">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#063F2E] animate-ping" />
+                <span className="text-xs sm:text-sm font-semibold text-[#063F2E]">
                   Recording Voice Note...
                 </span>
-                <span className="text-xs font-mono font-bold text-[#005A3C] bg-white border border-[#005A3C]/20 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-mono font-bold text-[#063F2E] bg-white border border-[#063F2E]/20 px-2 py-0.5 rounded-full">
                   {fmtDuration(recordingSeconds)}
                 </span>
               </div>
-              <span className="text-[11px] text-[#005A3C]/80 hidden md:inline">Click mic or Stop to send</span>
+              <span className="text-[11px] text-[#063F2E]/80 hidden md:inline">Click mic or Stop to send</span>
             </div>
           ) : (
             <div className="flex-1 relative">
@@ -1089,7 +1089,7 @@ export default function ChatPanel({ user, initialPrompt }) {
                   }
                 }}
                 placeholder={t(language, "askKisanMitra")}
-                className="w-full pl-0 pr-2 py-2 text-sm sm:text-base font-medium text-[#17201C] placeholder:text-[#8C9B93] placeholder:font-normal bg-transparent focus:outline-none"
+                className="w-full pl-0 pr-2 py-2 text-sm sm:text-base font-medium text-[#17211D] placeholder:text-[#65736C]/60 placeholder:font-normal bg-transparent focus:outline-none"
                 disabled={loading}
               />
             </div>
@@ -1106,7 +1106,7 @@ export default function ChatPanel({ user, initialPrompt }) {
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl border border-[#E1E8E4] flex items-center justify-center text-[#66736D] hover:bg-[#E8F8F1] hover:text-[#005A3C] transition-colors cursor-pointer"
+              className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl border border-[#E1E8E4] flex items-center justify-center text-[#65736C] hover:bg-[#DDF5EA] hover:text-[#063F2E] transition-colors cursor-pointer"
               title="Attach crop/leaf photo"
             >
               <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -1116,8 +1116,8 @@ export default function ChatPanel({ user, initialPrompt }) {
               onClick={toggleListening}
               className={`w-10 h-10 sm:w-11 sm:h-11 rounded-2xl border flex items-center justify-center transition-all cursor-pointer ${
                 listening
-                  ? "bg-[#005A3C] border-[#003F2B] text-white animate-pulse shadow-md ring-2 ring-[#005A3C]/40"
-                  : "border-[#E1E8E4] text-[#66736D] hover:bg-[#E8F8F1] hover:text-[#005A3C]"
+                  ? "bg-[#063F2E] border-[#032C21] text-white animate-pulse shadow-xs ring-2 ring-[#063F2E]/40"
+                  : "border-[#E1E8E4] text-[#65736C] hover:bg-[#DDF5EA] hover:text-[#063F2E]"
               }`}
               title={listening ? "Click to stop and send voice message" : "Record voice question"}
             >
@@ -1127,7 +1127,7 @@ export default function ChatPanel({ user, initialPrompt }) {
               type="button"
               onClick={() => send(input)}
               disabled={loading || (!input.trim() && !attachedImage)}
-              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#005A3C] hover:bg-[#003F2B] text-white flex items-center justify-center transition-colors disabled:opacity-40 cursor-pointer shadow-md"
+              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#063F2E] hover:bg-[#032C21] text-white flex items-center justify-center transition-colors disabled:opacity-40 cursor-pointer shadow-xs"
               title="Send question"
             >
               {loading ? (
@@ -1146,7 +1146,7 @@ export default function ChatPanel({ user, initialPrompt }) {
               key={q}
               type="button"
               onClick={() => send(q)}
-              className="text-xs px-3.5 py-1.5 rounded-full border border-[#E1E8E4] bg-white text-[#17201C] hover:border-[#005A3C] hover:text-[#005A3C] hover:bg-[#E8F8F1] transition-all font-medium cursor-pointer"
+              className="text-xs px-3.5 py-1.5 rounded-full border border-[#E1E8E4] bg-white text-[#17211D] hover:border-[#063F2E] hover:text-[#063F2E] hover:bg-[#DDF5EA] transition-all font-medium cursor-pointer"
             >
               {q}
             </button>

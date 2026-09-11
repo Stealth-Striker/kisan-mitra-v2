@@ -91,7 +91,7 @@ export default function AdminMarketData() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-xs font-semibold text-[#17201C] uppercase tracking-wider mb-1 block">
-                Mandi / Market Name
+                Market Name
               </label>
               <input
                 value={form.market}
@@ -183,7 +183,7 @@ export default function AdminMarketData() {
         <table className="w-full text-sm text-left">
           <thead className="bg-[#F7F9F7] text-[#66736D] border-b border-[#E1E8E4]">
             <tr>
-              <th className="p-4 text-xs uppercase tracking-wider font-bold">Market / Mandi</th>
+              <th className="p-4 text-xs uppercase tracking-wider font-bold">Market</th>
               <th className="p-4 text-xs uppercase tracking-wider font-bold hidden sm:table-cell">Crop</th>
               <th className="p-4 text-xs uppercase tracking-wider font-bold">Min</th>
               <th className="p-4 text-xs uppercase tracking-wider font-bold">Max</th>

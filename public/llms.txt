@@ -2,13 +2,13 @@
 > AI-Powered Smart Agricultural Companion & Decision Intelligence Platform for Farmers
 
 ## Overview
-Kisan Mitra is a full-stack agritech progressive web application engineered to bridge technology and agriculture for Indian farmers. The platform combines visual AI plant pathology, geospatial epidemiological surveillance, meteorological harvest window modeling, real-time APMC agricultural mandi pricing, and multilingual voice-driven intelligence.
+Kisan Mitra is a full-stack agritech progressive web application engineered to bridge technology and agriculture for Indian farmers. The platform combines visual AI plant pathology, geospatial epidemiological surveillance, meteorological harvest window modeling, real-time APMC agricultural market pricing, and multilingual voice-driven intelligence.
 
 ## Core Capabilities
 - **Crop Doctor (Plant Pathology AI)**: Multimodal deep learning visual diagnostic tool that accepts leaf and crop photographs, identifies fungal/bacterial/viral infections with confidence metrics, categorizes severity, and outputs localized agrochemical and organic remedy recommendations.
 - **Outbreak Radar (Epidemiological Surveillance)**: Interactive Leaflet geospatial map visualizing verified regional crop pest and disease outbreaks with district-level risk clustering and preventive advisories.
 - **Harvest Guardian (Meteorological & Agronomic Planning)**: Real-time 7-day weather synthesis correlating humidity, precipitation risk, and crop maturity to calculate optimal harvest windows.
-- **Market Copilot (APMC Mandi Price Intelligence)**: Live market pricing engine tracking minimum, maximum, and modal agricultural commodity prices across Indian state markets with historical trend charts.
+- **Market Copilot (APMC Market Price Intelligence)**: Live market pricing engine tracking minimum, maximum, and modal agricultural commodity prices across Indian state markets with historical trend charts.
 - **Multilingual Support**: Real-time voice and text interaction available in English, Hindi (हिंदी), Malayalam (മലയാളം), and Tamil (தமிழ்).
 
 ## Technical Architecture

@@ -2,7 +2,6 @@ import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   LineChart,
-  TrendingUp,
   MapPin,
   Sparkles,
   Truck,
@@ -22,8 +21,10 @@ import {
 import { base44 } from "@/api/base44Client";
 import { useFarm } from "@/lib/farmContext";
 import SEO from "@/components/SEO";
+import MetricCard from "@/components/ui/MetricCard";
+import RecommendationBanner from "@/components/ui/RecommendationBanner";
 
-// Multi-crop market profiles with APMC mandis, historical & forecast rates, and MSP data
+// Multi-crop market profiles with APMC markets, historical & forecast rates, and MSP data
 const CROP_MARKET_DATA = {
   Rice: {
     cropName: "Paddy / Rice (Common & Grade A)",
@@ -34,7 +35,7 @@ const CROP_MARKET_DATA = {
     mandis: [
       {
         id: "ernakulam",
-        name: "Ernakulam Wholesale Mandi",
+        name: "Ernakulam Wholesale Market",
         distanceKm: 14,
         avgPrice: 32.5,
         minPrice: 30.0,
@@ -130,7 +131,7 @@ const CROP_MARKET_DATA = {
       },
       {
         id: "thrissur",
-        name: "Thrissur Central Mandi",
+        name: "Thrissur Central Market",
         distanceKm: 48,
         avgPrice: 31.0,
         minPrice: 26.0,
@@ -267,7 +268,7 @@ const CROP_MARKET_DATA = {
       },
       {
         id: "pollachi",
-        name: "Palakkad / Pollachi Border Mandi",
+        name: "Palakkad / Pollachi Border Market",
         distanceKm: 72,
         avgPrice: 25.5,
         minPrice: 23.5,
@@ -330,7 +331,7 @@ const CROP_MARKET_DATA = {
       },
       {
         id: "kozhikode",
-        name: "Kozhikode Copra Apex Mandi",
+        name: "Kozhikode Copra Apex Market",
         distanceKm: 88,
         avgPrice: 126.0,
         minPrice: 118.0,
@@ -469,7 +470,7 @@ export default function MarketCopilot() {
   // Vehicle data
   const vehicleObj = VEHICLES.find((v) => v.id === selectedVehicle) || VEHICLES[1];
 
-  // Calculate Net Profit Realization for each Mandi
+  // Calculate Net Profit Realization for each Market
   const mandiRealizations = useMemo(() => {
     const qtyKg = Number(saleQuantityQtl) * 100;
     if (qtyKg <= 0) return [];
@@ -479,7 +480,7 @@ export default function MarketCopilot() {
         const grossRevenue = qtyKg * mandi.avgPrice;
         // Two-way transport: round trip distance
         const transportCost = mandi.distanceKm * 2 * vehicleObj.ratePerKm + vehicleObj.loadingBase;
-        // Mandi cess and weighing charge
+        // Market cess and weighing charge
         const mandiCess = (grossRevenue * mandi.cessPct) / 100 + 150; // ₹150 weighing slip
         const netProfit = grossRevenue - transportCost - mandiCess;
         const netPerKg = netProfit / qtyKg;
@@ -521,7 +522,7 @@ export default function MarketCopilot() {
 
     if (diffPerKg >= 0.5) {
       verdict = "excellent";
-      message = "Highly Lucrative: Trader's offer beats your net mandi return without freight hassle!";
+      message = "Highly Lucrative: Trader's offer beats your net market return without freight hassle!";
       badgeColor = "bg-emerald-100 text-[#005A3C] border-emerald-300";
     } else if (diffPerKg >= -0.75 && farmgatePickup) {
       verdict = "acceptable";
@@ -529,7 +530,7 @@ export default function MarketCopilot() {
       badgeColor = "bg-amber-100 text-amber-800 border-amber-300";
     } else {
       verdict = "lowball";
-      message = "Lowball Offer: You would lose significant money compared to selling directly at the mandi!";
+      message = "Lowball Offer: You would lose significant money compared to selling directly at the market!";
       badgeColor = "bg-rose-100 text-rose-800 border-rose-300";
     }
 
@@ -554,7 +555,7 @@ export default function MarketCopilot() {
     const crop = cropData.cropName.split("(")[0].trim();
     const offer = traderEvaluation.offer;
     const counter = traderEvaluation.recommendedCounterPrice;
-    const mandiName = bestMandi?.name || "Local Mandi";
+    const mandiName = bestMandi?.name || "Local Market";
     const mandiRate = bestMandi?.avgPrice || todayAvgPrice;
 
     return {
@@ -583,7 +584,7 @@ export default function MarketCopilot() {
     if (!traderEvaluation) return;
     setAiLoading(true);
     try {
-      const prompt = `A trader offered ₹${traderOfferPrice}/kg for ${saleQuantityQtl} quintals of ${cropData.cropName}. Payment terms: ${paymentTerms}. Today's Mandi average is ₹${todayAvgPrice}/kg. Best mandi net realization is ₹${bestMandi?.netPerKg.toFixed(2)}/kg. Should I accept, counter, or reject? Provide 3 sharp bargaining tips for an Indian farmer.`;
+      const prompt = `A trader offered ₹${traderOfferPrice}/kg for ${saleQuantityQtl} quintals of ${cropData.cropName}. Payment terms: ${paymentTerms}. Today's Market average is ₹${todayAvgPrice}/kg. Best market net realization is ₹${bestMandi?.netPerKg.toFixed(2)}/kg. Should I accept, counter, or reject? Provide 3 sharp bargaining tips for an Indian farmer.`;
       const res = await base44.functions.invoke("askKisanMitra", {
         question: prompt,
         language: counterLang === "ml" ? "Malayalam" : counterLang === "hi" ? "Hindi" : "English",
@@ -591,7 +592,7 @@ export default function MarketCopilot() {
       setAiNegotiationAdvice(res.data?.answer || res.data);
     } catch {
       setAiNegotiationAdvice(
-        `Strategic Negotiation Advice:\n• Current Mandi benchmark is ₹${todayAvgPrice}/kg. The buyer's offer of ₹${traderOfferPrice}/kg is ${traderEvaluation.diffPerKg >= 0 ? "at par with market" : "underpricing your batch by ₹" + Math.abs(traderEvaluation.diffPerKg).toFixed(2) + "/kg"}.\n• Counter firmly at ₹${traderEvaluation.recommendedCounterPrice}/kg citing high grain density and low regional market arrivals.\n• If payment is deferred (${paymentTerms}), strictly demand 25% cash advance before truck weighing.`
+        `Strategic Negotiation Advice:\n• Current Market benchmark is ₹${todayAvgPrice}/kg. The buyer's offer of ₹${traderOfferPrice}/kg is ${traderEvaluation.diffPerKg >= 0 ? "at par with market" : "underpricing your batch by ₹" + Math.abs(traderEvaluation.diffPerKg).toFixed(2) + "/kg"}.\n• Counter firmly at ₹${traderEvaluation.recommendedCounterPrice}/kg citing high grain density and low regional market arrivals.\n• If payment is deferred (${paymentTerms}), strictly demand 25% cash advance before truck weighing.`
       );
     }
     setAiLoading(false);
@@ -649,29 +650,25 @@ export default function MarketCopilot() {
   return (
     <div className="space-y-7 max-w-6xl mx-auto pb-16">
       <SEO
-        title="Market Copilot - Mandi Prices, Freight Calculator & Trader Negotiation"
-        description="Real-time APMC wholesale mandi rates, net profit freight calculator, 15-day price trajectory forecast, trader offer evaluator and MSP safety net."
+        title="Market Copilot - Market Prices, Freight Calculator & Trader Negotiation"
+        description="Real-time APMC wholesale market rates, net profit freight calculator, 15-day price trajectory forecast, trader offer evaluator and MSP safety net."
         canonicalPath="/market-copilot"
       />
 
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E1E8E4] pb-5">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E8F8F1] text-[#005A3C] text-xs font-bold mb-2">
-            <Sparkles className="w-3.5 h-3.5" />
-            AI Mandi Intelligence & Negotiation Suite
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#17201C] flex items-center gap-3">
-            <LineChart className="w-7 h-7 text-[#005A3C]" />
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#17211D] flex items-center gap-3">
+            <LineChart className="w-7 h-7 text-[#063F2E]" />
             Market Copilot
           </h1>
-          <p className="text-sm text-[#66736D] mt-1">
+          <p className="text-sm text-[#65736C] mt-1">
             Real-time wholesale market prices, net freight realization, 15-day price trajectory, and middleman counter-negotiation.
           </p>
         </div>
 
         {/* Commodity / Crop Switcher Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 bg-[#F7F9F7] p-1.5 rounded-2xl border border-[#E1E8E4]">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 bg-[#F6F8F5] p-1.5 rounded-2xl border border-[#E1E8E4]">
           {Object.keys(CROP_MARKET_DATA).map((cropKey) => {
             const isSelected = selectedCrop === cropKey;
             return (
@@ -682,10 +679,10 @@ export default function MarketCopilot() {
                   setAiNegotiationAdvice(null);
                   setTraderOfferPrice("");
                 }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                   isSelected
-                    ? "bg-[#005A3C] text-white shadow-sm"
-                    : "text-[#66736D] hover:text-[#17201C] hover:bg-white"
+                    ? "bg-[#063F2E] text-white shadow-xs"
+                    : "text-[#65736C] hover:text-[#17211D] hover:bg-white"
                 }`}
               >
                 {cropKey}
@@ -695,106 +692,80 @@ export default function MarketCopilot() {
         </div>
       </div>
 
-      {/* Top 3 Metric Cards */}
+      {/* Top 3 Bento Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* 1. Regional APMC Benchmark */}
-        <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition-shadow">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#005A3C] bg-[#E8F8F1] px-2.5 py-1 rounded-full">
-                Mandi Benchmark
-              </span>
-              <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md flex items-center gap-1">
-                <TrendingUp className="w-3.5 h-3.5" /> Live Trend
-              </span>
-            </div>
-            <p className="text-xs text-[#66736D] mt-3">{cropData.cropName}</p>
-            <div className="flex items-baseline gap-2.5 mt-1.5">
-              <span className="text-3xl sm:text-4xl font-black text-[#17201C]">
-                ₹{todayAvgPrice}
-              </span>
-              <span className="text-xs font-bold text-[#66736D]">/ kg</span>
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-[#E1E8E4] flex items-center justify-between text-xs text-[#66736D]">
-            <span>Peak Mandi: <strong className="text-[#17201C] font-semibold">{bestMandi?.name.split(" ")[0]}</strong></span>
-            <span className="font-bold text-[#005A3C]">₹{bestMandi?.avgPrice}/kg</span>
-          </div>
-        </div>
+        <MetricCard
+          label="Market Benchmark"
+          value={`₹${todayAvgPrice}`}
+          unit="/ kg"
+          trend="+2.4% this week"
+          trendType="positive"
+          subtext={`Average across ${cropData.mandis.length} regional markets`}
+        />
 
-        {/* 2. Official Government MSP Floor */}
-        <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition-shadow">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-100 px-2.5 py-1 rounded-full flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-amber-700" /> Govt MSP Floor
-              </span>
-              <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md">
-                Legal Base
-              </span>
-            </div>
-            <p className="text-xs text-[#66736D] mt-3">Central Govt Procurement Rate</p>
-            <div className="flex items-baseline gap-2 mt-1.5">
-              <span className="text-3xl sm:text-4xl font-black text-[#17201C]">
-                ₹{cropData.msp.toFixed(2)}
-              </span>
-              <span className="text-xs font-bold text-[#66736D]">/ kg (₹{(cropData.msp * 100).toLocaleString()}/qtl)</span>
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-[#E1E8E4] text-xs text-[#66736D] flex items-center justify-between">
-            <span>State Bonus Floor:</span>
-            <span className="font-bold text-emerald-700">₹{cropData.stateBonusMsp.toFixed(2)}/kg</span>
-          </div>
-        </div>
+        {/* 2. Peak Market Opportunity */}
+        <MetricCard
+          label="Peak Market Rate"
+          value={`₹${bestMandi?.avgPrice.toFixed(2)}`}
+          unit="/ kg"
+          trend={`${bestMandi?.trendPct > 0 ? "+" : ""}${bestMandi?.trendPct}% trend`}
+          trendType={bestMandi?.trendPct >= 0 ? "positive" : "negative"}
+          subtext={`${bestMandi?.name} (${bestMandi?.distanceKm} km)`}
+          icon={MapPin}
+        />
 
-        {/* 3. Market Momentum & Sell Recommendation */}
-        <div className="bg-gradient-to-br from-[#E8F8F1] via-[#F2FAF6] to-white border border-[#005A3C]/30 border-l-4 border-l-[#005A3C] rounded-2xl p-5 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-[#005A3C] flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-[#005A3C]" /> Sell Timing Signal
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-wide bg-[#005A3C] text-white px-2.5 py-0.5 rounded-full">
-                High Confidence
-              </span>
-            </div>
-            <h2 className="text-sm font-bold text-[#17201C] mt-2.5 leading-snug">
-              {cropData.peakRecommendation}
-            </h2>
-          </div>
-          <div className="mt-4 pt-3 border-t border-[#005A3C]/15 flex items-center gap-3 text-xs font-semibold text-[#005A3C]">
-            <span className="flex items-center gap-1">✓ Low Regional Inflow</span>
-            <span className="flex items-center gap-1">✓ Bullish Momentum</span>
-          </div>
-        </div>
+        {/* 3. Net In-Pocket Realization */}
+        <MetricCard
+          label="Est. Net In-Pocket Return"
+          value={`₹${Math.round(bestMandi?.netProfit || 0).toLocaleString()}`}
+          unit={`/ ${saleQuantityQtl * 100} kg`}
+          trend={`Effective ₹${bestMandi?.netPerKg.toFixed(2)}/kg`}
+          trendType="neutral"
+          subtext={`After freight (-₹${Math.round(bestMandi?.transportCost || 0)}) & cess`}
+          icon={Truck}
+        />
       </div>
 
+      {/* Standardized 3-Step Cognitive Recommendation Banner */}
+      <RecommendationBanner
+        headline={`Market Strategy: ${cropData.cropName.split("(")[0].trim()}`}
+        whyItMatters={cropData.peakRecommendation}
+        recommendedAction={`Target ₹${bestMandi?.avgPrice.toFixed(2)}/kg or higher at ${bestMandi?.name}. Maintain grain moisture under standard limit before transit.`}
+        ctaText="Calculate Transport"
+        onCtaClick={() => {
+          const el = document.getElementById("net-freight-calculator");
+          if (el) el.scrollIntoView({ behavior: "smooth" });
+        }}
+        variant="primary"
+      />
+
       {/* 15-Day Interactive SVG Price Trajectory Chart */}
-      <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm p-5 sm:p-6 space-y-4">
+      <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-5 sm:p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E1E8E4] pb-4">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-[#17201C]">
+              <h2 className="text-base font-bold text-[#17211D]">
                 15-Day Price Trajectory & Forecast
               </h2>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-[#E8F8F1] text-[#005A3C]">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-[#DDF5EA] text-[#063F2E]">
                 {selectedCrop}
               </span>
             </div>
-            <p className="text-xs text-[#66736D] mt-0.5">
+            <p className="text-xs text-[#65736C] mt-0.5">
               Past 7-day arrivals vs next 7-day predictive peak window. Hover any node for details.
             </p>
           </div>
 
           <div className="flex items-center gap-4 text-xs">
-            <span className="flex items-center gap-1.5 text-[#17201C] font-semibold">
-              <span className="w-3 h-3 rounded-full bg-[#005A3C]"></span> Actual Rates
+            <span className="flex items-center gap-1.5 text-[#17211D] font-semibold">
+              <span className="w-3 h-3 rounded-full bg-[#063F2E]"></span> Actual Rates
             </span>
-            <span className="flex items-center gap-1.5 text-emerald-600 font-semibold">
-              <span className="w-3 h-1 border-t-2 border-dashed border-[#005A3C]"></span> Projected
+            <span className="flex items-center gap-1.5 text-[#087F5B] font-semibold">
+              <span className="w-3 h-1 border-t-2 border-dashed border-[#087F5B]"></span> Projected
             </span>
-            <span className="flex items-center gap-1.5 text-amber-700 font-semibold">
-              <span className="w-3 h-1 border-t-2 border-dashed border-amber-600"></span> MSP Floor
+            <span className="flex items-center gap-1.5 text-[#92540C] font-semibold">
+              <span className="w-3 h-1 border-t-2 border-dashed border-[#E99B16]"></span> MSP Floor
             </span>
           </div>
         </div>
@@ -807,9 +778,8 @@ export default function MarketCopilot() {
           >
             <defs>
               <linearGradient id="copilotGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#005A3C" stopOpacity="0.25" />
-                <stop offset="80%" stopColor="#005A3C" stopOpacity="0.02" />
-                <stop offset="100%" stopColor="#005A3C" stopOpacity="0" />
+                <stop offset="0%" stopColor="#087F5B" stopOpacity="0.20" />
+                <stop offset="100%" stopColor="#087F5B" stopOpacity="0.01" />
               </linearGradient>
             </defs>
 
@@ -824,7 +794,7 @@ export default function MarketCopilot() {
                     y1={y}
                     x2={chartWidth - chartPadding.right}
                     y2={y}
-                    stroke="#E5EAE7"
+                    stroke="#E1E8E4"
                     strokeDasharray="4,4"
                   />
                   <text
@@ -832,7 +802,7 @@ export default function MarketCopilot() {
                     y={y + 3}
                     textAnchor="end"
                     fontSize="10"
-                    fill="#87958F"
+                    fill="#65736C"
                     fontWeight="500"
                   >
                     ₹{val.toFixed(1)}
@@ -847,7 +817,7 @@ export default function MarketCopilot() {
               y1={mspY}
               x2={chartWidth - chartPadding.right}
               y2={mspY}
-              stroke="#D97706"
+              stroke="#E99B16"
               strokeWidth="1.8"
               strokeDasharray="6,4"
             />
@@ -856,7 +826,7 @@ export default function MarketCopilot() {
               y={mspY - 6}
               textAnchor="end"
               fontSize="10"
-              fill="#B45309"
+              fill="#92540C"
               fontWeight="bold"
             >
               Govt MSP Floor: ₹{cropData.msp.toFixed(2)}/kg
@@ -866,7 +836,7 @@ export default function MarketCopilot() {
             <path d={areaD} fill="url(#copilotGradient)" />
 
             {/* The Main Line */}
-            <path d={pathD} fill="none" stroke="#005A3C" strokeWidth="3.2" strokeLinecap="round" />
+            <path d={pathD} fill="none" stroke="#087F5B" strokeWidth="3" strokeLinecap="round" />
 
             {/* Data Points */}
             {points.map((pt, idx) => {
@@ -886,7 +856,7 @@ export default function MarketCopilot() {
                       cx={pt.x}
                       cy={pt.y}
                       r="12"
-                      fill="#005A3C"
+                      fill="#063F2E"
                       fillOpacity="0.2"
                       className="animate-pulse"
                     />
@@ -894,9 +864,9 @@ export default function MarketCopilot() {
                   <circle
                     cx={pt.x}
                     cy={pt.y}
-                    r={isHovered ? "6.5" : isToday ? "5.5" : "3.8"}
-                    fill={isToday ? "#005A3C" : isForecast ? "#34D399" : "#FFFFFF"}
-                    stroke="#005A3C"
+                    r={isHovered ? "6" : isToday ? "5" : "3.5"}
+                    fill={isToday ? "#063F2E" : isForecast ? "#16A36F" : "#FFFFFF"}
+                    stroke="#063F2E"
                     strokeWidth={isToday ? "2.5" : "2"}
                     className="transition-all duration-150"
                   />
@@ -906,7 +876,7 @@ export default function MarketCopilot() {
                     y={chartHeight - 10}
                     textAnchor="middle"
                     fontSize="9.5"
-                    fill={isToday ? "#005A3C" : "#66736D"}
+                    fill={isToday ? "#063F2E" : "#65736C"}
                     fontWeight={isToday ? "bold" : "500"}
                   >
                     {pt.day}
@@ -919,13 +889,13 @@ export default function MarketCopilot() {
           {/* Interactive Tooltip Card */}
           {hoveredPoint && (
             <div
-              className="absolute top-2 left-1/2 -translate-x-1/2 bg-[#17201C] text-white px-3.5 py-2 rounded-xl text-xs shadow-lg pointer-events-none flex items-center gap-3 border border-white/10"
+              className="absolute top-2 left-1/2 -translate-x-1/2 bg-[#17211D] text-white px-3.5 py-2 rounded-xl text-xs shadow-lg pointer-events-none flex items-center gap-3 border border-white/10"
             >
               <div>
                 <span className="text-[10px] text-zinc-400 uppercase tracking-wider block">
                   {hoveredPoint.day} ({hoveredPoint.type})
                 </span>
-                <span className="text-sm font-extrabold text-emerald-400">
+                <span className="text-sm font-bold text-emerald-400">
                   ₹{hoveredPoint.price.toFixed(2)}/kg
                 </span>
               </div>
@@ -942,32 +912,32 @@ export default function MarketCopilot() {
         </div>
       </div>
 
-      {/* Two-Column Section: True Net Mandi Freight Calculator & Trader Offer Evaluator */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-7">
-        {/* Left Column (7 Cols): Multi-Mandi Freight & In-Pocket Profit Calculator */}
+      {/* Two-Column Section: True Net Market Freight Calculator & Trader Offer Evaluator */}
+      <div id="net-freight-calculator" className="grid grid-cols-1 lg:grid-cols-12 gap-7">
+        {/* Left Column (7 Cols): Multi-Market Freight & In-Pocket Profit Calculator */}
         <div className="lg:col-span-7 space-y-5">
-          <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm p-5 sm:p-6 space-y-5">
+          <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-5 sm:p-6 space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E1E8E4] pb-4">
               <div>
-                <h3 className="text-base font-bold text-[#17201C] flex items-center gap-2">
-                  <Calculator className="w-5 h-5 text-[#005A3C]" />
-                  Net Mandi Freight & Profit Realization
+                <h3 className="text-base font-bold text-[#17211D] flex items-center gap-2">
+                  <Calculator className="w-5 h-5 text-[#063F2E]" />
+                  Net Market Freight & Profit Realization
                 </h3>
-                <p className="text-xs text-[#66736D] mt-0.5">
-                  Never lose profit to diesel costs. Calculate true in-pocket earnings after transport & mandi fees.
+                <p className="text-xs text-[#65736C] mt-0.5">
+                  Calculate true in-pocket earnings after transport & market fees.
                 </p>
               </div>
-              <span className="text-xs font-bold text-[#005A3C] bg-[#E8F8F1] px-3 py-1 rounded-full self-start sm:self-auto">
+              <span className="text-xs font-bold text-[#063F2E] bg-[#DDF5EA] px-3 py-1 rounded-full self-start sm:self-auto">
                 Automatic Ranking
               </span>
             </div>
 
             {/* Inputs: Quantity & Transport Vehicle */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#F7F9F7] p-4 rounded-xl border border-[#E1E8E4]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#F6F8F5] p-4 rounded-xl border border-[#E1E8E4]">
               <div>
-                <label className="text-xs font-bold text-[#17201C] block mb-1.5 flex items-center justify-between">
+                <label className="text-xs font-bold text-[#17211D] block mb-1.5 flex items-center justify-between">
                   <span>Batch Quantity to Sell</span>
-                  <span className="text-[#005A3C] font-semibold">{saleQuantityQtl * 100} kg</span>
+                  <span className="text-[#063F2E] font-semibold">{saleQuantityQtl * 100} kg</span>
                 </label>
                 <div className="relative">
                   <input
@@ -976,22 +946,22 @@ export default function MarketCopilot() {
                     max="1000"
                     value={saleQuantityQtl}
                     onChange={(e) => setSaleQuantityQtl(Math.max(1, Number(e.target.value) || 1))}
-                    className="w-full pl-3 pr-16 py-2 rounded-xl border border-[#E1E8E4] text-sm font-bold text-[#17201C] focus:outline-none focus:ring-2 focus:ring-[#005A3C]/20 focus:border-[#005A3C] bg-white"
+                    className="w-full pl-3 pr-16 py-2 rounded-xl border border-[#E1E8E4] text-sm font-bold text-[#17211D] focus:outline-none focus:ring-2 focus:ring-[#063F2E]/20 focus:border-[#063F2E] bg-white"
                   />
-                  <span className="absolute right-3 top-2 text-xs font-bold text-[#66736D]">
+                  <span className="absolute right-3 top-2 text-xs font-bold text-[#65736C]">
                     Quintals
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-[#17201C] block mb-1.5 flex items-center gap-1.5">
-                  <Truck className="w-3.5 h-3.5 text-[#005A3C]" /> Transport Vehicle
+                <label className="text-xs font-bold text-[#17211D] block mb-1.5 flex items-center gap-1.5">
+                  <Truck className="w-3.5 h-3.5 text-[#063F2E]" /> Transport Vehicle
                 </label>
                 <select
                   value={selectedVehicle}
                   onChange={(e) => setSelectedVehicle(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-[#E1E8E4] text-xs font-bold text-[#17201C] focus:outline-none focus:ring-2 focus:ring-[#005A3C]/20 focus:border-[#005A3C] bg-white"
+                  className="w-full px-3 py-2 rounded-xl border border-[#E1E8E4] text-xs font-bold text-[#17211D] focus:outline-none focus:ring-2 focus:ring-[#063F2E]/20 focus:border-[#063F2E] bg-white"
                 >
                   {VEHICLES.map((v) => (
                     <option key={v.id} value={v.id}>
@@ -1002,7 +972,7 @@ export default function MarketCopilot() {
               </div>
             </div>
 
-            {/* Mandi Cards List */}
+            {/* Market Cards List */}
             <div className="space-y-3">
               {mandiRealizations.map((mandi, idx) => {
                 const isTopNet = idx === 0;
@@ -1015,51 +985,51 @@ export default function MarketCopilot() {
                     key={mandi.id}
                     className={`p-4 rounded-xl border transition-all ${
                       isTopNet
-                        ? "bg-[#E8F8F1]/60 border-[#005A3C] shadow-sm ring-1 ring-[#005A3C]/30"
-                        : "bg-white border-[#E1E8E4] hover:border-[#B5C9BE]"
+                        ? "bg-[#DDF5EA]/60 border-[#063F2E] shadow-xs ring-1 ring-[#063F2E]/30"
+                        : "bg-white border-[#E1E8E4] hover:border-[#087F5B]/30"
                     }`}
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-[#17201C] flex items-center gap-1.5">
-                            <MapPin className="w-4 h-4 text-[#005A3C]" />
+                          <span className="text-sm font-bold text-[#17211D] flex items-center gap-1.5">
+                            <MapPin className="w-4 h-4 text-[#063F2E]" />
                             {mandi.name}
                           </span>
                           {isTopNet && (
-                            <span className="bg-[#005A3C] text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">
+                            <span className="bg-[#063F2E] text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
                               Best Net Profit
                             </span>
                           )}
                         </div>
 
-                        <div className="flex items-center gap-3 text-xs text-[#66736D]">
-                          <span>Distance: <strong className="text-[#17201C]">{mandi.distanceKm} km</strong></span>
+                        <div className="flex items-center gap-3 text-xs text-[#65736C]">
+                          <span>Distance: <strong className="text-[#17211D]">{mandi.distanceKm} km</strong></span>
                           <span>•</span>
-                          <span>Mandi Rate: <strong className="text-[#17201C]">₹{mandi.avgPrice}/kg</strong></span>
+                          <span>Market Rate: <strong className="text-[#17211D]">₹{mandi.avgPrice}/kg</strong></span>
                           <span>•</span>
-                          <span>Arrivals: <strong className="text-[#17201C]">{mandi.arrivalTons} T/day</strong></span>
+                          <span>Arrivals: <strong className="text-[#17211D]">{mandi.arrivalTons} T/day</strong></span>
                         </div>
                       </div>
 
                       <div className="text-right sm:min-w-[140px]">
-                        <span className="text-xs text-[#66736D] block">True In-Pocket Return</span>
-                        <span className={`text-lg font-black ${isTopNet ? "text-[#005A3C]" : "text-[#17201C]"}`}>
+                        <span className="text-xs text-[#65736C] block">True In-Pocket Return</span>
+                        <span className={`text-lg font-bold ${isTopNet ? "text-[#063F2E]" : "text-[#17211D]"}`}>
                           ₹{Math.round(mandi.netProfit).toLocaleString()}
                         </span>
-                        <span className="text-[11px] font-bold text-[#66736D] block">
+                        <span className="text-[11px] font-semibold text-[#65736C] block">
                           (Effective ₹{mandi.netPerKg.toFixed(2)}/kg)
                         </span>
                       </div>
                     </div>
 
                     {/* Breakdown Strip */}
-                    <div className="mt-3 pt-2.5 border-t border-[#E1E8E4]/60 flex flex-wrap items-center justify-between text-[11px] text-[#66736D]">
+                    <div className="mt-3 pt-2.5 border-t border-[#E1E8E4]/60 flex flex-wrap items-center justify-between text-[11px] text-[#65736C]">
                       <span>Gross: ₹{Math.round(mandi.grossRevenue).toLocaleString()}</span>
                       <span>Est. Freight: -₹{Math.round(mandi.transportCost).toLocaleString()}</span>
-                      <span>Mandi Cess: -₹{Math.round(mandi.mandiCess).toLocaleString()}</span>
+                      <span>Market Cess: -₹{Math.round(mandi.mandiCess).toLocaleString()}</span>
                       {isTopNet ? (
-                        <span className="font-bold text-[#005A3C]">
+                        <span className="font-bold text-[#063F2E]">
                           +₹{Math.round(profitDiff).toLocaleString()} extra vs 2nd choice
                         </span>
                       ) : (
@@ -1077,13 +1047,13 @@ export default function MarketCopilot() {
 
         {/* Right Column (5 Cols): Trader Offer Evaluator & Negotiation Pitch */}
         <div className="lg:col-span-5 space-y-5">
-          <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm p-5 sm:p-6 space-y-4">
+          <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-5 sm:p-6 space-y-4">
             <div className="border-b border-[#E1E8E4] pb-3">
-              <h3 className="text-base font-bold text-[#17201C] flex items-center gap-2">
-                <Scale className="w-5 h-5 text-[#005A3C]" />
+              <h3 className="text-base font-bold text-[#17211D] flex items-center gap-2">
+                <Scale className="w-5 h-5 text-[#063F2E]" />
                 Trader Offer Evaluator
               </h3>
-              <p className="text-xs text-[#66736D] mt-0.5">
+              <p className="text-xs text-[#65736C] mt-0.5">
                 Got an offer from a middleman or mill agent? Check if it's fair before shaking hands.
               </p>
             </div>
@@ -1091,31 +1061,31 @@ export default function MarketCopilot() {
             {/* Inputs: Price & Terms */}
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-bold text-[#17201C] block mb-1">
+                <label className="text-xs font-bold text-[#17211D] block mb-1">
                   Trader's Offer (₹ / kg)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-sm font-bold text-[#66736D]">₹</span>
+                  <span className="absolute left-3.5 top-2.5 text-sm font-bold text-[#65736C]">₹</span>
                   <input
                     type="number"
                     step="0.5"
                     value={traderOfferPrice}
                     onChange={(e) => setTraderOfferPrice(e.target.value)}
-                    placeholder={`e.g. ${(todayAvgPrice * 0.95).toFixed(1)}`}
-                    className="w-full pl-8 pr-3 py-2 rounded-xl border border-[#E1E8E4] text-sm font-bold text-[#17201C] focus:outline-none focus:ring-2 focus:ring-[#005A3C]/20 focus:border-[#005A3C]"
+                    placeholder={`e.g. ${(parseFloat(todayAvgPrice) * 0.95).toFixed(1)}`}
+                    className="w-full pl-8 pr-3 py-2 rounded-xl border border-[#E1E8E4] text-sm font-bold text-[#17211D] focus:outline-none focus:ring-2 focus:ring-[#063F2E]/20 focus:border-[#063F2E]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-[#17201C] block mb-1">
+                  <label className="text-xs font-bold text-[#17211D] block mb-1">
                     Payment Terms
                   </label>
                   <select
                     value={paymentTerms}
                     onChange={(e) => setPaymentTerms(e.target.value)}
-                    className="w-full px-2.5 py-2 rounded-xl border border-[#E1E8E4] text-xs font-semibold text-[#17201C] focus:outline-none focus:ring-2 focus:ring-[#005A3C]/20 focus:border-[#005A3C]"
+                    className="w-full px-2.5 py-2 rounded-xl border border-[#E1E8E4] text-xs font-semibold text-[#17211D] focus:outline-none focus:ring-2 focus:ring-[#063F2E]/20 focus:border-[#063F2E]"
                   >
                     <option value="cash">Spot Cash</option>
                     <option value="credit_7">7-Day Credit</option>
@@ -1124,7 +1094,7 @@ export default function MarketCopilot() {
                 </div>
 
                 <div className="flex flex-col justify-center">
-                  <label className="text-xs font-bold text-[#17201C] block mb-1">
+                  <label className="text-xs font-bold text-[#17211D] block mb-1">
                     Loading Location
                   </label>
                   <button
@@ -1132,8 +1102,8 @@ export default function MarketCopilot() {
                     onClick={() => setFarmgatePickup(!farmgatePickup)}
                     className={`py-2 px-3 rounded-xl border text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 ${
                       farmgatePickup
-                        ? "bg-[#E8F8F1] border-[#005A3C] text-[#005A3C]"
-                        : "bg-[#F7F9F7] border-[#E1E8E4] text-[#66736D]"
+                        ? "bg-[#DDF5EA] border-[#063F2E] text-[#063F2E]"
+                        : "bg-[#F6F8F5] border-[#E1E8E4] text-[#65736C]"
                     }`}
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
@@ -1147,16 +1117,16 @@ export default function MarketCopilot() {
             {traderEvaluation && (
               <div className={`p-4 rounded-xl border space-y-2.5 ${traderEvaluation.badgeColor}`}>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black uppercase tracking-wider">
+                  <span className="text-xs font-bold uppercase tracking-wider">
                     {traderEvaluation.verdict === "excellent"
                       ? "Favorable Deal"
                       : traderEvaluation.verdict === "acceptable"
                       ? "Fair Compromise"
                       : "Unfavorable Lowball"}
                   </span>
-                  <span className="text-xs font-extrabold">
+                  <span className="text-xs font-bold">
                     {traderEvaluation.diffTotal >= 0
-                      ? `+₹${Math.round(traderEvaluation.diffTotal).toLocaleString()} vs Mandi`
+                      ? `+₹${Math.round(traderEvaluation.diffTotal).toLocaleString()} vs Market`
                       : `-₹${Math.abs(Math.round(traderEvaluation.diffTotal)).toLocaleString()} Loss`}
                   </span>
                 </div>
@@ -1166,7 +1136,7 @@ export default function MarketCopilot() {
 
                 <div className="pt-2 border-t border-current/20 flex items-center justify-between text-xs font-bold">
                   <span>Recommended Counter-Offer:</span>
-                  <span className="text-sm font-black">₹{traderEvaluation.recommendedCounterPrice}/kg</span>
+                  <span className="text-sm font-extrabold">₹{traderEvaluation.recommendedCounterPrice}/kg</span>
                 </div>
               </div>
             )}
@@ -1175,19 +1145,19 @@ export default function MarketCopilot() {
             {negotiationScripts && (
               <div className="space-y-2 pt-2 border-t border-[#E1E8E4]">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#17201C] flex items-center gap-1.5">
-                    <MessageSquare className="w-3.5 h-3.5 text-[#005A3C]" />
+                  <span className="text-xs font-bold text-[#17211D] flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5 text-[#063F2E]" />
                     Counter-Offer Pitch
                   </span>
-                  <div className="flex items-center gap-1 bg-[#F7F9F7] p-0.5 rounded-lg border border-[#E1E8E4]">
+                  <div className="flex items-center gap-1 bg-[#F6F8F5] p-0.5 rounded-lg border border-[#E1E8E4]">
                     {["en", "ml", "hi"].map((lang) => (
                       <button
                         key={lang}
                         onClick={() => setCounterLang(lang)}
                         className={`px-2 py-0.5 text-[10px] font-bold rounded ${
                           counterLang === lang
-                            ? "bg-[#005A3C] text-white"
-                            : "text-[#66736D] hover:text-[#17201C]"
+                            ? "bg-[#063F2E] text-white"
+                            : "text-[#65736C] hover:text-[#17211D]"
                         }`}
                       >
                         {lang === "en" ? "EN" : lang === "ml" ? "മലയാളം" : "हिंदी"}
@@ -1196,14 +1166,14 @@ export default function MarketCopilot() {
                   </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[#F7F9F7] border border-[#E1E8E4] text-xs text-[#17201C] leading-relaxed font-normal">
+                <div className="p-3 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] text-xs text-[#17211D] leading-relaxed font-normal">
                   {negotiationScripts[counterLang]}
                 </div>
 
                 <div className="flex items-center gap-2">
                   <button
                     onClick={copyCounterScript}
-                    className="flex-1 py-2 px-3 rounded-xl border border-[#E1E8E4] bg-white hover:bg-[#F7F9F7] text-xs font-bold text-[#17201C] transition-colors flex items-center justify-center gap-1.5"
+                    className="flex-1 py-2 px-3 rounded-xl border border-[#E1E8E4] bg-white hover:bg-[#F6F8F5] text-xs font-bold text-[#17211D] transition-colors flex items-center justify-center gap-1.5"
                   >
                     {copiedScript ? (
                       <>
@@ -1211,14 +1181,14 @@ export default function MarketCopilot() {
                       </>
                     ) : (
                       <>
-                        <Copy className="w-3.5 h-3.5 text-[#66736D]" /> Copy Script
+                        <Copy className="w-3.5 h-3.5 text-[#65736C]" /> Copy Script
                       </>
                     )}
                   </button>
 
                   <button
                     onClick={shareViaWhatsApp}
-                    className="flex-1 py-2 px-3 rounded-xl bg-[#25D366] hover:bg-[#1EBE5D] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                    className="flex-1 py-2 px-3 rounded-xl bg-[#16A36F] hover:bg-[#087F5B] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-xs"
                   >
                     <Share2 className="w-3.5 h-3.5" /> Send WhatsApp
                   </button>
@@ -1231,7 +1201,7 @@ export default function MarketCopilot() {
               <button
                 onClick={handleAskAiNegotiator}
                 disabled={aiLoading || !traderOfferPrice}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#005A3C] hover:bg-[#003F2B] text-white text-xs font-bold transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
+                className="w-full py-2.5 px-4 rounded-xl bg-[#063F2E] hover:bg-[#032C21] text-white text-xs font-bold transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-xs"
               >
                 {aiLoading ? (
                   <>
@@ -1245,11 +1215,11 @@ export default function MarketCopilot() {
               </button>
 
               {aiNegotiationAdvice && (
-                <div className="mt-3 p-3.5 rounded-xl bg-[#E8F8F1] border border-[#005A3C]/20 text-xs text-[#17201C] leading-relaxed space-y-1.5 animate-in fade-in duration-200">
-                  <p className="font-bold text-[#005A3C] flex items-center gap-1.5">
+                <div className="mt-3 p-3.5 rounded-xl bg-[#DDF5EA] border border-[#063F2E]/20 text-xs text-[#17211D] leading-relaxed space-y-1.5 animate-in fade-in duration-200">
+                  <p className="font-bold text-[#063F2E] flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5" /> AI Negotiator Counsel:
                   </p>
-                  <p className="whitespace-pre-line text-[#17201C]">{aiNegotiationAdvice}</p>
+                  <p className="whitespace-pre-line text-[#17211D]">{aiNegotiationAdvice}</p>
                 </div>
               )}
             </div>
@@ -1260,47 +1230,47 @@ export default function MarketCopilot() {
       {/* Bottom Section: MSP Safety Net, Quality Standards & Price Alert Simulator */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
         {/* Government Procurement & Quality Specs */}
-        <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm p-5 sm:p-6 space-y-4">
+        <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-5 sm:p-6 space-y-4">
           <div className="flex items-center gap-2.5 border-b border-[#E1E8E4] pb-3">
-            <Building className="w-5 h-5 text-[#005A3C]" />
+            <Building className="w-5 h-5 text-[#063F2E]" />
             <div>
-              <h3 className="text-sm font-bold text-[#17201C]">
+              <h3 className="text-sm font-bold text-[#17211D]">
                 Govt MSP Safety Net & Procurement Depots
               </h3>
-              <p className="text-xs text-[#66736D]">
+              <p className="text-xs text-[#65736C]">
                 Sell at guaranteed minimum prices if open market rates fall below standard.
               </p>
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E1E8E4] space-y-2">
+          <div className="p-3.5 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-[#66736D] font-medium">Designated Depot:</span>
-              <span className="font-bold text-[#17201C]">{cropData.govtCenter}</span>
+              <span className="text-[#65736C] font-medium">Designated Depot:</span>
+              <span className="font-bold text-[#17211D]">{cropData.govtCenter}</span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-[#66736D] font-medium">Procurement Rate:</span>
-              <span className="font-extrabold text-[#005A3C]">
+              <span className="text-[#65736C] font-medium">Procurement Rate:</span>
+              <span className="font-bold text-[#063F2E]">
                 ₹{cropData.stateBonusMsp.toFixed(2)}/kg (incl. State Bonus)
               </span>
             </div>
           </div>
 
           <div className="space-y-2">
-            <h4 className="text-xs font-bold text-[#17201C] flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-[#005A3C]" />
+            <h4 className="text-xs font-bold text-[#17211D] flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-[#063F2E]" />
               Mandatory Quality Acceptance Criteria
             </h4>
-            <p className="text-xs text-[#66736D] leading-relaxed bg-[#E8F8F1]/50 p-3 rounded-xl border border-[#005A3C]/15">
+            <p className="text-xs text-[#65736C] leading-relaxed bg-[#DDF5EA]/50 p-3 rounded-xl border border-[#063F2E]/15">
               {cropData.qualitySpecs}
             </p>
           </div>
 
           <div className="pt-2 flex items-center justify-between text-xs">
-            <span className="text-[#66736D]">Harvest moisture test required?</span>
+            <span className="text-[#65736C]">Harvest moisture test required?</span>
             <Link
               to="/harvest-guardian"
-              className="text-[#005A3C] hover:underline font-bold flex items-center gap-1"
+              className="text-[#063F2E] hover:underline font-bold flex items-center gap-1"
             >
               Open Harvest Guardian <ArrowRight className="w-3.5 h-3.5" />
             </Link>
@@ -1308,40 +1278,40 @@ export default function MarketCopilot() {
         </div>
 
         {/* Target Price Alert Simulator */}
-        <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm p-5 sm:p-6 space-y-4">
+        <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-5 sm:p-6 space-y-4">
           <div className="flex items-center gap-2.5 border-b border-[#E1E8E4] pb-3">
-            <Bell className="w-5 h-5 text-[#005A3C]" />
+            <Bell className="w-5 h-5 text-[#063F2E]" />
             <div>
-              <h3 className="text-sm font-bold text-[#17201C]">
+              <h3 className="text-sm font-bold text-[#17211D]">
                 Target Price Alert Monitor
               </h3>
-              <p className="text-xs text-[#66736D]">
-                Get notified when mandi rates cross your profit target threshold.
+              <p className="text-xs text-[#65736C]">
+                Get notified when market rates cross your profit target threshold.
               </p>
             </div>
           </div>
 
           <form onSubmit={handleSetAlert} className="space-y-3">
             <div>
-              <label className="text-xs font-bold text-[#17201C] block mb-1">
+              <label className="text-xs font-bold text-[#17211D] block mb-1">
                 Target Selling Price for {selectedCrop} (₹ / kg)
               </label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <span className="absolute left-3.5 top-2.5 text-sm font-bold text-[#66736D]">₹</span>
+                  <span className="absolute left-3.5 top-2.5 text-sm font-bold text-[#65736C]">₹</span>
                   <input
                     type="number"
                     step="0.5"
                     value={alertTargetPrice}
                     onChange={(e) => setAlertTargetPrice(e.target.value)}
-                    placeholder={`e.g. ${(todayAvgPrice * 1.08).toFixed(1)}`}
-                    className="w-full pl-8 pr-3 py-2 rounded-xl border border-[#E1E8E4] text-sm font-bold text-[#17201C] focus:outline-none focus:ring-2 focus:ring-[#005A3C]/20 focus:border-[#005A3C]"
+                    placeholder={`e.g. ${(parseFloat(todayAvgPrice) * 1.08).toFixed(1)}`}
+                    className="w-full pl-8 pr-3 py-2 rounded-xl border border-[#E1E8E4] text-sm font-bold text-[#17211D] focus:outline-none focus:ring-2 focus:ring-[#063F2E]/20 focus:border-[#063F2E]"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={!alertTargetPrice}
-                  className="bg-[#005A3C] hover:bg-[#003F2B] text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                  className="bg-[#063F2E] hover:bg-[#032C21] text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-xs"
                 >
                   <Bell className="w-3.5 h-3.5" /> Set Alert
                 </button>
@@ -1351,15 +1321,15 @@ export default function MarketCopilot() {
 
           {/* Active Alert Display */}
           {activeAlert ? (
-            <div className="p-3.5 rounded-xl bg-[#E8F8F1] border border-[#005A3C]/20 flex items-center justify-between">
+            <div className="p-3.5 rounded-xl bg-[#DDF5EA] border border-[#063F2E]/20 flex items-center justify-between">
               <div className="space-y-0.5">
                 <div className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                  <span className="text-xs font-bold text-[#005A3C]">
+                  <span className="text-xs font-bold text-[#063F2E]">
                     Alert Active: {activeAlert.crop} ≥ ₹{activeAlert.targetPrice}/kg
                   </span>
                 </div>
-                <p className="text-[11px] text-[#66736D]">
+                <p className="text-[11px] text-[#65736C]">
                   Set at {activeAlert.createdAt}. System will simulate an SMS & notification trigger upon APMC update.
                 </p>
               </div>
@@ -1371,7 +1341,7 @@ export default function MarketCopilot() {
               </button>
             </div>
           ) : (
-            <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#E1E8E4] text-xs text-[#66736D] text-center">
+            <div className="p-4 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] text-xs text-[#65736C] text-center">
               No active price alert. Enter your expected price above to track peak selling windows.
             </div>
           )}

@@ -1,36 +1,39 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { Sprout, Bell, Bug, ArrowRight, Check, X } from "lucide-react";
+import { Sprout, Bell, Bug, ArrowRight, Check, X, ChevronRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+import { useFarm } from "@/lib/farmContext";
+import { t } from "@/lib/translations";
 
 const ROUTE_LABELS = {
+  "/": "Dashboard",
   "/dashboard": "Dashboard",
-  "/chat": "Ask Kisan Mitra",
-  "/ask-kisan-mitra": "Ask Kisan Mitra",
-  "/crop-doctor": "Crop Doctor",
-  "/outbreak-radar": "Outbreak Radar",
+  "/crop-doctor": "Crop Health",
   "/harvest-guardian": "Harvest Guardian",
+  "/outbreak-radar": "Outbreak Radar",
   "/market-copilot": "Market Copilot",
-  "/conversations": "Conversations",
-  "/preferences": "Preferences",
+  "/chat": "AI Assistant",
+  "/ask-kisan-mitra": "AI Assistant",
+  "/conversations": "Past Conversations",
+  "/preferences": "Farm Settings",
+  "/profile": "Farmer Profile",
 };
 
-export default function Header({ user: _user }) {
+export default function Header({ user: propUser }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { farm, user: contextUser, language } = useFarm();
+  const user = propUser || contextUser;
+
   const [alerts, setAlerts] = useState([]);
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const currentPageLabel = ROUTE_LABELS[location.pathname] || (location.pathname.startsWith("/admin") ? "Admin" : "Overview");
+  const currentPageLabel =
+    ROUTE_LABELS[location.pathname] ||
+    (location.pathname.startsWith("/admin") ? "Admin" : "Dashboard");
+
+  const isDashboard = location.pathname === "/" || location.pathname === "/dashboard";
 
   useEffect(() => {
     base44.entities.DiseaseAlert.filter({ active: true })
@@ -67,135 +70,150 @@ export default function Header({ user: _user }) {
   const alertCount = alerts.length;
 
   return (
-    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#E1E8E4] transition-all">
-      <div className="flex items-center justify-between px-6 lg:px-8 h-16">
-        {/* Left Branding & Breadcrumb */}
-        <div className="flex items-center gap-4 sm:gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#005A3C] flex items-center justify-center lg:hidden shadow-sm">
-              <Sprout className="w-5 h-5 text-white" />
+    <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-[#E1E8E4] transition-all">
+      <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16">
+        {/* Left Branding & Breadcrumbs */}
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          {/* Mobile Brand */}
+          <div className="flex items-center gap-2 lg:hidden min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-[#087F5B] flex items-center justify-center shadow-xs shrink-0">
+              <Sprout className="w-4.5 h-4.5 text-white" />
             </div>
-            <div className="text-base sm:text-lg font-bold tracking-tight text-[#005A3C] leading-none lg:hidden">
-              KISAN MITRA
+            <div className="flex items-center gap-1.5 text-xs min-w-0">
+              <span className="font-bold text-[#063F2E] tracking-tight shrink-0">KISAN MITRA</span>
+              {!isDashboard && (
+                <>
+                  <span className="text-[#A1ACA5]">/</span>
+                  <span className="font-semibold text-[#17211D] truncate">{currentPageLabel}</span>
+                </>
+              )}
             </div>
           </div>
 
-          {/* Breadcrumb Navigation */}
-          <Breadcrumb className="hidden sm:flex">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/dashboard" className="text-[#66736D] hover:text-[#005A3C] transition-colors font-medium text-xs sm:text-sm">
-                    Home
-                  </Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage className="text-[#17201C] font-semibold text-xs sm:text-sm">
-                  {currentPageLabel}
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          {/* Desktop Breadcrumb Navigation */}
+          <nav aria-label="Breadcrumb" className="hidden lg:flex items-center gap-1.5 text-xs">
+            {isDashboard ? (
+              <span className="text-sm font-bold text-[#17211D] tracking-tight">
+                {t(language, "dashboard")}
+              </span>
+            ) : (
+              <>
+                <Link
+                  to="/dashboard"
+                  className="text-[#65736C] hover:text-[#063F2E] font-medium transition-colors"
+                >
+                  {t(language, "dashboard")}
+                </Link>
+                <ChevronRight className="w-3.5 h-3.5 text-[#A1ACA5] shrink-0" />
+                <span className="font-semibold text-[#17211D]">{currentPageLabel}</span>
+              </>
+            )}
+          </nav>
         </div>
 
-        {/* Right Notification Bell Dropdown */}
-        <div className="relative" ref={dropdownRef}>
-          <button
-            type="button"
-            onClick={() => setOpen(!open)}
-            className="relative w-10 h-10 rounded-xl flex items-center justify-center text-[#66736D] hover:bg-[#E8F8F1] hover:text-[#005A3C] transition-all cursor-pointer border border-transparent hover:border-[#E1E8E4]"
-            title="Notifications"
-          >
-            <Bell className="w-5 h-5" />
-            {alertCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-[#DC2626] text-white text-[10px] font-extrabold flex items-center justify-center shadow-xs ring-2 ring-white">
-                {alertCount > 9 ? "9+" : alertCount}
-              </span>
-            )}
-          </button>
+        {/* Right Notification Bell */}
+        <div className="flex items-center gap-2.5">
+          {/* Notification Bell Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setOpen(!open)}
+              className="relative w-9 h-9 rounded-xl flex items-center justify-center text-[#65736C] hover:bg-[#F6F8F5] hover:text-[#063F2E] transition-all cursor-pointer border border-[#E1E8E4]"
+              title="Notifications"
+            >
+              <Bell className="w-4 h-4" />
+              {alertCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4.5 h-4.5 rounded-full bg-[#D94A4A] text-white text-[9px] font-bold flex items-center justify-center shadow-xs ring-2 ring-white">
+                  {alertCount > 9 ? "9+" : alertCount}
+                </span>
+              )}
+            </button>
 
-          {/* Notification Dropdown Popover */}
-          {open && (
-            <div className="absolute right-0 mt-2.5 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-[#E1E8E4] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-              <div className="p-4 border-b border-[#E1E8E4] flex items-center justify-between bg-[#F7F9F7]">
-                <div className="flex items-center gap-2">
-                  <Bell className="w-4 h-4 text-[#005A3C]" />
-                  <h3 className="text-sm font-bold text-[#17201C]">Alerts &amp; Advisories</h3>
-                  <span className="bg-[#E8F8F1] text-[#005A3C] text-[11px] font-bold px-2.5 py-0.5 rounded-full">
-                    {alertCount} New
-                  </span>
+            {/* Notification Dropdown Popover */}
+            {open && (
+              <div className="absolute right-0 mt-2.5 w-80 sm:w-96 bg-white rounded-2xl shadow-lg border border-[#E1E8E4] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                <div className="p-4 border-b border-[#E1E8E4] flex items-center justify-between bg-[#F6F8F5]">
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-4 h-4 text-[#063F2E]" />
+                    <h3 className="text-xs font-bold text-[#17211D] uppercase tracking-wider">
+                      Alerts &amp; Advisories
+                    </h3>
+                    <span className="bg-[#DDF5EA] text-[#063F2E] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      {alertCount} Active
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setOpen(false)}
+                    className="text-[#65736C] hover:text-[#17211D] p-1 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="text-[#66736D] hover:text-[#17201C] p-1 rounded-lg hover:bg-gray-200/50 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
 
-              {/* Notification Items List */}
-              <div className="divide-y divide-[#E1E8E4] max-h-80 overflow-y-auto">
-                {alerts.map((item) => (
-                  <div
-                    key={item.id}
+                {/* Notification Items List */}
+                <div className="divide-y divide-[#E1E8E4] max-h-80 overflow-y-auto">
+                  {alerts.map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => {
+                        setOpen(false);
+                        navigate(item.severity === "High" ? "/outbreak-radar" : "/harvest-guardian");
+                      }}
+                      className="p-3.5 hover:bg-[#DDF5EA]/30 transition-colors cursor-pointer flex items-start gap-3"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0 mt-0.5 border border-red-100">
+                        <Bug className="w-4.5 h-4.5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-1">
+                          <p className="text-xs font-bold text-[#17211D] truncate">
+                            {item.disease_name || item.disease}
+                          </p>
+                          <span
+                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                              item.severity === "High"
+                                ? "bg-red-50 text-red-700 border border-red-200"
+                                : "bg-amber-50 text-amber-700 border border-amber-200"
+                            }`}
+                          >
+                            {item.severity}
+                          </span>
+                        </div>
+                        <p className="text-xs text-[#65736C] mt-0.5 truncate">
+                          {item.location} • Affects: {item.crop || "Rice"}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Footer Links */}
+                <div className="p-3 bg-[#F6F8F5] border-t border-[#E1E8E4] flex items-center justify-between text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAlerts([]);
+                      setOpen(false);
+                    }}
+                    className="text-[#65736C] hover:text-[#17211D] flex items-center gap-1 cursor-pointer"
+                  >
+                    <Check className="w-3.5 h-3.5" /> Clear All
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => {
                       setOpen(false);
-                      navigate(item.severity === "High" ? "/outbreak-radar" : "/harvest-guardian");
+                      navigate("/outbreak-radar");
                     }}
-                    className="p-3.5 hover:bg-[#E8F8F1]/40 transition-colors cursor-pointer flex items-start gap-3"
+                    className="text-[#063F2E] hover:underline flex items-center gap-1 cursor-pointer font-bold"
                   >
-                    <div className="w-9 h-9 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0 mt-0.5">
-                      <Bug className="w-4.5 h-4.5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-1">
-                        <p className="text-xs font-bold text-[#17201C] truncate">{item.disease_name || item.disease}</p>
-                        <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                            item.severity === "High"
-                              ? "bg-red-50 text-red-700 border border-red-200"
-                              : "bg-amber-50 text-amber-700 border border-amber-200"
-                          }`}
-                        >
-                          {item.severity}
-                        </span>
-                      </div>
-                      <p className="text-xs text-[#66736D] mt-0.5 truncate">
-                        {item.location} • Affects: {item.crop || "Rice"}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                    View Outbreak Radar <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
-
-              {/* Footer Links */}
-              <div className="p-3 bg-[#F7F9F7] border-t border-[#E1E8E4] flex items-center justify-between text-xs font-semibold">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAlerts([]);
-                    setOpen(false);
-                  }}
-                  className="text-[#66736D] hover:text-[#17201C] flex items-center gap-1 cursor-pointer"
-                >
-                  <Check className="w-3.5 h-3.5" /> Clear All
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOpen(false);
-                    navigate("/outbreak-radar");
-                  }}
-                  className="text-[#005A3C] hover:underline flex items-center gap-1 cursor-pointer"
-                >
-                  View Outbreak Radar <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </header>

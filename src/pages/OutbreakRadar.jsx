@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   MapContainer,
@@ -30,7 +30,6 @@ import {
   Activity,
   Navigation,
   LocateFixed,
-  Compass,
 } from "lucide-react";
 import { useFarm } from "@/lib/farmContext";
 import SEO from "@/components/SEO";
@@ -267,8 +266,8 @@ const farmCenterIcon = L.divIcon({
   className: "leaflet-custom-farm-marker",
   html: `
     <div class="relative flex items-center justify-center cursor-pointer">
-      <span class="absolute -inset-2 rounded-full bg-[#005A3C] opacity-40 animate-ping"></span>
-      <div class="w-10 h-10 rounded-full bg-[#005A3C] text-white shadow-xl flex items-center justify-center border-2 border-white ring-4 ring-[#005A3C]/30">
+      <span class="absolute -inset-2 rounded-full bg-[#063F2E] opacity-40 animate-ping"></span>
+      <div class="w-10 h-10 rounded-full bg-[#063F2E] text-white shadow-xl flex items-center justify-center border-2 border-white ring-4 ring-[#063F2E]/30">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
           <polyline points="9 22 9 12 15 12 15 22"/>
@@ -281,12 +280,25 @@ const farmCenterIcon = L.divIcon({
   popupAnchor: [0, -22],
 });
 
-// Map recentering controller component
-function MapController({ center, zoom }) {
+// Map recentering controller component that binds the live map instance and triggers smooth animations
+function MapController({ target, mapRef }) {
   const map = useMap();
+
   useEffect(() => {
-    map.setView(center, zoom, { animate: true });
-  }, [center, zoom, map]);
+    if (mapRef) {
+      mapRef.current = map;
+    }
+  }, [map, mapRef]);
+
+  useEffect(() => {
+    if (target && target.coords) {
+      map.flyTo(target.coords, target.zoom || 11, {
+        animate: true,
+        duration: 1.0,
+      });
+    }
+  }, [target, map]);
+
   return null;
 }
 
@@ -305,6 +317,8 @@ export default function OutbreakRadar() {
   const [selectedAlert, setSelectedAlert] = useState(null); // for detail modal
 
   // State: Map controls
+  const mapRef = useRef(null);
+  const [mapTarget, setMapTarget] = useState({ coords: farmCoords, zoom: 10, key: 0 });
   const [mapCenter, setMapCenter] = useState(farmCoords);
   const [mapZoom, setMapZoom] = useState(10);
   const [showRings, setShowRings] = useState(true);
@@ -365,15 +379,24 @@ export default function OutbreakRadar() {
   // Handle Focus On Threat
   const handleFocusThreat = (alert) => {
     setSelectedAlert(alert);
-    setMapCenter([alert.lat, alert.lng]);
+    const coords = [alert.lat, alert.lng];
+    if (mapRef.current) {
+      mapRef.current.flyTo(coords, 12, { animate: true, duration: 1.0 });
+    }
+    setMapCenter(coords);
     setMapZoom(12);
+    setMapTarget({ coords, zoom: 12, key: Date.now() });
   };
 
   // Handle Recenter to Farm
   const handleRecenterFarm = () => {
-    setMapCenter(farmCoords);
-    setMapZoom(10);
     setSelectedAlert(null);
+    if (mapRef.current) {
+      mapRef.current.flyTo(farmCoords, 10, { animate: true, duration: 1.0 });
+    }
+    setMapCenter([...farmCoords]);
+    setMapZoom(10);
+    setMapTarget({ coords: farmCoords, zoom: 10, key: Date.now() });
   };
 
   // Handle Community Sighting Submit
@@ -414,11 +437,16 @@ export default function OutbreakRadar() {
       },
     };
 
+    const targetCoords = [created.lat, created.lng];
     setAlerts([created, ...alerts]);
     setShowReportModal(false);
     setSelectedAlert(created);
-    setMapCenter([created.lat, created.lng]);
+    if (mapRef.current) {
+      mapRef.current.flyTo(targetCoords, 12, { animate: true, duration: 1.0 });
+    }
+    setMapCenter(targetCoords);
     setMapZoom(12);
+    setMapTarget({ coords: targetCoords, zoom: 12, key: Date.now() });
 
     setNewSighting({
       crop: farmCrop,
@@ -434,20 +462,20 @@ export default function OutbreakRadar() {
 
   // WhatsApp Alert Share
   const handleShareWhatsApp = (alert) => {
-    const text = `🚨 *KISAN MITRA OUTBREAK ALERT*\n\n` +
-      `⚠️ *Threat:* ${alert.disease_name}\n` +
-      `🌾 *Crop:* ${alert.crop}\n` +
-      `📍 *Location:* ${alert.location} (${alert.distance_km} km away)\n` +
-      `🔥 *Severity:* ${alert.severity}\n\n` +
-      `🛡️ *Immediate Preventive Action:* ${alert.cultural_actions[0]}\n` +
-      `🌿 *Bio-Remedy:* ${alert.bio_remedies[0]}\n\n` +
-      `Stay alert! Track live via Kisan Mitra Outbreak Radar.`;
+    const text = `[KISAN MITRA OUTBREAK ADVISORY]\n\n` +
+      `Threat: ${alert.disease_name}\n` +
+      `Crop: ${alert.crop}\n` +
+      `Location: ${alert.location} (${alert.distance_km} km away)\n` +
+      `Severity: ${alert.severity}\n\n` +
+      `Immediate Preventive Action: ${alert.cultural_actions[0]}\n` +
+      `Bio-Remedy: ${alert.bio_remedies[0]}\n\n` +
+      `Stay alert. Track live via Kisan Mitra Outbreak Radar.`;
 
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
   return (
-    <div className="space-y-7 max-w-6xl mx-auto pb-16">
+    <div className="space-y-6 max-w-7xl mx-auto pb-16">
       <SEO
         title="Outbreak Radar - Interactive Geospatial Pest & Disease Map"
         description="Live OpenStreetMap agricultural pest and disease monitoring map. Track outbreak hotspots, 10km/25km/50km perimeter zones, and preventive IPM protocols."
@@ -455,17 +483,13 @@ export default function OutbreakRadar() {
       />
 
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E1E8E4] pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E1E8E4] pb-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E8F8F1] text-[#005A3C] text-xs font-bold mb-2">
-            <Activity className="w-3.5 h-3.5" />
-            Live Geospatial Early-Warning Shield
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#17201C] flex items-center gap-3">
-            <MapPin className="w-7 h-7 text-[#005A3C]" />
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#17211D] flex items-center gap-2.5">
+            <MapPin className="w-6 h-6 text-[#063F2E]" />
             Outbreak Radar
           </h1>
-          <p className="text-sm text-[#66736D] mt-1">
+          <p className="text-xs sm:text-sm text-[#65736C] mt-0.5">
             Real-time interactive GPS monitoring map tracking pest clusters within a 50 km radius of your farm.
           </p>
         </div>
@@ -474,9 +498,10 @@ export default function OutbreakRadar() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowReportModal(true)}
-            className="bg-[#005A3C] hover:bg-[#003F2B] text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 shadow-sm"
+            className="km-btn-primary"
           >
-            <PlusCircle className="w-4 h-4" /> Report a Sighting
+            <PlusCircle className="w-4 h-4" />
+            <span>Report a Sighting</span>
           </button>
         </div>
       </div>
@@ -484,78 +509,79 @@ export default function OutbreakRadar() {
       {/* Top 3 Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* 1. Farm Exposure Risk Index */}
-        <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-5 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#005A3C] bg-[#E8F8F1] px-2.5 py-1 rounded-full flex items-center gap-1.5">
-                <ShieldAlert className="w-3.5 h-3.5 text-[#005A3C]" /> Farm Exposure Index
+              <span className="text-xs font-bold uppercase tracking-wider text-[#063F2E] bg-[#DDF5EA] px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+                <ShieldAlert className="w-3.5 h-3.5 text-[#063F2E]" /> Farm Exposure Index
               </span>
-              <span className={`text-xs font-extrabold px-2.5 py-0.5 rounded-full border ${exposureStats.scoreColor}`}>
+              <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${exposureStats.scoreColor}`}>
                 {exposureStats.score}
               </span>
             </div>
-            <p className="text-xs text-[#66736D] mt-3">Monitoring for: <strong>{farmCrop}</strong> at {farmLocation}</p>
-            <p className="text-sm font-semibold text-[#17201C] mt-2 leading-relaxed">
+            <p className="text-xs text-[#65736C] mt-3">Monitoring for: <strong>{farmCrop}</strong> at {farmLocation}</p>
+            <p className="text-sm font-semibold text-[#17211D] mt-1.5 leading-relaxed">
               {exposureStats.summaryText}
             </p>
           </div>
-          <div className="mt-4 pt-3 border-t border-[#E1E8E4] flex items-center justify-between text-xs text-[#66736D]">
+          <div className="mt-4 pt-3 border-t border-[#E1E8E4] flex items-center justify-between text-xs text-[#65736C]">
             <span>Active threats &lt; 25km:</span>
-            <span className="font-extrabold text-[#17201C]">{exposureStats.totalNearby}</span>
+            <span className="font-extrabold text-[#17211D]">{exposureStats.totalNearby}</span>
           </div>
         </div>
 
         {/* 2. Microclimate Weather Vector */}
-        <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-5 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-100 px-2.5 py-1 rounded-full flex items-center gap-1.5">
-                <Thermometer className="w-3.5 h-3.5 text-amber-700" /> Weather Vector
+              <span className="text-xs font-bold uppercase tracking-wider text-[#92540C] bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+                <Thermometer className="w-3.5 h-3.5 text-[#E99B16]" /> Weather Vector
               </span>
-              <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md">
+              <span className="text-[11px] font-bold text-[#92540C] bg-amber-50 px-2 py-0.5 rounded-md">
                 High Fungal Favorability
               </span>
             </div>
             <div className="grid grid-cols-2 gap-3 mt-3">
-              <div className="p-2.5 rounded-xl bg-[#F7F9F7] border border-[#E1E8E4]">
-                <div className="flex items-center gap-1.5 text-xs text-[#66736D]">
-                  <Droplets className="w-3.5 h-3.5 text-blue-500" /> Humidity
+              <div className="p-2.5 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4]">
+                <div className="flex items-center gap-1.5 text-xs text-[#65736C]">
+                  <Droplets className="w-3.5 h-3.5 text-[#3B82A0]" /> Humidity
                 </div>
-                <p className="text-base font-extrabold text-[#17201C] mt-0.5">86% RH</p>
+                <p className="text-base font-extrabold text-[#17211D] mt-0.5">86% RH</p>
               </div>
-              <div className="p-2.5 rounded-xl bg-[#F7F9F7] border border-[#E1E8E4]">
-                <div className="flex items-center gap-1.5 text-xs text-[#66736D]">
+              <div className="p-2.5 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4]">
+                <div className="flex items-center gap-1.5 text-xs text-[#65736C]">
                   <Thermometer className="w-3.5 h-3.5 text-orange-500" /> Day Temp
                 </div>
-                <p className="text-base font-extrabold text-[#17201C] mt-0.5">28.4°C</p>
+                <p className="text-base font-extrabold text-[#17211D] mt-0.5">28.4°C</p>
               </div>
             </div>
           </div>
-          <p className="text-xs text-[#66736D] mt-3 pt-2.5 border-t border-[#E1E8E4] leading-relaxed">
+          <p className="text-xs text-[#65736C] mt-3 pt-2.5 border-t border-[#E1E8E4] leading-relaxed">
             Persistent leaf dampness elevates blast & hopper multiplication.
           </p>
         </div>
 
         {/* 3. Spore & Insect Wind Drift */}
-        <div className="bg-gradient-to-br from-[#E8F8F1] via-[#F2FAF6] to-white border border-[#005A3C]/30 border-l-4 border-l-[#005A3C] rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-5 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-[#005A3C] flex items-center gap-1.5">
-                <Wind className="w-4 h-4 text-[#005A3C]" /> Wind Vector Drift
+              <span className="text-xs font-bold uppercase tracking-wider text-[#063F2E] bg-[#DDF5EA] px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+                <Wind className="w-3.5 h-3.5 text-[#087F5B]" /> Wind Vector Drift
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-wide bg-[#005A3C] text-white px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold uppercase tracking-wide bg-[#063F2E] text-white px-2.5 py-0.5 rounded-full">
                 12 km/h NW
               </span>
             </div>
-            <h3 className="text-sm font-bold text-[#17201C] mt-2.5 leading-snug">
+            <h3 className="text-sm font-bold text-[#17211D] mt-2.5 leading-snug">
               North-West to South-East Swarm Dispersion
             </h3>
-            <p className="text-xs text-[#66736D] mt-1.5 leading-relaxed">
+            <p className="text-xs text-[#65736C] mt-1.5 leading-relaxed">
               Hopper nymphs and fungal aerosols are drifting along the Chalakudy-Aluva river basin corridor.
             </p>
           </div>
-          <div className="mt-4 pt-3 border-t border-[#005A3C]/15 flex items-center gap-3 text-xs font-semibold text-[#005A3C]">
-            <span className="flex items-center gap-1">✓ Northern Flank Vulnerable</span>
+          <div className="mt-4 pt-3 border-t border-[#E1E8E4] flex items-center gap-2 text-xs font-semibold text-[#087F5B]">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>Northern Flank Monitored</span>
           </div>
         </div>
       </div>
@@ -566,24 +592,15 @@ export default function OutbreakRadar() {
         <div className="lg:col-span-7 space-y-3">
           <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-sm p-4 space-y-3">
             {/* Map Top Toolbar */}
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E1E8E4] pb-3">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="text-xs font-bold text-[#17201C] flex items-center gap-1">
-                  <Compass className="w-3.5 h-3.5 text-[#005A3C]" />
-                  Live GPS Radar Map
-                </span>
-                <span className="text-[11px] text-[#66736D]">({filteredAlerts.length} mapped threats)</span>
-              </div>
-
+            <div className="flex flex-wrap items-center justify-end gap-2 border-b border-[#E1E8E4] pb-3">
               {/* Map Layer & Recenter Controls */}
               <div className="flex items-center gap-2 text-xs">
                 <button
                   onClick={() => setShowRings(!showRings)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors ${
                     showRings
-                      ? "bg-[#E8F8F1] text-[#005A3C] border-[#005A3C]"
-                      : "bg-[#F7F9F7] text-[#66736D] border-[#E1E8E4]"
+                      ? "bg-[#DDF5EA] text-[#063F2E] border-[#063F2E]"
+                      : "bg-[#F6F8F5] text-[#65736C] border-[#E1E8E4]"
                   }`}
                 >
                   {showRings ? "Zones: Visible" : "Zones: Hidden"}
@@ -593,8 +610,8 @@ export default function OutbreakRadar() {
                   onClick={() => setShowHeatzones(!showHeatzones)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors ${
                     showHeatzones
-                      ? "bg-[#E8F8F1] text-[#005A3C] border-[#005A3C]"
-                      : "bg-[#F7F9F7] text-[#66736D] border-[#E1E8E4]"
+                      ? "bg-[#DDF5EA] text-[#063F2E] border-[#063F2E]"
+                      : "bg-[#F6F8F5] text-[#65736C] border-[#E1E8E4]"
                   }`}
                 >
                   {showHeatzones ? "Heatzones: On" : "Heatzones: Off"}
@@ -602,7 +619,7 @@ export default function OutbreakRadar() {
 
                 <button
                   onClick={handleRecenterFarm}
-                  className="bg-[#005A3C] hover:bg-[#003F2B] text-white px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors flex items-center gap-1 shadow-sm"
+                  className="bg-[#063F2E] hover:bg-[#032C21] text-white px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors flex items-center gap-1 shadow-xs"
                   title="Recenter to Your Farm"
                 >
                   <LocateFixed className="w-3 h-3" /> Center Farm
@@ -618,7 +635,7 @@ export default function OutbreakRadar() {
                 scrollWheelZoom={true}
                 className="h-full w-full"
               >
-                <MapController center={mapCenter} zoom={mapZoom} />
+                <MapController target={mapTarget} mapRef={mapRef} />
 
                 {/* OpenStreetMap Standard Tiles */}
                 <TileLayer
@@ -672,9 +689,11 @@ export default function OutbreakRadar() {
                 <Marker position={farmCoords} icon={farmCenterIcon}>
                   <Popup>
                     <div className="p-1 space-y-1 text-xs">
-                      <p className="font-bold text-[#005A3C] text-sm">📍 Your Farm</p>
-                      <p className="text-zinc-600 font-medium">{farmLocation}</p>
-                      <p className="text-[11px] text-zinc-500">Center point for 50km pest radar.</p>
+                      <p className="font-bold text-[#063F2E] text-sm flex items-center gap-1">
+                        Your Farm
+                      </p>
+                      <p className="text-[#65736C] font-medium">{farmLocation}</p>
+                      <p className="text-[11px] text-[#65736C]">Center point for 50km pest radar.</p>
                     </div>
                   </Popup>
                 </Marker>
@@ -728,18 +747,18 @@ export default function OutbreakRadar() {
                               <h4 className="font-bold text-[#17201C] text-sm mt-1">
                                 {item.disease_name}
                               </h4>
-                              <p className="text-[11px] text-[#005A3C] font-semibold">
+                              <p className="text-[11px] text-[#063F2E] font-semibold">
                                 Crop: {item.crop} • {item.distance_km} km away
                               </p>
                             </div>
 
-                            <p className="text-[11px] text-zinc-600 line-clamp-2">
+                            <p className="text-[11px] text-[#65736C] line-clamp-2">
                               {item.description}
                             </p>
 
                             <button
                               onClick={() => setSelectedAlert(item)}
-                              className="w-full bg-[#005A3C] hover:bg-[#003F2B] text-white py-1.5 px-3 rounded-lg text-xs font-bold transition-colors text-center"
+                              className="w-full bg-[#063F2E] hover:bg-[#032C21] text-white py-1.5 px-3 rounded-lg text-xs font-bold transition-colors text-center"
                             >
                               View Treatment Advisory
                             </button>
@@ -765,7 +784,7 @@ export default function OutbreakRadar() {
                   <span className="w-3 h-3 rounded-full bg-emerald-600"></span> Low
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-[#66736D] text-[11px]">
+              <div className="flex items-center gap-2 text-[#65736C] text-[11px]">
                 <span>Dotted Rings: <strong>10km</strong>, <strong>25km</strong>, <strong>50km</strong></span>
               </div>
             </div>
@@ -775,10 +794,10 @@ export default function OutbreakRadar() {
         {/* Right (5 Cols): Threat List, Filters & Quick Action Cards */}
         <div className="lg:col-span-5 space-y-4">
           {/* Filter Bar */}
-          <div className="bg-white p-4 rounded-2xl border border-[#E1E8E4] shadow-sm flex flex-col gap-2.5">
+          <div className="bg-white p-4 rounded-2xl border border-[#E1E8E4] shadow-xs flex flex-col gap-2.5">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#17201C]">
-                <Filter className="w-3.5 h-3.5 text-[#005A3C]" /> Severity:
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#17211D]">
+                <Filter className="w-3.5 h-3.5 text-[#063F2E]" /> Severity:
               </div>
               <div className="flex items-center gap-1">
                 {["All", "High", "Moderate", "Low"].map((s) => (
@@ -787,8 +806,8 @@ export default function OutbreakRadar() {
                     onClick={() => setFilterSeverity(s)}
                     className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all ${
                       filterSeverity === s
-                        ? "bg-[#005A3C] text-white shadow-sm"
-                        : "text-[#66736D] hover:bg-[#E8F8F1] hover:text-[#005A3C]"
+                        ? "bg-[#063F2E] text-white shadow-xs"
+                        : "text-[#65736C] hover:bg-[#DDF5EA] hover:text-[#063F2E]"
                     }`}
                   >
                     {s}
@@ -802,8 +821,8 @@ export default function OutbreakRadar() {
               onClick={() => setFilterMyCropOnly(!filterMyCropOnly)}
               className={`w-full py-1.5 px-3 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 ${
                 filterMyCropOnly
-                  ? "bg-[#E8F8F1] border-[#005A3C] text-[#005A3C]"
-                  : "bg-[#F7F9F7] border-[#E1E8E4] text-[#66736D] hover:text-[#17201C]"
+                  ? "bg-[#DDF5EA] border-[#063F2E] text-[#063F2E]"
+                  : "bg-[#F6F8F5] border-[#E1E8E4] text-[#65736C] hover:text-[#17211D]"
               }`}
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
@@ -832,15 +851,15 @@ export default function OutbreakRadar() {
                     key={item.id}
                     className={`bg-white rounded-2xl border p-4 transition-all space-y-2.5 ${
                       isSelected
-                        ? "border-[#005A3C] ring-2 ring-[#005A3C]/20 shadow-md bg-[#E8F8F1]/20"
-                        : "border-[#E1E8E4] hover:border-[#B5C9BE] shadow-sm"
+                        ? "border-[#063F2E] ring-2 ring-[#063F2E]/20 shadow-md bg-[#DDF5EA]/20"
+                        : "border-[#E1E8E4] hover:border-[#087F5B]/30 shadow-xs"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="flex items-center gap-1.5 mb-1">
                           <span
-                            className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
                               isHigh
                                 ? "bg-rose-100 text-rose-800 border border-rose-200"
                                 : isModerate
@@ -850,18 +869,18 @@ export default function OutbreakRadar() {
                           >
                             {item.severity}
                           </span>
-                          <span className="text-[11px] font-bold text-[#005A3C] bg-[#E8F8F1] px-2 py-0.5 rounded-md">
+                          <span className="text-[11px] font-bold text-[#063F2E] bg-[#DDF5EA] px-2 py-0.5 rounded-md">
                             {item.crop}
                           </span>
                         </div>
 
-                        <h3 className="text-sm font-extrabold text-[#17201C] flex items-center gap-1.5">
-                          <Bug className="w-3.5 h-3.5 text-[#005A3C]" />
+                        <h3 className="text-sm font-bold text-[#17211D] flex items-center gap-1.5">
+                          <Bug className="w-3.5 h-3.5 text-[#063F2E]" />
                           {item.disease_name}
                         </h3>
 
-                        <p className="text-[11px] text-[#66736D] mt-0.5 flex items-center gap-1">
-                          <MapPin className="w-3 h-3 text-[#005A3C]" />
+                        <p className="text-[11px] text-[#65736C] mt-0.5 flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-[#063F2E]" />
                           {item.location} ({item.distance_km} km away)
                         </p>
                       </div>
@@ -869,7 +888,7 @@ export default function OutbreakRadar() {
                       <div className="flex items-center gap-1 shrink-0">
                         <button
                           onClick={() => handleFocusThreat(item)}
-                          className="bg-[#005A3C] hover:bg-[#003F2B] text-white p-1.5 rounded-xl text-xs font-bold transition-colors shadow-sm"
+                          className="bg-[#063F2E] hover:bg-[#032C21] text-white p-1.5 rounded-xl text-xs font-bold transition-colors shadow-xs"
                           title="Center on Map & View"
                         >
                           <Navigation className="w-3.5 h-3.5" />
@@ -877,7 +896,7 @@ export default function OutbreakRadar() {
 
                         <button
                           onClick={() => handleShareWhatsApp(item)}
-                          className="bg-[#25D366] hover:bg-[#1EBE5D] text-white p-1.5 rounded-xl text-xs font-bold transition-colors shadow-sm"
+                          className="bg-[#16A36F] hover:bg-[#087F5B] text-white p-1.5 rounded-xl text-xs font-bold transition-colors shadow-xs"
                           title="Share to WhatsApp"
                         >
                           <Share2 className="w-3.5 h-3.5" />
@@ -885,17 +904,17 @@ export default function OutbreakRadar() {
                       </div>
                     </div>
 
-                    <p className="text-xs text-[#66736D] leading-relaxed line-clamp-2">
+                    <p className="text-xs text-[#65736C] leading-relaxed line-clamp-2">
                       {item.description}
                     </p>
 
                     <div className="pt-2 border-t border-[#E1E8E4] flex items-center justify-between text-xs">
-                      <span className="text-[11px] text-[#66736D] truncate max-w-[70%]">
+                      <span className="text-[11px] text-[#65736C] truncate max-w-[70%]">
                         <strong>Defense:</strong> {item.cultural_actions[0]}
                       </span>
                       <button
                         onClick={() => setSelectedAlert(item)}
-                        className="text-[#005A3C] font-bold hover:underline flex items-center gap-0.5 text-xs whitespace-nowrap"
+                        className="text-[#063F2E] font-bold hover:underline flex items-center gap-0.5 text-xs whitespace-nowrap"
                       >
                         Advisory <ChevronRight className="w-3.5 h-3.5" />
                       </button>
@@ -913,17 +932,17 @@ export default function OutbreakRadar() {
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-2xl rounded-3xl border border-[#E1E8E4] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
             {/* Modal Header */}
-            <div className="p-5 sm:p-6 bg-[#005A3C] text-white flex items-start justify-between">
+            <div className="p-5 sm:p-6 bg-[#063F2E] text-white flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[11px] font-black uppercase tracking-wider bg-white/20 text-white px-2.5 py-0.5 rounded-full">
+                  <span className="text-[11px] font-bold uppercase tracking-wider bg-white/20 text-white px-2.5 py-0.5 rounded-full">
                     {selectedAlert.severity} Severity Threat
                   </span>
                   <span className="text-xs font-bold bg-white/10 text-white px-2.5 py-0.5 rounded-full">
                     Crop: {selectedAlert.crop}
                   </span>
                 </div>
-                <h2 className="text-xl font-black">{selectedAlert.disease_name}</h2>
+                <h2 className="text-xl font-bold">{selectedAlert.disease_name}</h2>
                 <p className="text-xs text-white/80 mt-1 flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-emerald-300" />
                   {selectedAlert.location} • {selectedAlert.distance_km} km from your farm • {selectedAlert.reported_date}
@@ -942,10 +961,10 @@ export default function OutbreakRadar() {
             <div className="p-5 sm:p-6 space-y-5 overflow-y-auto">
               {/* Field Symptoms */}
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[#005A3C] mb-1.5">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#063F2E] mb-1.5">
                   Observed Symptoms & Field Spread
                 </h4>
-                <p className="text-xs text-[#17201C] leading-relaxed bg-[#F7F9F7] p-3 rounded-xl border border-[#E1E8E4]">
+                <p className="text-xs text-[#17211D] leading-relaxed bg-[#F6F8F5] p-3 rounded-xl border border-[#E1E8E4]">
                   {selectedAlert.description}
                 </p>
               </div>
@@ -964,14 +983,14 @@ export default function OutbreakRadar() {
 
               {/* 1. Cultural Countermeasures */}
               <div className="space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[#17201C] flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-[#005A3C]" />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#17211D] flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-[#063F2E]" />
                   Immediate Cultural & Field Containment Steps
                 </h4>
                 <ul className="space-y-1.5">
                   {selectedAlert.cultural_actions.map((act, i) => (
-                    <li key={i} className="text-xs text-[#17201C] flex items-start gap-2 bg-[#F7F9F7] p-2.5 rounded-xl border border-[#E1E8E4]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#005A3C] mt-1.5 shrink-0" />
+                    <li key={i} className="text-xs text-[#17211D] flex items-start gap-2 bg-[#F6F8F5] p-2.5 rounded-xl border border-[#E1E8E4]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#063F2E] mt-1.5 shrink-0" />
                       <span>{act}</span>
                     </li>
                   ))}
@@ -980,14 +999,15 @@ export default function OutbreakRadar() {
 
               {/* 2. Biological & Organic Remedies */}
               <div className="space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[#17201C] flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-emerald-600" />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#17211D] flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-[#16A36F]" />
                   Recommended Organic & Bio-Control Formulations
                 </h4>
                 <div className="space-y-1.5">
                   {selectedAlert.bio_remedies.map((bio, i) => (
-                    <div key={i} className="text-xs text-emerald-900 bg-[#E8F8F1] p-2.5 rounded-xl border border-[#005A3C]/20 font-medium">
-                      ✓ {bio}
+                    <div key={i} className="text-xs text-[#063F2E] bg-[#DDF5EA] p-2.5 rounded-xl border border-[#063F2E]/20 font-medium flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#087F5B] shrink-0" />
+                      <span>{bio}</span>
                     </div>
                   ))}
                 </div>
@@ -1000,24 +1020,25 @@ export default function OutbreakRadar() {
                     <AlertTriangle className="w-4 h-4 text-amber-600" />
                     Targeted Chemical IPM (Use Only If Threshold Exceeded)
                   </h4>
-                  <p className="font-bold text-[#17201C]">
+                  <p className="font-bold text-[#17211D]">
                     Active Molecule: <span className="font-normal text-slate-800">{selectedAlert.chemical_ipm.molecule}</span>
                   </p>
                   <p className="text-slate-600">
                     <strong>Application Protocol:</strong> {selectedAlert.chemical_ipm.method}
                   </p>
-                  <p className="text-amber-800 font-semibold">
-                    ⏱️ {selectedAlert.chemical_ipm.waiting_period}
+                  <p className="text-amber-800 font-semibold flex items-center gap-1.5">
+                    <Activity className="w-3.5 h-3.5 text-amber-600" />
+                    {selectedAlert.chemical_ipm.waiting_period}
                   </p>
                 </div>
               )}
             </div>
 
             {/* Modal Footer Actions */}
-            <div className="p-4 sm:p-5 bg-[#F7F9F7] border-t border-[#E1E8E4] flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="p-4 sm:p-5 bg-[#F6F8F5] border-t border-[#E1E8E4] flex flex-col sm:flex-row items-center justify-between gap-3">
               <Link
                 to="/disease-doctor"
-                className="text-xs text-[#005A3C] hover:underline font-bold flex items-center gap-1.5"
+                className="text-xs text-[#063F2E] hover:underline font-bold flex items-center gap-1.5"
               >
                 Suspect this on your plants? Open Disease Doctor <ExternalLink className="w-3.5 h-3.5" />
               </Link>
@@ -1025,13 +1046,13 @@ export default function OutbreakRadar() {
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <button
                   onClick={() => handleShareWhatsApp(selectedAlert)}
-                  className="flex-1 sm:flex-none py-2 px-4 rounded-xl bg-[#25D366] hover:bg-[#1EBE5D] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                  className="flex-1 sm:flex-none py-2 px-4 rounded-xl bg-[#16A36F] hover:bg-[#087F5B] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-xs"
                 >
                   <Share2 className="w-3.5 h-3.5" /> Broadcast to WhatsApp
                 </button>
                 <button
                   onClick={() => setSelectedAlert(null)}
-                  className="py-2 px-4 rounded-xl border border-[#E1E8E4] bg-white text-xs font-bold text-[#17201C] hover:bg-zinc-50"
+                  className="py-2 px-4 rounded-xl border border-[#E1E8E4] bg-white text-xs font-bold text-[#17211D] hover:bg-zinc-50"
                 >
                   Close
                 </button>
@@ -1045,9 +1066,9 @@ export default function OutbreakRadar() {
       {showReportModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-lg rounded-3xl border border-[#E1E8E4] shadow-2xl overflow-hidden">
-            <div className="p-5 bg-[#005A3C] text-white flex items-center justify-between">
+            <div className="p-5 bg-[#063F2E] text-white flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-black flex items-center gap-2">
+                <h3 className="text-lg font-bold flex items-center gap-2">
                   <PlusCircle className="w-5 h-5" /> Report a Field Sighting
                 </h3>
                 <p className="text-xs text-white/80 mt-0.5">
@@ -1064,13 +1085,13 @@ export default function OutbreakRadar() {
 
             <form onSubmit={handleReportSubmit} className="p-5 sm:p-6 space-y-4">
               <div>
-                <label className="text-xs font-bold text-[#17201C] block mb-1">
+                <label className="text-xs font-bold text-[#17211D] block mb-1">
                   Crop Affected
                 </label>
                 <select
                   value={newSighting.crop}
                   onChange={(e) => setNewSighting({ ...newSighting, crop: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-[#E1E8E4] text-xs font-bold text-[#17201C] focus:outline-none focus:ring-2 focus:ring-[#005A3C]/20 focus:border-[#005A3C]"
+                  className="w-full px-3 py-2 rounded-xl border border-[#E1E8E4] text-xs font-bold text-[#17211D] focus:outline-none focus:ring-2 focus:ring-[#063F2E]/20 focus:border-[#063F2E]"
                 >
                   <option value="Rice">Paddy / Rice</option>
                   <option value="Tomato">Tomato</option>
@@ -1083,7 +1104,7 @@ export default function OutbreakRadar() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-[#17201C] block mb-1">
+                <label className="text-xs font-bold text-[#17211D] block mb-1">
                   Suspect Pest or Disease Name
                 </label>
                 <input
@@ -1092,19 +1113,19 @@ export default function OutbreakRadar() {
                   value={newSighting.disease_name}
                   onChange={(e) => setNewSighting({ ...newSighting, disease_name: e.target.value })}
                   placeholder="e.g. Leaf Folder, Sheath Blight, Whitefly"
-                  className="w-full px-3 py-2 rounded-xl border border-[#E1E8E4] text-xs text-[#17201C] focus:outline-none focus:ring-2 focus:ring-[#005A3C]/20 focus:border-[#005A3C]"
+                  className="w-full px-3 py-2 rounded-xl border border-[#E1E8E4] text-xs text-[#17211D] focus:outline-none focus:ring-2 focus:ring-[#063F2E]/20 focus:border-[#063F2E]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-[#17201C] block mb-1">
+                  <label className="text-xs font-bold text-[#17211D] block mb-1">
                     Severity Observed
                   </label>
                   <select
                     value={newSighting.severity}
                     onChange={(e) => setNewSighting({ ...newSighting, severity: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-[#E1E8E4] text-xs font-semibold text-[#17201C] focus:outline-none focus:ring-2 focus:ring-[#005A3C]/20 focus:border-[#005A3C]"
+                    className="w-full px-3 py-2 rounded-xl border border-[#E1E8E4] text-xs font-semibold text-[#17211D] focus:outline-none focus:ring-2 focus:ring-[#063F2E]/20 focus:border-[#063F2E]"
                   >
                     <option value="High">High (Spreading fast)</option>
                     <option value="Moderate">Moderate (Cluster patches)</option>
@@ -1113,7 +1134,7 @@ export default function OutbreakRadar() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-[#17201C] block mb-1">
+                  <label className="text-xs font-bold text-[#17211D] block mb-1">
                     Distance from your farm
                   </label>
                   <div className="relative">
@@ -1123,15 +1144,15 @@ export default function OutbreakRadar() {
                       max="50"
                       value={newSighting.distance_km}
                       onChange={(e) => setNewSighting({ ...newSighting, distance_km: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-[#E1E8E4] text-xs text-[#17201C] focus:outline-none focus:ring-2 focus:ring-[#005A3C]/20 focus:border-[#005A3C]"
+                      className="w-full px-3 py-2 rounded-xl border border-[#E1E8E4] text-xs text-[#17211D] focus:outline-none focus:ring-2 focus:ring-[#063F2E]/20 focus:border-[#063F2E]"
                     />
-                    <span className="absolute right-3 top-2 text-xs text-[#66736D] font-bold">km</span>
+                    <span className="absolute right-3 top-2 text-xs text-[#65736C] font-bold">km</span>
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-[#17201C] block mb-1">
+                <label className="text-xs font-bold text-[#17211D] block mb-1">
                   Panchayat / Location
                 </label>
                 <input
@@ -1140,20 +1161,20 @@ export default function OutbreakRadar() {
                   value={newSighting.location}
                   onChange={(e) => setNewSighting({ ...newSighting, location: e.target.value })}
                   placeholder="e.g. Aluva East, Kalady canal area"
-                  className="w-full px-3 py-2 rounded-xl border border-[#E1E8E4] text-xs text-[#17201C] focus:outline-none focus:ring-2 focus:ring-[#005A3C]/20 focus:border-[#005A3C]"
+                  className="w-full px-3 py-2 rounded-xl border border-[#E1E8E4] text-xs text-[#17211D] focus:outline-none focus:ring-2 focus:ring-[#063F2E]/20 focus:border-[#063F2E]"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-[#17201C] block mb-1">
+                <label className="text-xs font-bold text-[#17211D] block mb-1">
                   Field Observations & Symptoms
                 </label>
                 <textarea
-                  rows="2"
+                  rows={2}
                   value={newSighting.description}
                   onChange={(e) => setNewSighting({ ...newSighting, description: e.target.value })}
                   placeholder="Describe leaf yellowing, caterpillar webs, hopper counts per hill..."
-                  className="w-full px-3 py-2 rounded-xl border border-[#E1E8E4] text-xs text-[#17201C] focus:outline-none focus:ring-2 focus:ring-[#005A3C]/20 focus:border-[#005A3C]"
+                  className="w-full px-3 py-2 rounded-xl border border-[#E1E8E4] text-xs text-[#17211D] focus:outline-none focus:ring-2 focus:ring-[#063F2E]/20 focus:border-[#063F2E]"
                 ></textarea>
               </div>
 
@@ -1161,13 +1182,13 @@ export default function OutbreakRadar() {
                 <button
                   type="button"
                   onClick={() => setShowReportModal(false)}
-                  className="px-4 py-2 rounded-xl border border-[#E1E8E4] text-xs font-bold text-[#66736D] hover:bg-zinc-50"
+                  className="px-4 py-2 rounded-xl border border-[#E1E8E4] text-xs font-bold text-[#65736C] hover:bg-zinc-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#005A3C] hover:bg-[#003F2B] text-white text-xs font-bold transition-colors shadow-sm"
+                  className="px-5 py-2 rounded-xl bg-[#063F2E] hover:bg-[#032C21] text-white text-xs font-bold transition-colors shadow-xs"
                 >
                   Publish Sighting Alert
                 </button>

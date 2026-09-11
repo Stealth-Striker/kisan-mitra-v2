@@ -80,7 +80,7 @@ export default function PageNotFound() {
             </div>
             <div>
               <div className="text-sm font-bold text-[#17201C]">Market Copilot</div>
-              <div className="text-xs text-[#66736D]">Live APMC mandi prices and trends</div>
+              <div className="text-xs text-[#66736D]">Live APMC market prices and trends</div>
             </div>
           </Link>
         </div>

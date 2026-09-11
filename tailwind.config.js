@@ -60,7 +60,26 @@ module.exports = {
   				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
+  			},
+  			km: {
+  				forest: '#063F2E',
+  				dark: '#032C21',
+  				green: '#087F5B',
+  				fresh: '#16A36F',
+  				mint: '#DDF5EA',
+  				bg: '#F6F8F5',
+  				surface: '#FFFFFF',
+  				sand: '#ECE9DF',
+  				text: '#17211D',
+  				secondary: '#65736C',
+  				border: '#E1E8E4',
+  				amber: '#E99B16',
+  				danger: '#D94A4A',
+  				blue: '#3B82A0'
   			}
+  		},
+  		boxShadow: {
+  			xs: '0 1px 2px 0 rgba(6, 63, 46, 0.04)',
   		},
   		fontFamily: {
   			sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
