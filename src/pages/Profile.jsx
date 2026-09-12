@@ -26,13 +26,13 @@ export default function Profile() {
   const { farm, user: farmUser, language } = useFarm();
   const user = context.user || farmUser;
 
-  const displayName = user?.full_name || user?.name || "Ramesh Kumar";
+  const displayName = user?.full_name || user?.name || (user?.email ? user.email.split("@")[0] : "Farmer");
   const avatarLetter = (displayName[0] || "F").toUpperCase();
-  const phone = user?.phone || "+91 98765 43210";
+  const phone = user?.phone || "Not set";
   const email = user?.email || "farmer@kisanmitra.in";
   const role = user?.role === "admin" ? "System Administrator" : "Verified Producer";
 
-  const farmName = farm?.name || "Varikoli Heritage Farm";
+  const farmName = farm?.name || `${displayName}'s Farm`;
   const primaryCrop = farm?.primary_crop || farm?.crop || "Rice";
   const secondaryCrop = farm?.secondary_crop || "Black Pepper & Coconut";
   const farmSize = farm?.farm_size || farm?.acreage || 1.5;

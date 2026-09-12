@@ -63,6 +63,14 @@ export default function FarmerDashboard() {
       .catch(() => {});
   }, [crop]);
 
+  const firstName = user?.full_name?.trim()
+    ? user.full_name.trim().split(/\s+/)[0]
+    : user?.name?.trim()
+    ? user.name.trim().split(/\s+/)[0]
+    : user?.email
+    ? user.email.split("@")[0]
+    : t(language, "farmer");
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-8">
       <SEO
@@ -75,7 +83,7 @@ export default function FarmerDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E1E8E4] pb-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#17211D]">
-            {t(language, "namaskaram")}, {user?.full_name || "Ramesh"}
+            {t(language, "namaskaram")}, {firstName}
           </h1>
         </div>
 

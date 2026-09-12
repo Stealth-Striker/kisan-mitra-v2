@@ -182,21 +182,21 @@ export default function Sidebar({ user: propUser }) {
             {user?.avatar_url ? (
               <img
                 src={user.avatar_url}
-                alt={user?.full_name || "Ramesh"}
+                alt={user?.full_name || (user?.email ? user.email.split("@")[0] : "Farmer")}
                 className="w-8 h-8 rounded-xl object-cover border border-[#16A36F]/40 shrink-0 shadow-xs"
               />
             ) : (
               <div className="w-8 h-8 rounded-xl bg-[#087F5B]/40 border border-[#16A36F]/40 flex items-center justify-center text-[#DDF5EA] font-bold text-xs shrink-0 shadow-xs group-hover:bg-[#087F5B]">
-                {(user?.full_name || "Ramesh").charAt(0).toUpperCase()}
+                {(user?.full_name || (user?.email ? user.email.split("@")[0] : "F")).charAt(0).toUpperCase()}
               </div>
             )}
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold text-white tracking-tight leading-tight truncate group-hover:text-emerald-300 transition-colors">
-                {user?.full_name || "Ramesh"}
+                {user?.full_name || (user?.email ? user.email.split("@")[0] : "Farmer")}
               </p>
               <p className="text-[11px] text-emerald-200/60 truncate flex items-center gap-1 mt-0.5">
                 <MapPin className="w-3 h-3 shrink-0 text-emerald-400/80" />
-                <span>{farm ? `${farm.location || "Varikoli"}` : "Varikoli"} • {crop}</span>
+                <span>{farm?.location || "Varikoli"} • {crop}</span>
               </p>
             </div>
           </Link>

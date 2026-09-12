@@ -28,8 +28,8 @@ export default function Preferences() {
 
   useEffect(() => {
     if (user) {
-      setFullName(user.full_name || "Ramesh");
-      setPhone(user.phone || "+91 98765 43210");
+      setFullName(user.full_name || (user.email ? user.email.split("@")[0] : ""));
+      setPhone(user.phone || "");
       setAvatarUrl(user.avatar_url || user.photo_url || "");
       if (user.notification_prefs) {
         try {
@@ -238,7 +238,7 @@ export default function Preferences() {
                 />
               ) : (
                 <div className="w-16 h-16 rounded-2xl bg-[#087F5B] text-white flex items-center justify-center text-2xl font-bold border-2 border-white shadow-xs ring-2 ring-[#DDF5EA]">
-                  {(fullName || "F").charAt(0).toUpperCase()}
+                  {(fullName || (user?.email ? user.email.split("@")[0] : "F")).charAt(0).toUpperCase()}
                 </div>
               )}
               {uploadingPhoto && (
@@ -292,7 +292,7 @@ export default function Preferences() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 className="km-input"
-                placeholder="e.g. Ramesh"
+                placeholder="e.g. Ramesh Kumar"
               />
             </Field>
             <Field label="Mobile Phone Number">

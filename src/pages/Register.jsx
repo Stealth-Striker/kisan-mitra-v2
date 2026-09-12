@@ -4,16 +4,19 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus, Lock, Loader2, Mail } from "lucide-react";
+import { UserPlus, Lock, Loader2, Mail, User, Eye, EyeOff } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 
 import { safeReturnTo } from "@/lib/authReturnTo";
 import SEO from "@/components/SEO";
 
 export default function Register() {
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -26,7 +29,11 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      const result = await base44.auth.register({ email, password });
+      const result = await base44.auth.register({
+        full_name: fullName.trim() || undefined,
+        email,
+        password,
+      });
       if (result && result.access_token) {
         base44.auth.setToken(result.access_token);
         window.location.href = safeReturnTo();
@@ -72,6 +79,22 @@ export default function Register() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
+          <Label htmlFor="fullName">Full Name</Label>
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+            <Input
+              id="fullName"
+              type="text"
+              autoFocus
+              placeholder="e.g. Ramesh Kumar"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="pl-10 h-12"
+              required
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
@@ -79,7 +102,6 @@ export default function Register() {
               id="email"
               type="email"
               autoComplete="email"
-              autoFocus
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -94,14 +116,22 @@ export default function Register() {
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
               id="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               autoComplete="new-password"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="pl-10 h-12"
+              className="pl-10 pr-10 h-12"
               required
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none cursor-pointer p-1"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
           </div>
         </div>
         <div className="space-y-2">
@@ -110,14 +140,22 @@ export default function Register() {
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
               id="confirm"
-              type="password"
+              type={showConfirmPassword ? "text" : "password"}
               autoComplete="new-password"
               placeholder="••••••••"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="pl-10 h-12"
+              className="pl-10 pr-10 h-12"
               required
             />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none cursor-pointer p-1"
+              aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+            >
+              {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
           </div>
         </div>
         <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>

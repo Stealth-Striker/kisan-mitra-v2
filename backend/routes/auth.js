@@ -29,7 +29,7 @@ function sanitizeUser(u) {
 // ── POST /api/auth/register ───────────────────────────────────────────────────
 router.post('/register', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, full_name, name } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
 
     const existing = db.users.findOne(u => u.email === email.toLowerCase());
@@ -37,14 +37,35 @@ router.post('/register', async (req, res) => {
 
     const hash = await bcrypt.hash(password, 10);
     const id = uuidv4();
+    const assignedName = (full_name || name || '').trim() || email.split('@')[0];
 
     const newUser = db.users.insert({
       id,
       email: email.toLowerCase(),
+      full_name: assignedName,
       password_hash: hash,
       role: 'user',
       is_verified: true, // Auto-verified immediately
       notification_prefs: '{}'
+    });
+
+    // Create an initial farm record associated with the new farmer
+    db.farms.insert({
+      id: uuidv4(),
+      created_by_id: newUser.id,
+      name: `${assignedName}'s Farm`,
+      location: 'Varikoli',
+      district: 'Ernakulam',
+      state: 'Kerala',
+      crop: 'Rice',
+      primary_crop: 'Rice',
+      soil_type: 'Alluvial Clay Loam',
+      acreage: 1.5,
+      farm_size: 1.5,
+      farm_size_unit: 'Acre',
+      language: 'English',
+      farmer_since: new Date().getFullYear().toString(),
+      created_date: new Date().toISOString()
     });
 
     const access_token = signToken(newUser.id);
