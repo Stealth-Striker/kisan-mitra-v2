@@ -14,7 +14,6 @@ import {
   Calendar,
   CheckSquare,
   Square,
-  LineChart,
   Plus,
   Trash2,
 } from "lucide-react";
@@ -168,7 +167,6 @@ export default function HarvestGuardian() {
     gddTarget,
     currentMoisturePct,
     targetMoisturePct,
-    moistureDecayCurve,
   } = useMemo(() => {
     const sow = new Date(sowingDate);
     const now = new Date();
@@ -493,41 +491,6 @@ export default function HarvestGuardian() {
                   </span>
                   <span className="text-xl font-bold text-[#17211D]">{totalYieldEstimate}</span>
                   <span className="text-[10px] text-[#65736C] block mt-1">{cropData.unit} ({farmAcres} Ac)</span>
-                </div>
-              </div>
-
-              {/* Desorption Trajectory Strip */}
-              <div className="bg-white rounded-2xl border border-[#E1E8E4] p-5 shadow-xs">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-bold text-[#17211D] uppercase tracking-wider flex items-center gap-1.5">
-                    <LineChart className="w-3.5 h-3.5 text-[#087F5B]" />
-                    Moisture Desorption Curve
-                  </h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#DDF5EA] text-[#063F2E]">
-                    Safe Target: {targetMoisturePct}%
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 text-center pt-1">
-                  {moistureDecayCurve.map((node, i) => {
-                    const isTargetReached = node.moisture <= targetMoisturePct + 0.5;
-                    return (
-                      <div
-                        key={i}
-                        className={`p-2 rounded-xl border text-xs transition-all ${
-                          isTargetReached
-                            ? "bg-[#DDF5EA]/70 border-[#087F5B]/30 font-bold"
-                            : "bg-[#F6F8F5] border-[#E1E8E4]"
-                        }`}
-                      >
-                        <p className="text-[10px] text-[#65736C]">{node.day}</p>
-                        <p className={`text-xs font-extrabold mt-0.5 ${isTargetReached ? "text-[#063F2E]" : "text-[#17211D]"}`}>
-                          {node.moisture}%
-                        </p>
-                        <span className="text-[9px] text-[#65736C] block">{node.date.split(",")[0]}</span>
-                      </div>
-                    );
-                  })}
                 </div>
               </div>
 
