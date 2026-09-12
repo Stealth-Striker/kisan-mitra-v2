@@ -14,15 +14,8 @@ try {
   sqliteDb = new Database(DB_PATH);
   sqliteDb.pragma('journal_mode = WAL');
   sqliteDb.pragma('foreign_keys = ON');
-  useSqlite = true;
-  console.log(`[db] SQLite database initialized successfully at: ${DB_PATH}`);
-} catch (err) {
-  console.warn('[db] better-sqlite3 not available, falling back to JSON storage:', err.message);
-  useSqlite = false;
-}
 
-// ── SQLite Schema Setup ─────────────────────────────────────────────────────────
-if (useSqlite) {
+  // ── SQLite Schema Setup ─────────────────────────────────────────────────────────
   sqliteDb.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
@@ -123,6 +116,12 @@ if (useSqlite) {
     );
     CREATE INDEX IF NOT EXISTS idx_prices_crop ON market_prices(crop);
   `);
+  useSqlite = true;
+  console.log(`[db] SQLite database initialized successfully at: ${DB_PATH}`);
+} catch (err) {
+  console.warn('[db] SQLite initialization failed, falling back to JSON storage:', err.message);
+  sqliteDb = null;
+  useSqlite = false;
 }
 
 // ── JSON Fallback Store ────────────────────────────────────────────────────────

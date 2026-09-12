@@ -56,8 +56,8 @@
 | **Data & State** | TanStack React Query, React Router v6 |
 | **Maps & Charts** | Leaflet, React Leaflet, Recharts |
 | **Backend API** | Node.js, Express.js |
-| **Database** | SQLite via `better-sqlite3` (with JSON fallback storage) |
-| **AI / LLM** | Google Gemini API (`@google/generative-ai`, Gemini 2.5 Flash) |
+| **Database** | SQLite via `better-sqlite3` (with automatic JSON fallback store) |
+| **AI / LLM** | Google Gemini API (`@google/generative-ai`, Gemini 3.5 Flash) |
 | **Agronomic Engine** | Continuous Moisture Desorption ODE (ASABE Standards D245.7) / MATLAB Core |
 | **Authentication** | JWT (`jsonwebtoken`, `bcryptjs`) |
 
@@ -66,7 +66,7 @@
 ## Getting Started
 
 ### Prerequisites
-- **Node.js** (v18 or higher)
+- **Node.js** (v20 LTS, v22, or v24 recommended)
 - **npm** (v9 or higher)
 - **Google Gemini API Key** (Get a free key from [Google AI Studio](https://aistudio.google.com/))
 
@@ -109,7 +109,7 @@ GEMINI_API_KEY=your_google_gemini_api_key_here
 # Optional configuration (defaults shown)
 PORT=3001
 JWT_SECRET=your_jwt_secret_key_here
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.5-flash
 NODE_ENV=development
 ```
 
@@ -121,9 +121,11 @@ NODE_ENV=development
 From the project root:
 ```bash
 cd backend
-npm start
+npm run dev
 ```
-The API server will run at: `http://localhost:3001` (SQLite database initializes automatically).
+> Tip: `npm run dev` starts the backend with live file-watching (`node --watch`). You can also run `npm start` for standard mode.
+
+The API server will run at: `http://localhost:3001` (SQLite database initializes automatically with fallback support).
 
 #### Start Frontend Client
 In a separate terminal, from the project root:
@@ -179,8 +181,9 @@ kisan-mitra-dashboard/
 |---|---|
 | `npm run dev` | Starts Vite frontend dev server |
 | `npm run build` | Builds optimized production bundle in `dist/` |
-| `npm test` | Runs backend automated test suite (10 unit/integration tests) |
-| `cd backend && npm start` | Starts Express backend server |
+| `npm test` | Runs backend automated test matrix (35 tests across 7 suites) |
+| `cd backend && npm run dev` | Starts Express backend server with live reload (`node --watch`) |
+| `cd backend && npm start` | Starts Express backend server in standard mode |
 
 ---
 
