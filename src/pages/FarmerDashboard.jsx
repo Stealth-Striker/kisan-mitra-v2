@@ -11,7 +11,6 @@ import {
   LineChart,
   SunMedium,
   Camera,
-  AlertTriangle,
 } from "lucide-react";
 import { useFarm } from "@/lib/farmContext";
 import { t } from "@/lib/translations";
@@ -98,7 +97,7 @@ export default function FarmerDashboard() {
             <span>{farmSize}</span>
           </div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#DDF5EA] border border-[#16A36F]/30 text-xs font-semibold text-[#063F2E]">
-            <span>{crop} Cultivation</span>
+            <span>{t(language, "cultivation", { crop })}</span>
           </div>
         </div>
       </div>
@@ -112,41 +111,41 @@ export default function FarmerDashboard() {
           <div className="lg:col-span-8 space-y-4">
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#DDF5EA] text-[#063F2E] text-xs font-bold tracking-wide">
-                Optimal Window: Sep 16–19
+                {t(language, "optimalWindow")}
               </span>
-              <span className="text-xs text-[#65736C]">4-day dry weather active</span>
+              <span className="text-xs text-[#65736C]">{t(language, "dryWeatherActive")}</span>
             </div>
 
             <div>
               <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#17211D]">
-                Your {crop.toLowerCase()} is ready for harvest.
+                {t(language, "cropReadyForHarvest", { crop })}
               </h2>
               <p className="text-xs sm:text-sm text-[#65736C] mt-1">
-                Moisture decay and thermal accumulation confirm peak maturity before rain risks on Day 6.
+                {t(language, "heroNarrative")}
               </p>
             </div>
 
             {/* Concise Supporting Metric Pills */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
               <div className="p-3 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4]">
-                <p className="text-[11px] font-medium text-[#65736C]">Moisture</p>
+                <p className="text-[11px] font-medium text-[#65736C]">{t(language, "moisture")}</p>
                 <p className="text-base font-bold text-[#17211D]">17.7%</p>
-                <span className="text-[10px] text-[#087F5B] font-semibold">Target 14.5%</span>
+                <span className="text-[10px] text-[#087F5B] font-semibold">{t(language, "targetMoisture")}</span>
               </div>
               <div className="p-3 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4]">
-                <p className="text-[11px] font-medium text-[#65736C]">Weather Safety</p>
+                <p className="text-[11px] font-medium text-[#65736C]">{t(language, "weatherSafety")}</p>
                 <p className="text-base font-bold text-[#087F5B]">92%</p>
-                <span className="text-[10px] text-[#65736C]">Dry &amp; Sunny</span>
+                <span className="text-[10px] text-[#65736C]">{t(language, "dryAndSunny")}</span>
               </div>
               <div className="p-3 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4]">
-                <p className="text-[11px] font-medium text-[#65736C]">Ground Traction</p>
-                <p className="text-base font-bold text-[#17211D]">Firm Dry</p>
-                <span className="text-[10px] text-[#087F5B] font-semibold">Harvester Ready</span>
+                <p className="text-[11px] font-medium text-[#65736C]">{t(language, "groundTraction")}</p>
+                <p className="text-base font-bold text-[#17211D]">{t(language, "firmDry")}</p>
+                <span className="text-[10px] text-[#087F5B] font-semibold">{t(language, "harvesterReady")}</span>
               </div>
               <div className="p-3 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4]">
-                <p className="text-[11px] font-medium text-[#65736C]">Shatter Risk</p>
-                <p className="text-base font-bold text-[#087F5B]">Low</p>
-                <span className="text-[10px] text-[#65736C]">On Schedule</span>
+                <p className="text-[11px] font-medium text-[#65736C]">{t(language, "shatterRisk")}</p>
+                <p className="text-base font-bold text-[#087F5B]">{t(language, "low")}</p>
+                <span className="text-[10px] text-[#65736C]">{t(language, "onSchedule")}</span>
               </div>
             </div>
 
@@ -157,7 +156,7 @@ export default function FarmerDashboard() {
                 onClick={() => navigate("/harvest-guardian")}
                 className="km-btn-primary py-2 px-4 text-xs font-bold"
               >
-                <span>Prepare for Harvest</span>
+                <span>{t(language, "prepareForHarvest")}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -190,11 +189,11 @@ export default function FarmerDashboard() {
               <div className="absolute flex flex-col items-center text-center">
                 <span className="text-3xl font-extrabold tracking-tight text-[#063F2E]">98%</span>
                 <span className="text-[10px] font-bold text-[#65736C] uppercase tracking-wider">
-                  Maturity
+                  {t(language, "maturity")}
                 </span>
               </div>
             </div>
-            <p className="text-xs font-bold text-[#17211D] mt-2">Peak Ripening</p>
+            <p className="text-xs font-bold text-[#17211D] mt-2">{t(language, "peakRipening")}</p>
           </div>
         </div>
       </div>
@@ -205,9 +204,9 @@ export default function FarmerDashboard() {
         <div className="km-card p-4 flex flex-col justify-between hover:border-[#087F5B]/40 transition-all">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-[#65736C] uppercase tracking-wider">Crop Health</span>
+              <span className="text-[11px] font-bold text-[#65736C] uppercase tracking-wider">{t(language, "cropHealth")}</span>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#DDF5EA] text-[#063F2E]">
-                Active
+                {t(language, "active")}
               </span>
             </div>
 
@@ -216,9 +215,9 @@ export default function FarmerDashboard() {
                 <Stethoscope className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-sm font-bold text-[#17211D]">Plant Diagnostics</p>
+                <p className="text-sm font-bold text-[#17211D]">{t(language, "plantDiagnostics")}</p>
                 <p className="text-[11px] text-[#65736C]">
-                  {recentDiagnosis ? recentDiagnosis.disease : "No active fungal infections"}
+                  {recentDiagnosis ? recentDiagnosis.disease : t(language, "noActiveInfections")}
                 </p>
               </div>
             </div>
@@ -230,7 +229,7 @@ export default function FarmerDashboard() {
               className="inline-flex items-center gap-1 text-xs font-bold text-[#087F5B] hover:text-[#063F2E] transition-colors"
             >
               <Camera className="w-3.5 h-3.5" />
-              <span>Scan Leaf</span>
+              <span>{t(language, "scanLeaf")}</span>
               <ArrowRight className="w-3.5 h-3.5 ml-auto" />
             </Link>
           </div>
@@ -240,7 +239,7 @@ export default function FarmerDashboard() {
         <div className="km-card p-4 flex flex-col justify-between hover:border-[#087F5B]/40 transition-all">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-[#65736C] uppercase tracking-wider">Outbreak Radar</span>
+              <span className="text-[11px] font-bold text-[#65736C] uppercase tracking-wider">{t(language, "outbreakRadar")}</span>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-[#92540C] border border-amber-200/60">
                 {nearestAlert.distance_km || 14} km
               </span>
@@ -263,7 +262,7 @@ export default function FarmerDashboard() {
               className="inline-flex items-center gap-1 text-xs font-bold text-[#087F5B] hover:text-[#063F2E] transition-colors"
             >
               <ShieldAlert className="w-3.5 h-3.5" />
-              <span>Live Threat Map</span>
+              <span>{t(language, "liveThreatMap")}</span>
               <ArrowRight className="w-3.5 h-3.5 ml-auto" />
             </Link>
           </div>
@@ -273,9 +272,9 @@ export default function FarmerDashboard() {
         <div className="km-card p-4 flex flex-col justify-between hover:border-[#087F5B]/40 transition-all">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-[#65736C] uppercase tracking-wider">Field Weather</span>
+              <span className="text-[11px] font-bold text-[#65736C] uppercase tracking-wider">{t(language, "fieldWeather")}</span>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#DDF5EA] text-[#063F2E]">
-                Favorable
+                {t(language, "favorable")}
               </span>
             </div>
 
@@ -284,8 +283,8 @@ export default function FarmerDashboard() {
                 <SunMedium className="w-4 h-4 text-amber-600" />
               </div>
               <div>
-                <p className="text-sm font-bold text-[#17211D]">28.4°C • Sunny</p>
-                <p className="text-[11px] text-[#65736C]">Humidity: 62% • Rain: 5%</p>
+                <p className="text-sm font-bold text-[#17211D]">{t(language, "weatherMetrics")}</p>
+                <p className="text-[11px] text-[#65736C]">{t(language, "weatherDetails")}</p>
               </div>
             </div>
           </div>
@@ -296,7 +295,7 @@ export default function FarmerDashboard() {
               className="inline-flex items-center gap-1 text-xs font-bold text-[#087F5B] hover:text-[#063F2E] transition-colors"
             >
               <CalendarClock className="w-3.5 h-3.5" />
-              <span>7-Day Radar</span>
+              <span>{t(language, "sevenDayRadar")}</span>
               <ArrowRight className="w-3.5 h-3.5 ml-auto" />
             </Link>
           </div>
@@ -306,7 +305,7 @@ export default function FarmerDashboard() {
         <div className="km-card p-4 flex flex-col justify-between hover:border-[#087F5B]/40 transition-all">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-[#65736C] uppercase tracking-wider">Mandi Rates</span>
+              <span className="text-[11px] font-bold text-[#65736C] uppercase tracking-wider">{t(language, "mandiRates")}</span>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#DDF5EA] text-[#063F2E]">
                 +2.4%
               </span>
@@ -318,7 +317,7 @@ export default function FarmerDashboard() {
               </div>
               <div>
                 <p className="text-sm font-bold text-[#17211D]">{marketPrice}</p>
-                <p className="text-[11px] text-[#65736C]">Peak: ₹34.60/kg in 3 days</p>
+                <p className="text-[11px] text-[#65736C]">{t(language, "peakPriceForecast")}</p>
               </div>
             </div>
           </div>
@@ -329,7 +328,7 @@ export default function FarmerDashboard() {
               className="inline-flex items-center gap-1 text-xs font-bold text-[#087F5B] hover:text-[#063F2E] transition-colors"
             >
               <LineChart className="w-3.5 h-3.5" />
-              <span>Market Copilot</span>
+              <span>{t(language, "marketCopilot")}</span>
               <ArrowRight className="w-3.5 h-3.5 ml-auto" />
             </Link>
           </div>

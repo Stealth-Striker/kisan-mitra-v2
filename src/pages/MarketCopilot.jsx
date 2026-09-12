@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
 import {
   LineChart,
   MapPin,
@@ -7,7 +6,6 @@ import {
   Truck,
   Scale,
   CheckCircle2,
-  ArrowRight,
   Copy,
   Check,
   MessageSquare,
@@ -15,14 +13,16 @@ import {
   Share2,
   Loader2,
   Bell,
-  ShieldCheck,
   Calculator,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useFarm } from "@/lib/farmContext";
+import { t } from "@/lib/translations";
 import SEO from "@/components/SEO";
 import MetricCard from "@/components/ui/MetricCard";
 import RecommendationBanner from "@/components/ui/RecommendationBanner";
+import ReactMarkdown from "react-markdown";
+import { cleanAiText } from "@/lib/cleanAiText";
 
 // Multi-crop market profiles with APMC markets, historical & forecast rates, and MSP data
 const CROP_MARKET_DATA = {
@@ -436,7 +436,7 @@ const VEHICLES = [
 ];
 
 export default function MarketCopilot() {
-  const { farm } = useFarm();
+  const { farm, language } = useFarm();
   const farmCrop = farm?.primary_crop || "Rice";
 
   // State: selected crop
@@ -456,7 +456,19 @@ export default function MarketCopilot() {
   const [farmgatePickup, setFarmgatePickup] = useState(true);
   const [aiNegotiationAdvice, setAiNegotiationAdvice] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
-  const [counterLang, setCounterLang] = useState("en"); // 'en', 'ml', 'hi'
+
+  const langToCounterCode = (l) => {
+    if (l === "Malayalam" || l === "ml") return "ml";
+    if (l === "Hindi" || l === "hi") return "hi";
+    if (l === "Tamil" || l === "ta") return "ta";
+    return "en";
+  };
+  const [counterLang, setCounterLang] = useState(() => langToCounterCode(language));
+
+  React.useEffect(() => {
+    setCounterLang(langToCounterCode(language));
+  }, [language]);
+
   const [copiedScript, setCopiedScript] = useState(false);
 
   // State: Target Price Alert
@@ -563,6 +575,7 @@ export default function MarketCopilot() {
       en: `Dear Buyer, thank you for your offer of ₹${offer}/kg for my ${crop}. Today's wholesale rate at ${mandiName} is ₹${mandiRate}/kg. Taking into account grade quality and current arrivals, my counter-offer is ₹${counter}/kg for immediate loading. Please confirm if we can proceed.`,
       ml: `നമസ്കാരം, എന്റെ ${crop} വിളയ്ക്ക് ₹${offer}/kg നിരക്കിൽ നിങ്ങൾ തന്ന ഓഫറിന് നന്ദി. ഇന്നത്തെ ${mandiName} വിപണി നിരക്ക് ₹${mandiRate}/kg ആണ്. ഗുണമേന്മയും ഇന്നത്തെ വിപണി ആവശ്യകതയും പരിഗണിച്ച്, ₹${counter}/kg നിരക്കിൽ നൽകാൻ തയ്യാറാണ്. അറിയിക്കുമല്ലോ.`,
       hi: `नमस्ते, मेरे ${crop} के लिए ₹${offer}/किग्रा के प्रस्ताव के लिए धन्यवाद। आज ${mandiName} में थोक भाव ₹${mandiRate}/किग्रा है। फसल की उच्च गुणवत्ता को देखते हुए, मेरा अंतिम प्रति-प्रस्ताव ₹${counter}/किग्रा है। कृपया पुष्टि करें।`,
+      ta: `வணக்கம், எனது ${crop} விளைச்சலுக்கு ₹${offer}/கிலோ வீதம் நீங்கள் அளித்த விலைக்கு நன்றி. இன்றைய ${mandiName} சந்தை மொத்த விலை ₹${mandiRate}/கிலோ. பயிரின் தரம் மற்றும் குறைவான வரத்தைக் கருத்தில் கொண்டு, எனது எதிர் விலை ₹${counter}/கிலோ. ஏற்றுமதி செய்ய உறுதிப்படுத்தவும்.`,
     };
   }, [traderEvaluation, cropData, bestMandi, todayAvgPrice]);
 
@@ -586,11 +599,20 @@ export default function MarketCopilot() {
     setAiLoading(true);
     try {
       const prompt = `A trader offered ₹${traderOfferPrice}/kg for ${saleQuantityQtl} quintals of ${cropData.cropName}. Payment terms: ${paymentTerms}. Today's Market average is ₹${todayAvgPrice}/kg. Best market net realization is ₹${bestMandi?.netPerKg.toFixed(2)}/kg. Should I accept, counter, or reject? Provide 3 sharp bargaining tips for an Indian farmer.`;
+      const langParam =
+        counterLang === "ml"
+          ? "Malayalam"
+          : counterLang === "hi"
+          ? "Hindi"
+          : counterLang === "ta"
+          ? "Tamil"
+          : "English";
       const res = await base44.functions.invoke("askKisanMitra", {
         question: prompt,
-        language: counterLang === "ml" ? "Malayalam" : counterLang === "hi" ? "Hindi" : "English",
+        language: langParam,
       });
-      setAiNegotiationAdvice(res.data?.answer || res.data);
+      const rawAdvice = res.data?.answer || res.data;
+      setAiNegotiationAdvice(cleanAiText(rawAdvice));
     } catch {
       setAiNegotiationAdvice(
         `Strategic Negotiation Advice:\n• Current Market benchmark is ₹${todayAvgPrice}/kg. The buyer's offer of ₹${traderOfferPrice}/kg is ${traderEvaluation.diffPerKg >= 0 ? "at par with market" : "underpricing your batch by ₹" + Math.abs(traderEvaluation.diffPerKg).toFixed(2) + "/kg"}.\n• Counter firmly at ₹${traderEvaluation.recommendedCounterPrice}/kg citing high grain density and low regional market arrivals.\n• If payment is deferred (${paymentTerms}), strictly demand 25% cash advance before truck weighing.`
@@ -1272,20 +1294,25 @@ export default function MarketCopilot() {
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-[#17211D] flex items-center gap-1.5">
                     <MessageSquare className="w-3.5 h-3.5 text-[#063F2E]" />
-                    Counter-Offer Pitch
+                    {t(language, "counterOfferPitch")}
                   </span>
                   <div className="flex items-center gap-1 bg-[#F6F8F5] p-0.5 rounded-lg border border-[#E1E8E4]">
-                    {["en", "ml", "hi"].map((lang) => (
+                    {[
+                      { code: "en", label: "EN" },
+                      { code: "ml", label: "മലയാളം" },
+                      { code: "hi", label: "हिंदी" },
+                      { code: "ta", label: "தமிழ்" },
+                    ].map((item) => (
                       <button
-                        key={lang}
-                        onClick={() => setCounterLang(lang)}
+                        key={item.code}
+                        onClick={() => setCounterLang(item.code)}
                         className={`px-2 py-0.5 text-[10px] font-bold rounded cursor-pointer ${
-                          counterLang === lang
+                          counterLang === item.code
                             ? "bg-[#063F2E] text-white"
                             : "text-[#65736C] hover:text-[#17211D]"
                         }`}
                       >
-                        {lang === "en" ? "EN" : lang === "ml" ? "മലയാളം" : "हिंदी"}
+                        {item.label}
                       </button>
                     ))}
                   </div>
@@ -1302,11 +1329,11 @@ export default function MarketCopilot() {
                   >
                     {copiedScript ? (
                       <>
-                        <Check className="w-3.5 h-3.5 text-emerald-600" /> Copied!
+                        <Check className="w-3.5 h-3.5 text-emerald-600" /> {t(language, "copied")}
                       </>
                     ) : (
                       <>
-                        <Copy className="w-3.5 h-3.5 text-[#65736C]" /> Copy Pitch
+                        <Copy className="w-3.5 h-3.5 text-[#65736C]" /> {t(language, "copyPitch")}
                       </>
                     )}
                   </button>
@@ -1315,7 +1342,7 @@ export default function MarketCopilot() {
                     onClick={shareViaWhatsApp}
                     className="flex-1 py-2 px-3 rounded-xl bg-[#16A36F] hover:bg-[#087F5B] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
                   >
-                    <Share2 className="w-3.5 h-3.5" /> Send WhatsApp
+                    <Share2 className="w-3.5 h-3.5" /> {t(language, "sendWhatsApp")}
                   </button>
                 </div>
               </div>
@@ -1334,17 +1361,30 @@ export default function MarketCopilot() {
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4" /> AI Bargaining Advice
+                    <Sparkles className="w-4 h-4" /> {t(language, "aiBargainingAdvice")}
                   </>
                 )}
               </button>
 
               {aiNegotiationAdvice && (
-                <div className="mt-3 p-3.5 rounded-xl bg-[#DDF5EA] border border-[#063F2E]/20 text-xs text-[#17211D] leading-relaxed space-y-1.5 animate-in fade-in">
+                <div className="mt-3 p-3.5 rounded-xl bg-[#DDF5EA] border border-[#063F2E]/20 text-xs text-[#17211D] leading-relaxed space-y-2 animate-in fade-in">
                   <p className="font-bold text-[#063F2E] flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5" /> AI Negotiator Counsel:
+                    <Sparkles className="w-3.5 h-3.5 shrink-0" /> AI Negotiator Counsel:
                   </p>
-                  <p className="whitespace-pre-line text-[#17211D]">{aiNegotiationAdvice}</p>
+                  <div className="text-xs text-[#17211D] leading-relaxed">
+                    <ReactMarkdown
+                      components={{
+                        p: ({ children }) => <p className="mb-1.5 last:mb-0 text-[#17211D] leading-relaxed">{children}</p>,
+                        strong: ({ children }) => <strong className="font-bold text-[#063F2E]">{children}</strong>,
+                        em: ({ children }) => <em className="italic text-[#063F2E] font-medium">{children}</em>,
+                        ul: ({ children }) => <ul className="list-disc pl-4 space-y-1 my-1">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal pl-4 space-y-1 my-1">{children}</ol>,
+                        li: ({ children }) => <li className="text-[#17211D]">{children}</li>,
+                      }}
+                    >
+                      {cleanAiText(aiNegotiationAdvice)}
+                    </ReactMarkdown>
+                  </div>
                 </div>
               )}
             </div>

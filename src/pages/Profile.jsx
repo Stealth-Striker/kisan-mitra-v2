@@ -18,7 +18,7 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import { useFarm } from "@/lib/farmContext";
-import { LANGUAGES, t } from "@/lib/translations";
+import { LANGUAGES } from "@/lib/translations";
 import SEO from "@/components/SEO";
 
 export default function Profile() {

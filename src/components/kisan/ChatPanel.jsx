@@ -6,6 +6,8 @@ import { useFarm } from "@/lib/farmContext";
 import { t } from "@/lib/translations";
 import { Image } from "@/components/ui/image";
 import { useToast } from "@/components/ui/use-toast";
+import ReactMarkdown from "react-markdown";
+import { cleanAiText } from "@/lib/cleanAiText";
 
 const SUGGESTED = [
   "What disease is affecting my rice?",
@@ -391,7 +393,8 @@ export default function ChatPanel({ user, initialPrompt }) {
         history,
       });
 
-      const answer = res.data?.answer || "I'm sorry, I couldn't generate a response right now. Please try again.";
+      const rawAnswer = res.data?.answer || "I'm sorry, I couldn't generate a response right now. Please try again.";
+      const answer = cleanAiText(rawAnswer);
       const aiMsg = { role: "assistant", content: answer, created_date: new Date().toISOString() };
       // Compute index BEFORE setMessages (messagesRef includes user msg after the awaited ops above)
       const aiIdx = messagesRef.current.length;
@@ -834,7 +837,7 @@ export default function ChatPanel({ user, initialPrompt }) {
     stopSpeaking();
 
     // Clean markdown formatting for natural voice synthesis
-    const cleanText = text
+    const cleanText = cleanAiText(text)
       .replace(/[*#_`~>]/g, "")
       .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
       .replace(/\n+/g, " ")
@@ -990,13 +993,30 @@ export default function ChatPanel({ user, initialPrompt }) {
                   </div>
                 ) : (
                   <div
-                    className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
+                    className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                       m.role === "user"
-                        ? "bg-[#063F2E] text-white rounded-br-md"
+                        ? "bg-[#063F2E] text-white rounded-br-md whitespace-pre-wrap"
                         : "bg-white text-[#17211D] border border-[#E1E8E4] rounded-bl-md shadow-xs"
                     }`}
                   >
-                    {m.content}
+                    {m.role === "user" ? (
+                      m.content
+                    ) : (
+                      <div className="space-y-1.5 leading-relaxed">
+                        <ReactMarkdown
+                          components={{
+                            p: ({ children }) => <p className="mb-1.5 last:mb-0 leading-relaxed">{children}</p>,
+                            strong: ({ children }) => <strong className="font-bold text-[#063F2E]">{children}</strong>,
+                            em: ({ children }) => <em className="italic text-[#063F2E] font-medium">{children}</em>,
+                            ul: ({ children }) => <ul className="list-disc pl-4 space-y-1 my-1">{children}</ul>,
+                            ol: ({ children }) => <ol className="list-decimal pl-4 space-y-1 my-1">{children}</ol>,
+                            li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                          }}
+                        >
+                          {cleanAiText(m.content)}
+                        </ReactMarkdown>
+                      </div>
+                    )}
                   </div>
                 )}
                 {/* Replay / Stop pill — below the bubble, clearly visible */}

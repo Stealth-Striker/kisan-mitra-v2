@@ -1,37 +1,52 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { Sprout, Bell, Bug, ArrowRight, Check, X, ChevronRight } from "lucide-react";
+import { Sprout, Bell, Bug, ArrowRight, Check, X, ChevronRight, Globe, ChevronDown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useFarm } from "@/lib/farmContext";
-import { t } from "@/lib/translations";
-
-const ROUTE_LABELS = {
-  "/": "Dashboard",
-  "/dashboard": "Dashboard",
-  "/crop-doctor": "Crop Health",
-  "/harvest-guardian": "Harvest Guardian",
-  "/outbreak-radar": "Outbreak Radar",
-  "/market-copilot": "Market Copilot",
-  "/chat": "AI Assistant",
-  "/ask-kisan-mitra": "AI Assistant",
-  "/conversations": "Past Conversations",
-  "/preferences": "Farm Settings",
-  "/profile": "Farmer Profile",
-};
+import { t, LANGUAGES } from "@/lib/translations";
 
 export default function Header({ user: propUser }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { farm, user: contextUser, language } = useFarm();
+  const { farm, user: contextUser, language, setLanguage } = useFarm();
   const user = propUser || contextUser;
 
   const [alerts, setAlerts] = useState([]);
   const [open, setOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const langRef = useRef(null);
 
-  const currentPageLabel =
-    ROUTE_LABELS[location.pathname] ||
-    (location.pathname.startsWith("/admin") ? "Admin" : "Dashboard");
+  const currentLangObj = LANGUAGES.find((l) => l.code === language) || LANGUAGES[0];
+
+  const getPageLabel = (pathname, lang) => {
+    switch (pathname) {
+      case "/":
+      case "/dashboard":
+        return t(lang, "dashboard");
+      case "/crop-doctor":
+        return t(lang, "cropHealth");
+      case "/harvest-guardian":
+        return t(lang, "harvestGuardian");
+      case "/outbreak-radar":
+        return t(lang, "outbreakRadar");
+      case "/market-copilot":
+        return t(lang, "marketCopilot");
+      case "/chat":
+      case "/ask-kisan-mitra":
+        return t(lang, "aiAssistant");
+      case "/conversations":
+        return t(lang, "pastConversations");
+      case "/preferences":
+        return t(lang, "farmSettings");
+      case "/profile":
+        return t(lang, "farmerProfile");
+      default:
+        return pathname.startsWith("/admin") ? t(lang, "adminPanel") : t(lang, "dashboard");
+    }
+  };
+
+  const currentPageLabel = getPageLabel(location.pathname, language);
 
   const isDashboard = location.pathname === "/" || location.pathname === "/dashboard";
 
@@ -56,11 +71,14 @@ export default function Header({ user: propUser }) {
       });
   }, []);
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setOpen(false);
+      }
+      if (langRef.current && !langRef.current.contains(event.target)) {
+        setLangOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -111,15 +129,57 @@ export default function Header({ user: propUser }) {
           </nav>
         </div>
 
-        {/* Right Notification Bell */}
-        <div className="flex items-center gap-2.5">
+        {/* Right Controls: Language Translator & Notification Bell */}
+        <div className="flex items-center gap-2">
+          {/* Top Header Language Translator */}
+          <div className="relative" ref={langRef}>
+            <button
+              type="button"
+              onClick={() => setLangOpen(!langOpen)}
+              className="flex items-center gap-1.5 h-9 px-2.5 rounded-xl bg-white hover:bg-[#F6F8F5] text-xs font-semibold text-[#17211D] transition-all cursor-pointer border border-[#E1E8E4]"
+              title={t(language, "selectLanguage")}
+            >
+              <Globe className="w-3.5 h-3.5 text-[#087F5B]" />
+              <span className="hidden sm:inline">{currentLangObj.label}</span>
+              <span className="sm:hidden font-medium text-[11px]">{currentLangObj.short}</span>
+              <ChevronDown className={`w-3 h-3 text-[#65736C] transition-transform ${langOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {langOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-[#E1E8E4] py-1.5 text-[#17211D] z-50 animate-in fade-in zoom-in-95 duration-100">
+                <div className="px-3 py-1.5 border-b border-[#E1E8E4] text-[10px] font-bold text-[#65736C] uppercase tracking-wider">
+                  {t(language, "selectLanguage")}
+                </div>
+                {LANGUAGES.map((l) => (
+                  <button
+                    key={l.code}
+                    type="button"
+                    onClick={() => {
+                      setLanguage(l.code);
+                      setLangOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-3.5 py-2 text-xs text-left hover:bg-[#F6F8F5] cursor-pointer transition-colors ${
+                      language === l.code ? "bg-[#DDF5EA] font-bold text-[#063F2E]" : ""
+                    }`}
+                  >
+                    <span className="font-medium">{l.native}</span>
+                    <span className="text-[11px] text-[#65736C] flex items-center gap-1.5">
+                      {l.label}
+                      {language === l.code && <Check className="w-3.5 h-3.5 text-[#087F5B]" />}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Notification Bell Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
               type="button"
               onClick={() => setOpen(!open)}
               className="relative w-9 h-9 rounded-xl flex items-center justify-center text-[#65736C] hover:bg-[#F6F8F5] hover:text-[#063F2E] transition-all cursor-pointer border border-[#E1E8E4]"
-              title="Notifications"
+              title={t(language, "notifications")}
             >
               <Bell className="w-4 h-4" />
               {alertCount > 0 && (
@@ -136,10 +196,10 @@ export default function Header({ user: propUser }) {
                   <div className="flex items-center gap-2">
                     <Bell className="w-4 h-4 text-[#063F2E]" />
                     <h3 className="text-xs font-bold text-[#17211D] uppercase tracking-wider">
-                      Alerts &amp; Advisories
+                      {t(language, "alertsAndAdvisories")}
                     </h3>
                     <span className="bg-[#DDF5EA] text-[#063F2E] text-[10px] font-bold px-2 py-0.5 rounded-full">
-                      {alertCount} Active
+                      {alertCount} {t(language, "active")}
                     </span>
                   </div>
                   <button
@@ -181,7 +241,7 @@ export default function Header({ user: propUser }) {
                           </span>
                         </div>
                         <p className="text-xs text-[#65736C] mt-0.5 truncate">
-                          {item.location} • Affects: {item.crop || "Rice"}
+                          {item.location} • {t(language, "crop")}: {item.crop || "Rice"}
                         </p>
                       </div>
                     </div>
@@ -198,7 +258,7 @@ export default function Header({ user: propUser }) {
                     }}
                     className="text-[#65736C] hover:text-[#17211D] flex items-center gap-1 cursor-pointer"
                   >
-                    <Check className="w-3.5 h-3.5" /> Clear All
+                    <Check className="w-3.5 h-3.5" /> {t(language, "clearAll")}
                   </button>
                   <button
                     type="button"
@@ -208,7 +268,7 @@ export default function Header({ user: propUser }) {
                     }}
                     className="text-[#063F2E] hover:underline flex items-center gap-1 cursor-pointer font-bold"
                   >
-                    View Outbreak Radar <ArrowRight className="w-3.5 h-3.5" />
+                    {t(language, "viewOutbreakRadar")} <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>

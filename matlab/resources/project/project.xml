@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Project xmlns="http://www.mathworks.com/matlab/project">
+  <Name>KisanMitra</Name>
+  <Version>1.0</Version>
+  <Description>Kisan Mitra Bio-Agronomic Simulation Engine and Harvest Guardian ODE Models</Description>
+  <StartupFile>startup.m</StartupFile>
+  <ShutdownFile>shutdown.m</ShutdownFile>
+</Project>

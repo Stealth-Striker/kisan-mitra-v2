@@ -88,62 +88,62 @@ export default function Sidebar({ user: propUser }) {
 
         {/* Crop Management */}
         <div className="space-y-1">
-          <div className="km-section-label px-3 mb-1.5">Crop</div>
+          <div className="km-section-label px-3 mb-1.5">{t(language, "cropSection")}</div>
           <Link
             to="/crop-doctor"
             className={`km-nav-item ${isActive("/crop-doctor") ? "km-nav-item-active" : ""}`}
           >
             <Stethoscope className="w-4 h-4 shrink-0" />
-            <span>Crop Health</span>
+            <span>{t(language, "cropHealth")}</span>
           </Link>
           <Link
             to="/harvest-guardian"
             className={`km-nav-item ${isActive("/harvest-guardian") ? "km-nav-item-active" : ""}`}
           >
             <CalendarClock className="w-4 h-4 shrink-0" />
-            <span>Harvest Guardian</span>
+            <span>{t(language, "harvestGuardian")}</span>
           </Link>
         </div>
 
         {/* Farm Monitoring */}
         <div className="space-y-1">
-          <div className="km-section-label px-3 mb-1.5">Farm Monitor</div>
+          <div className="km-section-label px-3 mb-1.5">{t(language, "farmMonitor")}</div>
           <Link
             to="/outbreak-radar"
             className={`km-nav-item ${isActive("/outbreak-radar") ? "km-nav-item-active" : ""}`}
           >
             <Radar className="w-4 h-4 shrink-0" />
-            <span>Outbreak Radar</span>
+            <span>{t(language, "outbreakRadar")}</span>
           </Link>
         </div>
 
         {/* Market Intelligence */}
         <div className="space-y-1">
-          <div className="km-section-label px-3 mb-1.5">Commerce</div>
+          <div className="km-section-label px-3 mb-1.5">{t(language, "commerce")}</div>
           <Link
             to="/market-copilot"
             className={`km-nav-item ${isActive("/market-copilot") ? "km-nav-item-active" : ""}`}
           >
             <LineChart className="w-4 h-4 shrink-0" />
-            <span>Market Copilot</span>
+            <span>{t(language, "marketCopilot")}</span>
           </Link>
         </div>
 
         {/* AI Assistant */}
         <div className="space-y-1">
-          <div className="km-section-label px-3 mb-1.5">Intelligence</div>
+          <div className="km-section-label px-3 mb-1.5">{t(language, "intelligence")}</div>
           <Link
             to="/chat"
             className={`km-nav-item ${isActive("/chat") ? "km-nav-item-active" : ""}`}
           >
             <Bot className="w-4 h-4 shrink-0" />
-            <span>Ask Kisan Mitra</span>
+            <span>{t(language, "askKisanMitraNav")}</span>
           </Link>
         </div>
 
         {/* Divider */}
         <div className="border-t border-white/[0.08] pt-3 space-y-1">
-          <div className="km-section-label px-3 mb-1.5">Activity & Settings</div>
+          <div className="km-section-label px-3 mb-1.5">{t(language, "activityAndSettings")}</div>
           <Link
             to="/conversations"
             className={`km-nav-item ${isActive("/conversations") ? "km-nav-item-active" : ""}`}
@@ -164,7 +164,7 @@ export default function Sidebar({ user: propUser }) {
               className={`km-nav-item ${location.pathname.startsWith("/admin") ? "km-nav-item-active" : ""}`}
             >
               <Shield className="w-4 h-4 shrink-0" />
-              <span>Admin Panel</span>
+              <span>{t(language, "adminPanel")}</span>
             </Link>
           )}
         </div>

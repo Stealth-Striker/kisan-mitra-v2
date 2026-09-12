@@ -4,17 +4,18 @@ import { LayoutGrid, Stethoscope, Radar, LineChart, Bot } from "lucide-react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import { FarmProvider, useFarm } from "@/lib/farmContext";
+import { t } from "@/lib/translations";
 
 function FarmerLayoutContent() {
-  const { user, setUser, refresh } = useFarm();
+  const { user, setUser, refresh, language } = useFarm();
   const location = useLocation();
 
   const mobileNavItems = [
-    { label: "Dashboard", path: "/dashboard", icon: LayoutGrid },
-    { label: "Crop", path: "/crop-doctor", icon: Stethoscope },
-    { label: "Radar", path: "/outbreak-radar", icon: Radar },
-    { label: "Market", path: "/market-copilot", icon: LineChart },
-    { label: "Assistant", path: "/chat", icon: Bot },
+    { label: t(language, "overview"), path: "/dashboard", icon: LayoutGrid },
+    { label: t(language, "cropSection"), path: "/crop-doctor", icon: Stethoscope },
+    { label: t(language, "radar"), path: "/outbreak-radar", icon: Radar },
+    { label: t(language, "market"), path: "/market-copilot", icon: LineChart },
+    { label: t(language, "assistant"), path: "/chat", icon: Bot },
   ];
 
   const isCurrentActive = (p) => {

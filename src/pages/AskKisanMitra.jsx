@@ -4,11 +4,12 @@ import { Bot, MessageSquare, Mic, Camera } from "lucide-react";
 import ChatPanel from "@/components/kisan/ChatPanel";
 import SEO from "@/components/SEO";
 import { useFarm } from "@/lib/farmContext";
+import { t } from "@/lib/translations";
 
 export default function AskKisanMitra() {
   const context = useOutletContext();
   const user = context?.user;
-  const { farm } = useFarm();
+  const { farm, language } = useFarm();
   const location = useLocation();
 
   const prompt = new URLSearchParams(location.search).get("prompt");
@@ -30,21 +31,21 @@ export default function AskKisanMitra() {
 
         <div className="relative z-10 space-y-3 max-w-2xl">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            Ask Kisan Mitra
+            {t(language, "askKisanMitraNav")}
           </h1>
           <p className="text-sm sm:text-base text-[#DDF5EA]/90 leading-relaxed font-normal">
-            Bilingual agronomic AI assistant for {crop} cultivation. Ask questions in Malayalam, Hindi, Tamil, or English, upload leaf photos for diagnosis, or use voice input.
+            {t(language, "chatDescription", { crop })}
           </p>
 
           <div className="flex flex-wrap items-center gap-2.5 pt-1 text-xs text-[#DDF5EA]/80">
             <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full border border-white/10">
-              <Mic className="w-3.5 h-3.5" /> Voice Input & Speech
+              <Mic className="w-3.5 h-3.5" /> {t(language, "voiceInputSpeech")}
             </span>
             <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full border border-white/10">
-              <Camera className="w-3.5 h-3.5" /> Leaf Photo Diagnosis
+              <Camera className="w-3.5 h-3.5" /> {t(language, "leafPhotoDiagnosis")}
             </span>
             <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full border border-white/10">
-              <MessageSquare className="w-3.5 h-3.5" /> Multilingual Support
+              <MessageSquare className="w-3.5 h-3.5" /> {t(language, "multilingualSupport")}
             </span>
           </div>
         </div>

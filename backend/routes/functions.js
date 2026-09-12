@@ -4,16 +4,24 @@ const { simulateGrowth } = require('../services/matlabBioGrowthEngine');
 
 const LANG_INSTRUCTIONS = {
   English: 'Respond in clear, simple English.',
+  en: 'Respond in clear, simple English.',
   Malayalam: 'മലയാളത്തിൽ ലളിതമായി മറുപടി നൽകുക.',
+  ml: 'മലയാളത്തിൽ ലളിതമായി മറുപടി നൽകുക.',
   Hindi: 'सरल हिंदी में उत्तर दें।',
+  hi: 'सरल हिंदी में उत्तर दें।',
   Tamil: 'எளிய தமிழில் பதிலளிக்கவும்.',
+  ta: 'எளிய தமிழில் பதிலளிக்கவும்.',
 };
 
 const LANG_INSTRUCTIONS_CROP = {
   English: 'Write all fields in clear English.',
+  en: 'Write all fields in clear English.',
   Malayalam: 'എല്ലാ ഫീൽഡുകളും മലയാളത്തിൽ എഴുതുക.',
+  ml: 'എല്ലാ ഫീൽഡുകളും മലയാളത്തിൽ എഴുതുക.',
   Hindi: 'सभी फ़ील्ड हिंदी में लिखें।',
+  hi: 'सभी फ़ील्ड हिंदी में लिखें।',
   Tamil: 'அனைத்து புலங்களையும் தமிழில் எழுதவும்.',
+  ta: 'அனைத்து புலங்களையும் தமிழில் எழுதவும்.',
 };
 
 // ── Image loading helper ───────────────────────────────────────────────────────
@@ -246,7 +254,7 @@ router.post('/askKisanMitra', async (req, res) => {
     const contextStr = ctxParts.length ? `Farmer context: ${ctxParts.join(', ')}.` : '';
 
     const langInstr = LANG_INSTRUCTIONS[language] || LANG_INSTRUCTIONS.English;
-    const systemPrompt = `You are Kisan Mitra, a friendly, knowledgeable AI farming assistant for Indian farmers. Give practical, actionable advice on crops, diseases, pests, harvest timing, market prices, and farming practices. Keep answers concise (3-6 sentences) unless the farmer asks for detail. ${greetingRule} ${langInstr} ${contextStr}`;
+    const systemPrompt = `You are Kisan Mitra, a friendly, knowledgeable AI farming assistant for Indian farmers. Give practical, actionable advice on crops, diseases, pests, harvest timing, market prices, and farming practices. Keep answers concise (3-6 sentences) unless the farmer asks for detail. Format clearly using standard markdown (bold headings, bullet points). Never wrap responses, sentences, or advice points in curly braces or raw JSON. ${greetingRule} ${langInstr} ${contextStr}`;
 
     let imageData = null;
     if (image_url) {
@@ -276,7 +284,12 @@ router.post('/askKisanMitra', async (req, res) => {
       maxTokens: 1500,
       temperature: 0.7,
     });
-    res.json({ answer });
+
+    const cleanAnswer = typeof answer === 'string'
+      ? answer.replace(/^\s*\{+\s*/gm, '').replace(/\s*\}+\s*$/gm, '').replace(/^\{+\s*/, '').replace(/\s*\}+$/, '').trim()
+      : answer;
+
+    res.json({ answer: cleanAnswer });
   } catch (err) {
     console.error('[functions/askKisanMitra] ERROR:', err.message);
     res.status(500).json({ error: err.message || 'AI service unavailable' });

@@ -3,15 +3,12 @@ import { useNavigate, Link } from "react-router-dom";
 import {
   Stethoscope,
   UploadCloud,
-  CheckCircle2,
   Share2,
   Volume2,
   VolumeX,
   Copy,
   Check,
   Loader2,
-  Calculator,
-  Calendar,
   Camera,
   Layers,
 } from "lucide-react";

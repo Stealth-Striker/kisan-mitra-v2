@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Info location="Root" type="Files">
+  <File location="models/harvest_bio_growth_model.m" />
+  <File location="models/simulate_harvest_ode.m" />
+  <File location="scripts/run_all_simulations.m" />
+  <File location="scripts/plot_harvest_results.m" />
+  <File location="scripts/fetch_real_weather.m" />
+  <File location="data/crop_parameters.csv" />
+  <File location="data/sample_weather_timeseries.csv" />
+  <File location="data/real_weather_timeseries.csv" />
+  <File location="startup.m" />
+  <File location="shutdown.m" />
+  <File location="README.md" />
+</Info>

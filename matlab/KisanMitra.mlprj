@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Project xmlns="http://www.mathworks.com/matlab/project">
+    <Root>.</Root>
+    <Name>KisanMitra</Name>
+    <Description>Kisan Mitra Bio-Agronomic Simulation Engine</Description>
+</Project>
