@@ -33,7 +33,7 @@ export default function AskKisanMitra() {
             Ask Kisan Mitra
           </h1>
           <p className="text-sm sm:text-base text-[#DDF5EA]/90 leading-relaxed font-normal">
-            Your dedicated agricultural AI assistant for {crop} farming. Ask questions in Malayalam, Hindi, Tamil, or English, attach leaf photos for pathology analysis, or tap the microphone to speak naturally.
+            Bilingual agronomic AI assistant for {crop} cultivation. Ask questions in Malayalam, Hindi, Tamil, or English, upload leaf photos for diagnosis, or use voice input.
           </p>
 
           <div className="flex flex-wrap items-center gap-2.5 pt-1 text-xs text-[#DDF5EA]/80">

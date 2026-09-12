@@ -55,6 +55,7 @@ export default function CropDoctor() {
   // Audio Speech State
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [copiedPrescription, setCopiedPrescription] = useState(false);
+  const [resultTab, setResultTab] = useState("treatment"); // "treatment" | "dosage" | "symptoms"
 
   // Stop speaking when unmounting or changing diagnosis
   useEffect(() => {
@@ -241,124 +242,114 @@ export default function CropDoctor() {
       />
 
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E1E8E4] pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E1E8E4] pb-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#17211D] flex items-center gap-3">
-            <Stethoscope className="w-7 h-7 text-[#063F2E]" />
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#17211D] flex items-center gap-2.5">
+            <Stethoscope className="w-6 h-6 text-[#063F2E]" />
             Crop Doctor
           </h1>
-          <p className="text-sm text-[#65736C] mt-1">
-            Upload or inspect a leaf sample to diagnose pathogens, calculate acreage spray dosages, and generate treatment timelines.
+          <p className="text-xs sm:text-sm text-[#65736C] mt-0.5">
+            AI disease diagnosis, targeted treatment timelines, and tank mix dosage calculations for {crop}.
           </p>
         </div>
 
-        {/* Quick link to Outbreak Radar */}
         <Link
           to="/outbreak-radar"
-          className="bg-white border border-[#E1E8E4] hover:border-[#087F5B] px-3.5 py-2 rounded-xl text-xs font-bold text-[#17211D] transition-colors flex items-center gap-2 shadow-xs"
+          className="bg-white border border-[#E1E8E4] hover:border-[#087F5B] px-3 py-1.5 rounded-xl text-xs font-bold text-[#17211D] transition-colors flex items-center gap-1.5 shadow-xs self-start sm:self-auto"
         >
-          <Layers className="w-4 h-4 text-[#063F2E]" /> Check District Radar
+          <Layers className="w-3.5 h-3.5 text-[#063F2E]" /> Outbreak Radar
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-7">
-        {/* Left Column (7 Cols): Upload Workspace & Visual Disease Reference */}
-        <div className="lg:col-span-7 space-y-6">
-          <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-5 sm:p-6 space-y-5">
-            {/* Photo Upload / Drag & Drop Zone */}
-            <div className="space-y-3">
-              <label className="block text-xs font-bold text-[#17211D] uppercase tracking-wider">
-                Leaf Photo Inspection
-              </label>
-
-              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
-
-              <div
-                onDragOver={handleDragOver}
-                onDragEnter={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onClick={() => !uploading && fileRef.current?.click()}
-                className={`relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[230px] overflow-hidden group ${
-                  isDragging
-                    ? "border-[#087F5B] bg-[#DDF5EA]/50 scale-[1.01] ring-4 ring-[#087F5B]/15"
-                    : "border-[#E1E8E4] hover:border-[#087F5B] hover:bg-[#DDF5EA]/20"
-                }`}
-              >
-                {uploading ? (
-                  <div className="space-y-3 py-4 flex flex-col items-center">
-                    <Loader2 className="w-10 h-10 animate-spin text-[#087F5B]" />
-                    <p className="text-xs font-semibold text-[#063F2E]">Uploading &amp; preparing leaf photo...</p>
-                  </div>
-                ) : image ? (
-                  <div className="space-y-3 w-full flex flex-col items-center">
-                    <div className="w-48 h-48 rounded-xl overflow-hidden shadow-sm border-2 border-[#063F2E] relative">
-                      <Image
-                        src={image}
-                        alt="Uploaded crop leaf sample for AI diagnosis"
-                        className="w-full h-full object-cover"
-                        fittingType="fill"
-                      />
-                    </div>
-                    <p className="text-xs text-[#063F2E] font-bold flex items-center gap-1">
-                      <Camera className="w-3.5 h-3.5" /> Drop or click to replace photo
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3 pointer-events-none">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto transition-transform ${
-                      isDragging ? "bg-[#087F5B] text-white scale-110" : "bg-[#DDF5EA] text-[#063F2E] group-hover:scale-105"
-                    }`}>
-                      <UploadCloud className="w-7 h-7" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-[#17211D]">
-                        {isDragging ? "Drop leaf photo here" : "Drag & drop leaf photo here, or click to browse"}
-                      </p>
-                      <p className="text-xs text-[#65736C] mt-0.5">
-                        Hold camera 15–20 cm away focusing on leaf spots, lesions, or discoloration
-                      </p>
-                    </div>
-                    <span className="inline-block text-[11px] font-semibold text-[#063F2E] bg-[#DDF5EA] px-3 py-1 rounded-full">
-                      JPG, PNG or WEBP up to 10MB
-                    </span>
-                  </div>
-                )}
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column (5 Cols): Upload Workspace */}
+        <div className="lg:col-span-5 space-y-4">
+          <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#17211D] uppercase tracking-wider">
+                Leaf Sample
+              </span>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-[#DDF5EA] text-[#063F2E]">
+                {crop}
+              </span>
             </div>
 
-            {/* 3. Action Button */}
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+
+            <div
+              onDragOver={handleDragOver}
+              onDragEnter={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => !uploading && fileRef.current?.click()}
+              className={`relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[200px] overflow-hidden ${
+                isDragging
+                  ? "border-[#087F5B] bg-[#DDF5EA]/50"
+                  : "border-[#E1E8E4] hover:border-[#087F5B] hover:bg-[#DDF5EA]/20"
+              }`}
+            >
+              {uploading ? (
+                <div className="space-y-2 py-4 flex flex-col items-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#087F5B]" />
+                  <p className="text-xs font-semibold text-[#063F2E]">Uploading image...</p>
+                </div>
+              ) : image ? (
+                <div className="space-y-2.5 w-full flex flex-col items-center">
+                  <div className="w-40 h-40 rounded-xl overflow-hidden shadow-xs border border-[#063F2E]/30 relative">
+                    <Image
+                      src={image}
+                      alt="Crop leaf sample"
+                      className="w-full h-full object-cover"
+                      fittingType="fill"
+                    />
+                  </div>
+                  <p className="text-xs text-[#063F2E] font-semibold flex items-center gap-1">
+                    <Camera className="w-3.5 h-3.5" /> Tap to change photo
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2 pointer-events-none">
+                  <div className="w-12 h-12 rounded-2xl bg-[#DDF5EA] text-[#063F2E] flex items-center justify-center mx-auto">
+                    <UploadCloud className="w-6 h-6" />
+                  </div>
+                  <p className="text-xs font-bold text-[#17211D]">
+                    {isDragging ? "Drop leaf photo here" : "Upload or capture leaf photo"}
+                  </p>
+                  <span className="inline-block text-[10px] text-[#65736C]">
+                    JPG, PNG or WEBP up to 10MB
+                  </span>
+                </div>
+              )}
+            </div>
+
             <button
               onClick={analyze}
               disabled={!image || analyzing}
-              className="w-full km-btn-primary py-3 text-sm font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full km-btn-primary py-2.5 text-xs font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {analyzing ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Diagnosing Pathogens with AI...</span>
+                  <span>Analyzing Pathogens...</span>
                 </>
               ) : (
                 <>
                   <Stethoscope className="w-4 h-4" />
-                  <span>Run AI Disease Diagnosis & Dosage</span>
+                  <span>Diagnose Leaf Disease</span>
                 </>
               )}
             </button>
           </div>
         </div>
 
-        {/* Right Column (5 Cols): Diagnosis Result, Dosage Calculator & 3-Stage Prescription */}
-        <div className="lg:col-span-5 space-y-6">
+        {/* Right Column (7 Cols): Progressive Disclosure via Clean Tabs */}
+        <div className="lg:col-span-7 space-y-4">
           {result ? (
-            <div className="bg-white rounded-2xl border border-[#063F2E]/25 shadow-xs p-5 sm:p-6 space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              {/* Result Header */}
-              <div className="flex items-start justify-between border-b border-[#E1E8E4] pb-4">
+            <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-5 sm:p-6 space-y-4 animate-in fade-in duration-200">
+              {/* Header & Badges */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E1E8E4] pb-4">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#063F2E] bg-[#DDF5EA] px-2.5 py-1 rounded-full">
-                      Diagnosis Result
-                    </span>
+                  <div className="flex items-center gap-2 mb-1">
                     <StatusBadge
                       status={
                         result.severity === "High" || result.severity === "Severe"
@@ -369,193 +360,226 @@ export default function CropDoctor() {
                       }
                       label={`${result.severity} Severity`}
                     />
+                    <span className="text-[11px] font-bold text-[#063F2E] bg-[#DDF5EA] px-2 py-0.5 rounded-full">
+                      {result.confidence || 92}% Confidence
+                    </span>
                   </div>
-                  <h2 className="text-xl font-bold text-[#17211D] mt-2">{result.disease}</h2>
-                  <p className="text-xs text-[#063F2E] font-semibold mt-0.5">Diagnosed on: {crop}</p>
+                  <h2 className="text-lg font-bold text-[#17211D]">{result.disease}</h2>
+                </div>
+
+                {/* Quick Share / Audio Actions */}
+                <div className="flex items-center gap-1.5 self-start sm:self-auto">
+                  <button
+                    onClick={toggleSpeech}
+                    className="p-2 rounded-xl bg-[#F6F8F5] hover:bg-[#DDF5EA] border border-[#E1E8E4] text-[#063F2E] transition-colors"
+                    title={isSpeaking ? "Stop Audio" : "Listen Audio"}
+                  >
+                    {isSpeaking ? <VolumeX className="w-4 h-4 text-rose-600" /> : <Volume2 className="w-4 h-4" />}
+                  </button>
+                  <button
+                    onClick={handleSharePrescription}
+                    className="p-2 rounded-xl bg-[#16A36F] hover:bg-[#087F5B] text-white transition-colors"
+                    title="Share via WhatsApp"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={handleCopyPrescription}
+                    className="p-2 rounded-xl bg-white hover:bg-[#F6F8F5] border border-[#E1E8E4] text-[#17211D] transition-colors"
+                    title="Copy Prescription"
+                  >
+                    {copiedPrescription ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-[#65736C]" />}
+                  </button>
                 </div>
               </div>
 
-              {/* Speech & Quick Action Bar */}
-              <div className="flex items-center gap-2">
+              {/* Segmented Tab Navigation */}
+              <div className="flex items-center gap-1 bg-[#F6F8F5] p-1 rounded-xl border border-[#E1E8E4] text-xs">
                 <button
-                  onClick={toggleSpeech}
-                  className="flex-1 py-2 px-3 rounded-xl bg-[#F6F8F5] hover:bg-[#DDF5EA] border border-[#E1E8E4] text-xs font-bold text-[#063F2E] transition-colors flex items-center justify-center gap-1.5"
+                  type="button"
+                  onClick={() => setResultTab("treatment")}
+                  className={`flex-1 py-1.5 px-3 rounded-lg font-bold transition-all ${
+                    resultTab === "treatment"
+                      ? "bg-white text-[#063F2E] shadow-xs"
+                      : "text-[#65736C] hover:text-[#17211D]"
+                  }`}
                 >
-                  {isSpeaking ? (
-                    <>
-                      <VolumeX className="w-4 h-4 text-rose-600" /> Stop Audio
-                    </>
-                  ) : (
-                    <>
-                      <Volume2 className="w-4 h-4" /> Listen Audio
-                    </>
-                  )}
+                  3-Stage Treatment
                 </button>
-
                 <button
-                  onClick={handleSharePrescription}
-                  className="flex-1 py-2 px-3 rounded-xl bg-[#16A36F] hover:bg-[#087F5B] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                  type="button"
+                  onClick={() => setResultTab("dosage")}
+                  className={`flex-1 py-1.5 px-3 rounded-lg font-bold transition-all ${
+                    resultTab === "dosage"
+                      ? "bg-white text-[#063F2E] shadow-xs"
+                      : "text-[#65736C] hover:text-[#17211D]"
+                  }`}
                 >
-                  <Share2 className="w-3.5 h-3.5" /> WhatsApp
+                  Dosage Calculator
                 </button>
-
                 <button
-                  onClick={handleCopyPrescription}
-                  className="py-2 px-3 rounded-xl bg-white hover:bg-[#F6F8F5] border border-[#E1E8E4] text-xs font-bold text-[#17211D] transition-colors flex items-center justify-center"
-                  title="Copy Prescription"
+                  type="button"
+                  onClick={() => setResultTab("symptoms")}
+                  className={`flex-1 py-1.5 px-3 rounded-lg font-bold transition-all ${
+                    resultTab === "symptoms"
+                      ? "bg-white text-[#063F2E] shadow-xs"
+                      : "text-[#65736C] hover:text-[#17211D]"
+                  }`}
                 >
-                  {copiedPrescription ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-[#65736C]" />}
+                  Symptoms &amp; Cause
                 </button>
               </div>
 
-              {/* 3-Stage Treatment Timeline */}
-              <div className="space-y-3 pt-2">
-                <h3 className="text-xs font-bold text-[#17211D] uppercase tracking-wider flex items-center gap-1.5">
-                  <Calendar className="w-4 h-4 text-[#063F2E]" />
-                  3-Stage Treatment Prescription
-                </h3>
-
-                {/* Stage 1 */}
-                <div className="p-3.5 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#92540C] flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#E99B16]"></span> Day 1 - 2: Field Sanitation
-                    </span>
-                    <span className="text-[10px] font-bold uppercase bg-amber-100 text-[#92540C] px-2 py-0.5 rounded">
-                      Immediate
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#17211D] leading-relaxed">
-                    {result.stage1 || "Isolate infected plants. Drain stagnant standing water and stop nitrogenous fertilizers."}
-                  </p>
-                </div>
-
-                {/* Stage 2 */}
-                <div className="p-3.5 rounded-xl bg-[#DDF5EA] border border-[#063F2E]/20 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#063F2E] flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#063F2E]"></span> Day 3: Curative Spraying
-                    </span>
-                    <span className="text-[10px] font-bold uppercase bg-[#063F2E] text-white px-2 py-0.5 rounded">
-                      Treatment
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#063F2E] font-medium leading-relaxed">
-                    {result.stage2 || result.recommended_actions}
-                  </p>
-                </div>
-
-                {/* Stage 3 */}
-                <div className="p-3.5 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#087F5B] flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#16A36F]"></span> Day 7: Recovery Audit
-                    </span>
-                    <span className="text-[10px] font-bold uppercase bg-[#DDF5EA] text-[#063F2E] px-2 py-0.5 rounded">
-                      Revival
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#17211D] leading-relaxed">
-                    {result.stage3 || result.prevention || "Check for healthy green shoot regrowth. Apply mild micronutrient foliar booster."}
-                  </p>
-                </div>
-              </div>
-
-              {/* Acreage & Tank Mix Dosage Calculator */}
-              <div className="p-4 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#17211D] flex items-center gap-1.5">
-                    <Calculator className="w-4 h-4 text-[#063F2E]" />
-                    Field Dosage & Tank Mix Calculator
-                  </h4>
-                  <span className="text-[10px] font-bold text-[#063F2E] bg-white px-2 py-0.5 rounded border border-[#E1E8E4]">
-                    Precise Dosing
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[11px] font-bold text-[#65736C] block mb-1">
-                      Field Area (Acres)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.25"
-                      min="0.25"
-                      max="100"
-                      value={fieldAcreage}
-                      onChange={(e) => setFieldAcreage(Math.max(0.25, Number(e.target.value) || 0.25))}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-[#E1E8E4] text-xs font-bold text-[#17211D] bg-white focus:outline-none focus:border-[#063F2E]"
-                    />
+              {/* TAB 1: 3-Stage Treatment */}
+              {resultTab === "treatment" && (
+                <div className="space-y-3 animate-in fade-in">
+                  <div className="p-3.5 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#92540C]">
+                        Day 1–2: Sanitation &amp; Drainage
+                      </span>
+                      <span className="text-[10px] font-bold uppercase bg-amber-100 text-[#92540C] px-2 py-0.5 rounded">
+                        Immediate
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#17211D] leading-relaxed">
+                      {result.stage1 || "Isolate infected plants. Drain stagnant standing water and pause nitrogen fertilizers."}
+                    </p>
                   </div>
 
-                  <div>
-                    <label className="text-[11px] font-bold text-[#65736C] block mb-1">
-                      Sprayer Tank
-                    </label>
-                    <select
-                      value={selectedSprayer}
-                      onChange={(e) => setSelectedSprayer(e.target.value)}
-                      className="w-full px-2 py-1.5 rounded-lg border border-[#E1E8E4] text-xs font-semibold text-[#17211D] bg-white focus:outline-none focus:border-[#063F2E]"
-                    >
-                      {SPRAYER_TYPES.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.name}
-                        </option>
-                      ))}
-                    </select>
+                  <div className="p-3.5 rounded-xl bg-[#DDF5EA]/50 border border-[#087F5B]/30 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#063F2E]">
+                        Day 3: Targeted Spraying
+                      </span>
+                      <span className="text-[10px] font-bold uppercase bg-[#063F2E] text-white px-2 py-0.5 rounded">
+                        Treatment
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#063F2E] font-medium leading-relaxed">
+                      {result.stage2 || result.recommended_actions}
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#087F5B]">
+                        Day 7: Recovery Audit
+                      </span>
+                      <span className="text-[10px] font-bold uppercase bg-[#DDF5EA] text-[#063F2E] px-2 py-0.5 rounded">
+                        Follow-up
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#17211D] leading-relaxed">
+                      {result.stage3 || result.prevention || "Inspect new shoot regrowth. Apply mild micronutrient foliar booster if cleared."}
+                    </p>
                   </div>
                 </div>
+              )}
 
-                {/* Calculation Result Strip */}
-                <div className="p-3 rounded-lg bg-white border border-[#E1E8E4] space-y-1.5 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[#65736C]">Total Water Required:</span>
-                    <strong className="text-[#17211D]">{dosageCalculations.totalWaterLiters} Liters</strong>
+              {/* TAB 2: Dosage Calculator */}
+              {resultTab === "dosage" && (
+                <div className="space-y-4 animate-in fade-in">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] font-bold text-[#65736C] block mb-1">
+                        Field Area (Acres)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.25"
+                        min="0.25"
+                        max="100"
+                        value={fieldAcreage}
+                        onChange={(e) => setFieldAcreage(Math.max(0.25, Number(e.target.value) || 0.25))}
+                        className="w-full px-3 py-2 rounded-xl border border-[#E1E8E4] text-xs font-bold text-[#17211D] bg-[#F6F8F5] focus:outline-none focus:border-[#063F2E]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-bold text-[#65736C] block mb-1">
+                        Sprayer Tank Capacity
+                      </label>
+                      <select
+                        value={selectedSprayer}
+                        onChange={(e) => setSelectedSprayer(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-[#E1E8E4] text-xs font-semibold text-[#17211D] bg-[#F6F8F5] focus:outline-none focus:border-[#063F2E]"
+                      >
+                        {SPRAYER_TYPES.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[#65736C]">Total Chemical/Bio Required:</span>
-                    <strong className="text-[#063F2E] font-bold">{dosageCalculations.totalDoseGrams} Grams / ml</strong>
-                  </div>
-                  <div className="flex items-center justify-between pt-1 border-t border-[#E1E8E4]">
-                    <span className="text-[#17211D] font-bold">Dose Per Tank Refill:</span>
-                    <strong className="text-[#087F5B] font-extrabold text-sm">
-                      {dosageCalculations.dosePerTank} g/ml ({dosageCalculations.refillsNeeded} tanks)
-                    </strong>
+
+                  {/* Calculated Outcomes */}
+                  <div className="grid grid-cols-3 gap-2.5 pt-1">
+                    <div className="p-3 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] text-center">
+                      <span className="text-[10px] text-[#65736C] block uppercase font-semibold">Total Water</span>
+                      <strong className="text-sm font-bold text-[#17211D] mt-0.5 block">
+                        {dosageCalculations.totalWaterLiters} L
+                      </strong>
+                    </div>
+                    <div className="p-3 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] text-center">
+                      <span className="text-[10px] text-[#65736C] block uppercase font-semibold">Total Formulation</span>
+                      <strong className="text-sm font-bold text-[#063F2E] mt-0.5 block">
+                        {dosageCalculations.totalDoseGrams} g/ml
+                      </strong>
+                    </div>
+                    <div className="p-3 rounded-xl bg-[#DDF5EA] border border-[#087F5B]/30 text-center">
+                      <span className="text-[10px] text-[#063F2E] block uppercase font-semibold">Per Tank Refill</span>
+                      <strong className="text-sm font-extrabold text-[#063F2E] mt-0.5 block">
+                        {dosageCalculations.dosePerTank} g/ml
+                      </strong>
+                      <span className="text-[10px] text-[#65736C] block mt-0.5">({dosageCalculations.refillsNeeded} tanks)</span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
-              {/* Direct Bridge to Outbreak Radar */}
-              <div className="pt-2 border-t border-[#E1E8E4] flex items-center justify-between">
-                <span className="text-xs text-[#65736C]">Protect nearby farmers?</span>
+              {/* TAB 3: Symptoms & Cause */}
+              {resultTab === "symptoms" && (
+                <div className="space-y-3 animate-in fade-in text-xs">
+                  <div className="p-3.5 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] space-y-1">
+                    <span className="font-bold text-[#17211D] block">Observed Symptoms:</span>
+                    <p className="text-[#65736C] leading-relaxed">
+                      {result.symptoms || "Irregular necrotic lesions observed on leaf surfaces with chlorotic yellow halo margins."}
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] space-y-1">
+                    <span className="font-bold text-[#17211D] block">Preventive Protocol:</span>
+                    <p className="text-[#65736C] leading-relaxed">
+                      {result.prevention || "Maintain optimum field drainage, avoid high-dose nitrogenous fertilizers, and keep field bunds weed-free."}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Bottom Outbreak Alert Bridge */}
+              <div className="pt-3 border-t border-[#E1E8E4] flex items-center justify-between text-xs">
+                <span className="text-[#65736C]">Alert neighboring farmers?</span>
                 <button
+                  type="button"
                   onClick={() => navigate("/outbreak-radar")}
-                  className="km-btn-primary py-2 px-3 text-xs flex items-center gap-1.5"
+                  className="km-btn-primary py-1.5 px-3 text-xs font-bold flex items-center gap-1.5"
                 >
                   <Layers className="w-3.5 h-3.5" /> Post to Outbreak Radar
                 </button>
               </div>
             </div>
           ) : (
-            /* Blank state prompting upload */
-            <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-8 text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-[#DDF5EA] text-[#063F2E] flex items-center justify-center mx-auto">
-                <Stethoscope className="w-8 h-8" />
+            /* Blank state */
+            <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-8 text-center space-y-3">
+              <div className="w-14 h-14 rounded-2xl bg-[#DDF5EA] text-[#063F2E] flex items-center justify-center mx-auto">
+                <Stethoscope className="w-7 h-7" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-[#17211D]">Ready for Inspection</h3>
-                <p className="text-xs text-[#65736C] mt-1 max-w-sm mx-auto leading-relaxed">
-                  Upload a photo of your diseased crop leaf on the left to start the AI plant clinic.
+                <h3 className="text-sm font-bold text-[#17211D]">Awaiting Leaf Sample</h3>
+                <p className="text-xs text-[#65736C] mt-1 max-w-xs mx-auto">
+                  Upload a photo of your diseased leaf to view pathogen diagnosis, treatment timeline, and spray dosage.
                 </p>
-              </div>
-              <div className="p-3.5 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] text-xs text-[#17211D] text-left space-y-1">
-                <p className="font-bold text-[#063F2E] flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> What You Will Receive:
-                </p>
-                <p className="text-[#65736C]">• Exact pathogen identification with severity score</p>
-                <p className="text-[#65736C]">• 3-Stage treatment prescription (Day 1, Day 3, Day 7)</p>
-                <p className="text-[#65736C]">• Tank mix dosage calibrated for your field acreage</p>
               </div>
             </div>
           )}

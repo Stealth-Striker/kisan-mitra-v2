@@ -155,6 +155,7 @@ export default function HarvestGuardian() {
   const [customSignsByCrop, setCustomSignsByCrop] = useState({});
   const [isAddingOption, setIsAddingOption] = useState(false);
   const [newOptionText, setNewOptionText] = useState("");
+  const [activeTab, setActiveTab] = useState("readiness"); // "readiness" | "checklist" | "storage"
 
   // Biological growth and timeline calculation (GDD & Moisture Differential)
   const {
@@ -361,280 +362,302 @@ export default function HarvestGuardian() {
 
       {/* ── ACTIONABLE RECOMMENDATION BANNER ─────────────────────── */}
       <RecommendationBanner
-        headline={`Prepare harvesting equipment and begin field inspection for ${cropData.cropName}.`}
-        whyItMatters={`Your fields have reached ${maturityPct}% physiological maturity. A 4-day dry window is currently active across the region, offering ideal combine harvester ground traction before rain risk elevates on Day 6.`}
-        recommendedAction={`Inspect grain firmness, secure combine harvester booking, and prepare drying tarpaulins for target ${cropData.idealMoisture} moisture threshold.`}
+        headline={`Prepare harvesting equipment for ${cropData.cropName}.`}
+        whyItMatters={`Crop reached ${maturityPct}% maturity. 4-day dry window active before Day 6 rain risk.`}
+        recommendedAction={`Inspect grain firmness, secure combine harvester, and prepare drying yard.`}
         ctaText="View Inspection Checklist"
-        onCtaClick={() => {
-          const el = document.getElementById("field-checklist-section");
-          if (el) el.scrollIntoView({ behavior: "smooth" });
-        }}
+        onCtaClick={() => setActiveTab("checklist")}
       />
 
-      {/* ── CENTERPIECE BENTO: Maturity Gauge & Core Metrics ─────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left: Prominent Radial Harvest Readiness Centerpiece (5 cols) */}
-        <div className="lg:col-span-5 bg-white rounded-2xl border border-[#E1E8E4] p-6 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#65736C]">
-              Harvest Readiness
-            </span>
-          </div>
+      {/* ── SEGMENTED NAVIGATION TABS ────────────────────────────── */}
+      <div className="flex items-center gap-2 bg-[#F6F8F5] p-1.5 rounded-2xl border border-[#E1E8E4] w-fit">
+        {[
+          { id: "readiness", label: "Readiness & Forecast", icon: SunMedium },
+          { id: "checklist", label: `Field Checklist (${completedSignsCount}/${signsTotal})`, icon: CheckSquare },
+          { id: "storage", label: "Storage & AI Advisory", icon: Warehouse },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                isActive
+                  ? "bg-white text-[#063F2E] shadow-xs border border-[#E1E8E4]"
+                  : "text-[#65736C] hover:text-[#17211D]"
+              }`}
+            >
+              <Icon className={`w-3.5 h-3.5 ${isActive ? "text-[#087F5B]" : "text-[#65736C]"}`} />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
 
-          {/* Radial Visualization */}
-          <div className="flex flex-col items-center justify-center py-6">
-            <div className="relative w-44 h-44 flex items-center justify-center">
-              <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  className="stroke-[#E1E8E4]"
-                  strokeWidth="8"
-                  fill="transparent"
-                />
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  className="stroke-[#087F5B]"
-                  strokeWidth="8"
-                  strokeDasharray="251.2"
-                  strokeDashoffset={251.2 - (251.2 * maturityPct) / 100}
-                  strokeLinecap="round"
-                  fill="transparent"
-                />
-              </svg>
-              <div className="absolute flex flex-col items-center text-center">
-                <span className="text-4xl sm:text-5xl font-extrabold tracking-tight text-[#063F2E]">
-                  {maturityPct}%
+      {/* ── TAB 1: READINESS & WEATHER FORECAST ─────────────────────── */}
+      {activeTab === "readiness" && (
+        <div className="space-y-6">
+          {/* Bento: Maturity Gauge & Core Metrics */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left: Radial Readiness Centerpiece (5 cols) */}
+            <div className="lg:col-span-5 bg-white rounded-2xl border border-[#E1E8E4] p-6 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#65736C]">
+                  Harvest Readiness
                 </span>
-                <span className="text-[11px] font-semibold text-[#65736C] uppercase tracking-wider mt-1">
-                  Readiness
+                <span className="text-xs font-bold text-[#087F5B] bg-[#DDF5EA] px-2.5 py-0.5 rounded-full">
+                  Day {daysElapsed} / {cropData.duration}
                 </span>
               </div>
-            </div>
-            <p className="text-xs font-semibold text-[#17211D] mt-3 text-center">
-              Day {daysElapsed} of {cropData.duration} in Crop Cycle
-            </p>
-          </div>
 
-          {/* Optimal Window Highlight Box */}
-          <div className="p-4 rounded-xl bg-[#DDF5EA]/60 border border-[#087F5B]/20 text-xs">
-            <div className="flex items-center justify-between font-bold text-[#063F2E] mb-1">
-              <span>Optimal Harvest Window:</span>
-              <span className="text-sm">{harvestWindowStart} – {harvestWindowEnd}</span>
-            </div>
-            <p className="text-[#65736C] text-[11px] leading-relaxed">
-              Harvesting during this window minimizes shattering losses and maximizes grain density.
-            </p>
-          </div>
-        </div>
+              {/* Radial Visualization */}
+              <div className="flex flex-col items-center justify-center py-6">
+                <div className="relative w-44 h-44 flex items-center justify-center">
+                  <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      className="stroke-[#E1E8E4]"
+                      strokeWidth="8"
+                      fill="transparent"
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      className="stroke-[#087F5B]"
+                      strokeWidth="8"
+                      strokeDasharray="251.2"
+                      strokeDashoffset={251.2 - (251.2 * maturityPct) / 100}
+                      strokeLinecap="round"
+                      fill="transparent"
+                    />
+                  </svg>
+                  <div className="absolute flex flex-col items-center text-center">
+                    <span className="text-4xl sm:text-5xl font-extrabold tracking-tight text-[#063F2E]">
+                      {maturityPct}%
+                    </span>
+                    <span className="text-[11px] font-semibold text-[#65736C] uppercase tracking-wider mt-1">
+                      Readiness
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-        {/* Right: Supporting Agronomic Metrics & Moisture Curve (7 cols) */}
-        <div className="lg:col-span-7 space-y-5">
-          {/* 4 Supporting Metric Cards Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-            <div className="bg-white p-4 rounded-2xl border border-[#E1E8E4] shadow-xs">
-              <span className="text-[11px] font-semibold text-[#65736C] uppercase tracking-wider block mb-1">
-                Grain Moisture
-              </span>
-              <span className="text-xl font-bold text-[#17211D]">{currentMoisturePct}%</span>
-              <span className="text-[10px] text-[#087F5B] block mt-1 font-semibold">Target {targetMoisturePct}%</span>
-            </div>
-
-            <div className="bg-white p-4 rounded-2xl border border-[#E1E8E4] shadow-xs">
-              <span className="text-[11px] font-semibold text-[#65736C] uppercase tracking-wider block mb-1">
-                Heat Units (GDD)
-              </span>
-              <span className="text-xl font-bold text-[#17211D]">{gddAccumulated}</span>
-              <span className="text-[10px] text-[#65736C] block mt-1">Target: {gddTarget}</span>
-            </div>
-
-            <div className="bg-white p-4 rounded-2xl border border-[#E1E8E4] shadow-xs">
-              <span className="text-[11px] font-semibold text-[#65736C] uppercase tracking-wider block mb-1">
-                Air Humidity
-              </span>
-              <span className="text-xl font-bold text-[#17211D]">62%</span>
-              <span className="text-[10px] text-[#087F5B] block mt-1 font-semibold">Dry Ripening</span>
-            </div>
-
-            <div className="bg-white p-4 rounded-2xl border border-[#E1E8E4] shadow-xs">
-              <span className="text-[11px] font-semibold text-[#65736C] uppercase tracking-wider block mb-1">
-                Yield Estimate
-              </span>
-              <span className="text-xl font-bold text-[#17211D]">{totalYieldEstimate}</span>
-              <span className="text-[10px] text-[#65736C] block mt-1">{cropData.unit} ({farmAcres} Ac)</span>
-            </div>
-          </div>
-
-          {/* Predictive Grain Moisture Dry-Down Trajectory Strip */}
-          <div className="bg-white rounded-2xl border border-[#E1E8E4] p-5 shadow-xs">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h3 className="text-xs font-bold text-[#17211D] uppercase tracking-wider flex items-center gap-1.5">
-                  <LineChart className="w-3.5 h-3.5 text-[#087F5B]" />
-                  Simulated Grain Moisture Desorption Curve
-                </h3>
-                <p className="text-[11px] text-[#65736C] mt-0.5">
-                  Calculated from atmospheric humidity kinetics and thermal dry-down coefficients.
+              {/* Optimal Window Highlight Box */}
+              <div className="p-4 rounded-xl bg-[#DDF5EA]/60 border border-[#087F5B]/20 text-xs">
+                <div className="flex items-center justify-between font-bold text-[#063F2E] mb-1">
+                  <span>Optimal Window:</span>
+                  <span className="text-sm">{harvestWindowStart} – {harvestWindowEnd}</span>
+                </div>
+                <p className="text-[#65736C] text-[11px]">
+                  Harvesting in this window minimizes shatter loss and preserves grain density.
                 </p>
               </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#DDF5EA] text-[#063F2E]">
-                Safe Equilibrium: {targetMoisturePct}%
+            </div>
+
+            {/* Right: Agronomic Metrics & Moisture Curve (7 cols) */}
+            <div className="lg:col-span-7 space-y-5">
+              {/* 4 Supporting Metric Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+                <div className="bg-white p-4 rounded-2xl border border-[#E1E8E4] shadow-xs">
+                  <span className="text-[11px] font-semibold text-[#65736C] uppercase tracking-wider block mb-1">
+                    Grain Moisture
+                  </span>
+                  <span className="text-xl font-bold text-[#17211D]">{currentMoisturePct}%</span>
+                  <span className="text-[10px] text-[#087F5B] block mt-1 font-semibold">Target: {targetMoisturePct}%</span>
+                </div>
+
+                <div className="bg-white p-4 rounded-2xl border border-[#E1E8E4] shadow-xs">
+                  <span className="text-[11px] font-semibold text-[#65736C] uppercase tracking-wider block mb-1">
+                    Heat Units (GDD)
+                  </span>
+                  <span className="text-xl font-bold text-[#17211D]">{gddAccumulated}</span>
+                  <span className="text-[10px] text-[#65736C] block mt-1">Target: {gddTarget}</span>
+                </div>
+
+                <div className="bg-white p-4 rounded-2xl border border-[#E1E8E4] shadow-xs">
+                  <span className="text-[11px] font-semibold text-[#65736C] uppercase tracking-wider block mb-1">
+                    Air Humidity
+                  </span>
+                  <span className="text-xl font-bold text-[#17211D]">62%</span>
+                  <span className="text-[10px] text-[#087F5B] block mt-1 font-semibold">Dry Ripening</span>
+                </div>
+
+                <div className="bg-white p-4 rounded-2xl border border-[#E1E8E4] shadow-xs">
+                  <span className="text-[11px] font-semibold text-[#65736C] uppercase tracking-wider block mb-1">
+                    Yield Estimate
+                  </span>
+                  <span className="text-xl font-bold text-[#17211D]">{totalYieldEstimate}</span>
+                  <span className="text-[10px] text-[#65736C] block mt-1">{cropData.unit} ({farmAcres} Ac)</span>
+                </div>
+              </div>
+
+              {/* Desorption Trajectory Strip */}
+              <div className="bg-white rounded-2xl border border-[#E1E8E4] p-5 shadow-xs">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-bold text-[#17211D] uppercase tracking-wider flex items-center gap-1.5">
+                    <LineChart className="w-3.5 h-3.5 text-[#087F5B]" />
+                    Moisture Desorption Curve
+                  </h3>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#DDF5EA] text-[#063F2E]">
+                    Safe Target: {targetMoisturePct}%
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 text-center pt-1">
+                  {moistureDecayCurve.map((node, i) => {
+                    const isTargetReached = node.moisture <= targetMoisturePct + 0.5;
+                    return (
+                      <div
+                        key={i}
+                        className={`p-2 rounded-xl border text-xs transition-all ${
+                          isTargetReached
+                            ? "bg-[#DDF5EA]/70 border-[#087F5B]/30 font-bold"
+                            : "bg-[#F6F8F5] border-[#E1E8E4]"
+                        }`}
+                      >
+                        <p className="text-[10px] text-[#65736C]">{node.day}</p>
+                        <p className={`text-xs font-extrabold mt-0.5 ${isTargetReached ? "text-[#063F2E]" : "text-[#17211D]"}`}>
+                          {node.moisture}%
+                        </p>
+                        <span className="text-[9px] text-[#65736C] block">{node.date.split(",")[0]}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Lifecycle Progression Timeline */}
+              <div className="bg-white rounded-2xl border border-[#E1E8E4] p-5 shadow-xs">
+                <div className="flex items-center justify-between mb-3.5">
+                  <h3 className="text-xs font-bold text-[#17211D] uppercase tracking-wider">
+                    Crop Lifecycle
+                  </h3>
+                  <span className="text-[11px] font-semibold text-[#087F5B] bg-[#DDF5EA] px-2.5 py-0.5 rounded-full">
+                    Stage {currentStageIdx + 1} of {cropData.stages.length}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                  {cropData.stages.map((stage, idx) => {
+                    const isCompleted = idx < currentStageIdx;
+                    const isActive = idx === currentStageIdx;
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`p-3 rounded-xl border text-xs transition-all flex flex-col justify-between ${
+                          isActive
+                            ? "bg-[#063F2E] text-white border-[#063F2E] shadow-xs"
+                            : isCompleted
+                            ? "bg-[#DDF5EA]/50 text-[#063F2E] border-[#087F5B]/20"
+                            : "bg-[#F6F8F5] text-[#65736C] border-[#E1E8E4]"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[10px] font-bold opacity-75">Stage {idx + 1}</span>
+                          {isCompleted && <CheckCircle2 className="w-3.5 h-3.5 text-[#087F5B]" />}
+                        </div>
+                        <p className="font-bold leading-tight">{stage.name}</p>
+                        <p className={`text-[10px] mt-1 leading-snug line-clamp-2 ${isActive ? "text-emerald-100" : "text-[#65736C]"}`}>
+                          {stage.description}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 7-Day Harvest Weather Window Radar */}
+          <div className="bg-white rounded-2xl border border-[#E1E8E4] p-5 sm:p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E1E8E4] pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-[#17211D] uppercase tracking-wider flex items-center gap-2">
+                  <SunMedium className="w-4 h-4 text-[#E99B16]" />
+                  7-Day Harvest Weather Radar
+                </h3>
+                <p className="text-xs text-[#65736C] mt-0.5">
+                  Precipitation forecast for field machinery access and threshing.
+                </p>
+              </div>
+              <span className="self-start sm:self-auto text-xs font-semibold text-[#087F5B] bg-[#DDF5EA] px-3 py-1 rounded-full">
+                4-Day Golden Window Active
               </span>
             </div>
 
-            {/* Visual Step-by-Step Trajectory Strip */}
-            <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 text-center pt-1">
-              {moistureDecayCurve.map((node, i) => {
-                const isTargetReached = node.moisture <= targetMoisturePct + 0.5;
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+              {FORECAST_DAYS.map((f, i) => {
+                const Icon = f.icon;
+                const isIdeal = f.status === "Ideal";
+                const isGood = f.status === "Good";
+                const isRisk = f.status === "Rain Risk";
+
                 return (
                   <div
                     key={i}
-                    className={`p-2 rounded-xl border text-xs transition-all ${
-                      isTargetReached
-                        ? "bg-[#DDF5EA]/70 border-[#087F5B]/30 font-bold"
-                        : "bg-[#F6F8F5] border-[#E1E8E4]"
-                    }`}
-                  >
-                    <p className="text-[10px] text-[#65736C]">{node.day}</p>
-                    <p className={`text-xs font-extrabold mt-0.5 ${isTargetReached ? "text-[#063F2E]" : "text-[#17211D]"}`}>
-                      {node.moisture}%
-                    </p>
-                    <span className="text-[9px] text-[#65736C] block">{node.date.split(",")[0]}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Crop Lifecycle Progression Timeline */}
-          <div className="bg-white rounded-2xl border border-[#E1E8E4] p-5 shadow-xs">
-            <div className="flex items-center justify-between mb-3.5">
-              <h3 className="text-xs font-bold text-[#17211D] uppercase tracking-wider">
-                Crop Growth Lifecycle
-              </h3>
-              <span className="text-[11px] font-semibold text-[#087F5B] bg-[#DDF5EA] px-2.5 py-0.5 rounded-full">
-                Stage {currentStageIdx + 1} of {cropData.stages.length}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-              {cropData.stages.map((stage, idx) => {
-                const isCompleted = idx < currentStageIdx;
-                const isActive = idx === currentStageIdx;
-
-                return (
-                  <div
-                    key={idx}
-                    className={`p-3 rounded-xl border text-xs transition-all flex flex-col justify-between ${
-                      isActive
-                        ? "bg-[#063F2E] text-white border-[#063F2E] shadow-xs"
-                        : isCompleted
-                        ? "bg-[#DDF5EA]/50 text-[#063F2E] border-[#087F5B]/20"
-                        : "bg-[#F6F8F5] text-[#65736C] border-[#E1E8E4]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[10px] font-bold opacity-75">Stage {idx + 1}</span>
-                      {isCompleted && <CheckCircle2 className="w-3.5 h-3.5 text-[#087F5B]" />}
-                    </div>
-                    <p className="font-bold leading-tight">{stage.name}</p>
-                    <p className={`text-[10px] mt-1 leading-snug line-clamp-2 ${isActive ? "text-emerald-100" : "text-[#65736C]"}`}>
-                      {stage.description}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── 7-DAY HARVEST WEATHER WINDOW RADAR ────────────────────── */}
-      <div className="bg-white rounded-2xl border border-[#E1E8E4] p-5 sm:p-6 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E1E8E4] pb-3">
-          <div>
-            <h3 className="text-sm font-bold text-[#17211D] uppercase tracking-wider flex items-center gap-2">
-              <SunMedium className="w-4 h-4 text-[#E99B16]" />
-              7-Day Harvest Weather Window Radar
-            </h3>
-            <p className="text-xs text-[#65736C] mt-0.5">
-              Continuous precipitation monitoring for threshing, moisture drying, and harvester machinery access.
-            </p>
-          </div>
-          <span className="self-start sm:self-auto text-xs font-semibold text-[#087F5B] bg-[#DDF5EA] px-3 py-1 rounded-full">
-            4-Day Golden Window Available
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-          {FORECAST_DAYS.map((f, i) => {
-            const Icon = f.icon;
-            const isIdeal = f.status === "Ideal";
-            const isGood = f.status === "Good";
-            const isRisk = f.status === "Rain Risk";
-
-            return (
-              <div
-                key={i}
-                className={`p-3.5 rounded-xl border text-center flex flex-col justify-between space-y-2 transition-all ${
-                  isIdeal
-                    ? "bg-[#DDF5EA]/60 border-[#087F5B]/30 ring-1 ring-[#087F5B]/20"
-                    : isGood
-                    ? "bg-white border-[#E1E8E4]"
-                    : isRisk
-                    ? "bg-red-50/70 border-red-200"
-                    : "bg-amber-50/50 border-amber-200"
-                }`}
-              >
-                <div>
-                  <p className="text-xs font-bold text-[#17211D]">{f.day}</p>
-                  <p className="text-[10px] text-[#65736C]">{f.condition}</p>
-                </div>
-
-                <div className="flex justify-center py-1">
-                  <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                    className={`p-3.5 rounded-xl border text-center flex flex-col justify-between space-y-2 transition-all ${
                       isIdeal
-                        ? "bg-[#063F2E] text-white"
+                        ? "bg-[#DDF5EA]/60 border-[#087F5B]/30 ring-1 ring-[#087F5B]/20"
+                        : isGood
+                        ? "bg-white border-[#E1E8E4]"
                         : isRisk
-                        ? "bg-red-100 text-red-700"
-                        : "bg-gray-100 text-gray-700"
+                        ? "bg-red-50/70 border-red-200"
+                        : "bg-amber-50/50 border-amber-200"
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
+                    <div>
+                      <p className="text-xs font-bold text-[#17211D]">{f.day}</p>
+                      <p className="text-[10px] text-[#65736C]">{f.condition}</p>
+                    </div>
+
+                    <div className="flex justify-center py-1">
+                      <div
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                          isIdeal
+                            ? "bg-[#063F2E] text-white"
+                            : isRisk
+                            ? "bg-red-100 text-red-700"
+                            : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        <Icon className="w-4 h-4" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-0.5 text-xs">
+                      <p className="font-bold text-[#17211D]">{f.temp}</p>
+                      <p className="text-[10px] text-[#65736C]">Humidity: {f.humidity}</p>
+                      <p className={`text-[10px] font-semibold ${isRisk ? "text-red-600" : "text-[#087F5B]"}`}>
+                        Rain: {f.rainPct}
+                      </p>
+                    </div>
                   </div>
-                </div>
-
-                <div className="space-y-0.5 text-xs">
-                  <p className="font-bold text-[#17211D]">{f.temp}</p>
-                  <p className="text-[10px] text-[#65736C]">Humidity: {f.humidity}</p>
-                  <p className={`text-[10px] font-semibold ${isRisk ? "text-red-600" : "text-[#087F5B]"}`}>
-                    Rain: {f.rainPct}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* ── TWO-COLUMN: FIELD CHECKLIST & STORAGE GUIDELINES ──────── */}
-      <div id="field-checklist-section" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left: Field Inspection Signs Checklist */}
-        <div className="bg-white rounded-2xl border border-[#E1E8E4] p-5 sm:p-6 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-[#E1E8E4] pb-3">
+      {/* ── TAB 2: FIELD CHECKLIST ─────────────────────────────────── */}
+      {activeTab === "checklist" && (
+        <div className="bg-white rounded-2xl border border-[#E1E8E4] p-5 sm:p-6 shadow-xs space-y-5 max-w-4xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E1E8E4] pb-4">
             <div>
               <h3 className="text-sm font-bold text-[#17211D] uppercase tracking-wider">
                 Field Inspection Checklist
               </h3>
               <p className="text-xs text-[#65736C] mt-0.5">
-                Verify physical maturity indicators in the field before machine cutting.
+                Verify physical maturity indicators before harvesting.
               </p>
             </div>
-            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#DDF5EA] text-[#063F2E]">
+            <span className="self-start sm:self-auto text-xs font-bold px-3 py-1 rounded-full bg-[#DDF5EA] text-[#063F2E]">
               {completedSignsCount} of {signsTotal} Verified
             </span>
           </div>
@@ -645,7 +668,7 @@ export default function HarvestGuardian() {
               return (
                 <div
                   key={item.id}
-                  className={`w-full flex items-center justify-between gap-3 p-3 rounded-xl border text-left transition-all ${
+                  className={`w-full flex items-center justify-between gap-3 p-3.5 rounded-xl border text-left transition-all ${
                     isChecked
                       ? "bg-[#DDF5EA]/50 border-[#087F5B]/30 text-[#063F2E]"
                       : "bg-[#F6F8F5] border-[#E1E8E4] text-[#17211D] hover:border-[#D1DCD5]"
@@ -725,7 +748,7 @@ export default function HarvestGuardian() {
             </button>
           )}
 
-          <div className="pt-2 flex items-center justify-between text-xs text-[#65736C]">
+          <div className="pt-3 border-t border-[#E1E8E4] flex items-center justify-between text-xs text-[#65736C]">
             <span>Checklist completed?</span>
             <Link
               to="/market-copilot"
@@ -736,111 +759,117 @@ export default function HarvestGuardian() {
             </Link>
           </div>
         </div>
+      )}
 
-        {/* Right: Post-Harvest Storage & Logistics Guidance */}
-        <div className="bg-white rounded-2xl border border-[#E1E8E4] p-5 sm:p-6 shadow-xs space-y-4">
-          <div className="border-b border-[#E1E8E4] pb-3">
-            <h3 className="text-sm font-bold text-[#17211D] uppercase tracking-wider flex items-center gap-2">
-              <Warehouse className="w-4 h-4 text-[#063F2E]" />
-              Post-Harvest Storage &amp; Spoilage Prevention
-            </h3>
-            <p className="text-xs text-[#65736C] mt-0.5">
-              Prevent fungal molding, aflatoxin formation, and weight loss in storage.
-            </p>
-          </div>
-
-          <div className="space-y-3 text-xs">
-            <div className="p-3 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] space-y-1">
-              <span className="font-bold text-[#17211D]">Safe Moisture Threshold:</span>
-              <p className="text-[#65736C]">
-                Grain must be sun-dried to <strong>{cropData.storageMoisture}</strong> before bagging. Packing grain above 16% moisture leads to bin heating, discoloration, and mold.
+      {/* ── TAB 3: STORAGE & AI ADVISORY ─────────────────────────── */}
+      {activeTab === "storage" && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left: Storage Guidelines */}
+          <div className="bg-white rounded-2xl border border-[#E1E8E4] p-5 sm:p-6 shadow-xs space-y-4">
+            <div className="border-b border-[#E1E8E4] pb-3">
+              <h3 className="text-sm font-bold text-[#17211D] uppercase tracking-wider flex items-center gap-2">
+                <Warehouse className="w-4 h-4 text-[#063F2E]" />
+                Post-Harvest Storage Guidelines
+              </h3>
+              <p className="text-xs text-[#65736C] mt-0.5">
+                Prevent moisture spoilage, mould, and grain discoloration.
               </p>
             </div>
 
-            <div className="p-3 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] space-y-1">
-              <span className="font-bold text-[#17211D]">Bagging &amp; Stacking:</span>
-              <p className="text-[#65736C]">
-                Use clean gunny or HDPE bags elevated on wooden pallets (minimum 15 cm above ground). Keep 50 cm distance from concrete walls to prevent ground dampness migration.
-              </p>
+            <div className="space-y-3 text-xs">
+              <div className="p-3.5 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] space-y-1">
+                <span className="font-bold text-[#17211D]">Safe Moisture Threshold:</span>
+                <p className="text-[#65736C]">
+                  Sun-dry grain to <strong>{cropData.storageMoisture}</strong> before bagging. Packing above 16% moisture risks fungal heating and rot.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] space-y-1">
+                <span className="font-bold text-[#17211D]">Bagging &amp; Pallet Stacking:</span>
+                <p className="text-[#65736C]">
+                  Store in clean gunny bags elevated on wooden pallets (15 cm above floor). Keep 50 cm distance from concrete walls.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] space-y-1">
+                <span className="font-bold text-[#17211D]">Combine Timing:</span>
+                <p className="text-[#65736C]">
+                  Operate machinery between 10:00 AM and 04:30 PM after canopy dew evaporates to prevent threshing breakage.
+                </p>
+              </div>
             </div>
+          </div>
 
-            <div className="p-3 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4] space-y-1">
-              <span className="font-bold text-[#17211D]">Machinery Access Timing:</span>
-              <p className="text-[#65736C]">
-                Operate combine harvesters between 10:00 AM and 04:30 PM after morning dew evaporates. Cutting wet crops increases threshing breakage by up to 12%.
-              </p>
+          {/* Right: Ask Harvest AI Assistant */}
+          <div className="bg-white rounded-2xl border border-[#E1E8E4] p-5 sm:p-6 shadow-xs space-y-4 flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2.5 border-b border-[#E1E8E4] pb-3">
+                <div className="w-8 h-8 rounded-xl bg-[#063F2E] text-white flex items-center justify-center shrink-0">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#17211D]">Harvest AI Assistant</h3>
+                  <p className="text-xs text-[#65736C]">
+                    Ask about machinery booking, drying, or weather risks.
+                  </p>
+                </div>
+              </div>
+
+              {/* Quick prompt chips */}
+              <div className="flex flex-wrap gap-2">
+                {[
+                  "Harvest before Day 6 rain?",
+                  "Sun-drying hours needed?",
+                  "Action if moisture is 18%?",
+                ].map((promptText, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      setAiQuestion(promptText);
+                      askHarvestAi(promptText);
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-[#F6F8F5] hover:bg-[#DDF5EA] border border-[#E1E8E4] text-xs font-semibold text-[#17211D] hover:text-[#063F2E] transition-colors cursor-pointer"
+                  >
+                    "{promptText}"
+                  </button>
+                ))}
+              </div>
+
+              {/* Input box */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={aiQuestion}
+                  onChange={(e) => setAiQuestion(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && askHarvestAi()}
+                  placeholder="Ask a harvest or storage question..."
+                  className="km-input flex-1"
+                />
+                <button
+                  type="button"
+                  onClick={() => askHarvestAi()}
+                  disabled={aiLoading || !aiQuestion.trim()}
+                  className="km-btn-primary shrink-0"
+                >
+                  {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  <span className="hidden sm:inline">Ask</span>
+                </button>
+              </div>
+
+              {/* AI Answer Box */}
+              {aiAnswer && (
+                <div className="p-4 rounded-xl bg-[#DDF5EA]/50 border border-[#087F5B]/20 text-xs text-[#17211D] leading-relaxed whitespace-pre-line space-y-1">
+                  <p className="font-bold text-[#063F2E] flex items-center gap-1.5 mb-1">
+                    <Sparkles className="w-3.5 h-3.5" /> Assessment:
+                  </p>
+                  {aiAnswer}
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </div>
-
-
-      {/* ── AI HARVEST CONSULTATION DRAWER ───────────────────────── */}
-      <div className="bg-white rounded-2xl border border-[#E1E8E4] p-5 sm:p-6 shadow-xs space-y-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#063F2E] text-white flex items-center justify-center shrink-0">
-            <Sparkles className="w-4 h-4" />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-[#17211D]">Ask Harvest AI Assistant</h3>
-            <p className="text-xs text-[#65736C]">
-              Query logistics, machinery booking, rain contingency, or storage precautions.
-            </p>
-          </div>
-        </div>
-
-        {/* Quick prompt chips */}
-        <div className="flex flex-wrap gap-2">
-          {[
-            "Should I harvest before Day 6 rain?",
-            "How many hours of sun-drying is needed?",
-            "What if moisture is 18% at cutting?",
-          ].map((promptText, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => {
-                setAiQuestion(promptText);
-                askHarvestAi(promptText);
-              }}
-              className="px-3 py-1.5 rounded-xl bg-[#F6F8F5] hover:bg-[#DDF5EA] border border-[#E1E8E4] text-xs font-semibold text-[#17211D] hover:text-[#063F2E] transition-colors cursor-pointer"
-            >
-              "{promptText}"
-            </button>
-          ))}
-        </div>
-
-        {/* Input box */}
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={aiQuestion}
-            onChange={(e) => setAiQuestion(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && askHarvestAi()}
-            placeholder="e.g. Can I harvest in the morning dew or wait until noon?"
-            className="km-input flex-1"
-          />
-          <button
-            type="button"
-            onClick={() => askHarvestAi()}
-            disabled={aiLoading || !aiQuestion.trim()}
-            className="km-btn-primary shrink-0"
-          >
-            {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-            <span className="hidden sm:inline">Ask AI</span>
-          </button>
-        </div>
-
-        {/* AI Answer Box */}
-        {aiAnswer && (
-          <div className="p-4 rounded-xl bg-[#DDF5EA]/50 border border-[#087F5B]/20 text-xs text-[#17211D] leading-relaxed whitespace-pre-line space-y-1">
-            <p className="font-bold text-[#063F2E] flex items-center gap-1.5 mb-1">
-              <Sparkles className="w-3.5 h-3.5" /> Agronomic Harvest Assessment:
-            </p>
-            {aiAnswer}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }

@@ -315,6 +315,7 @@ export default function OutbreakRadar() {
   const [filterSeverity, setFilterSeverity] = useState("All");
   const [filterMyCropOnly, setFilterMyCropOnly] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState(null); // for detail modal
+  const [advisoryTab, setAdvisoryTab] = useState("containment"); // "containment" | "organic" | "chemical"
 
   // State: Map controls
   const mapRef = useRef(null);
@@ -507,81 +508,64 @@ export default function OutbreakRadar() {
       </div>
 
       {/* Top 3 Metric Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* 1. Farm Exposure Risk Index */}
-        <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-5 flex flex-col justify-between">
-          <div>
+        <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-4 flex flex-col justify-between">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#063F2E] bg-[#DDF5EA] px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
-                <ShieldAlert className="w-3.5 h-3.5 text-[#063F2E]" /> Farm Exposure Index
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#063F2E] bg-[#DDF5EA] px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+                <ShieldAlert className="w-3.5 h-3.5" /> Threat Level
               </span>
               <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${exposureStats.scoreColor}`}>
                 {exposureStats.score}
               </span>
             </div>
-            <p className="text-xs text-[#65736C] mt-3">Monitoring for: <strong>{farmCrop}</strong> at {farmLocation}</p>
-            <p className="text-sm font-semibold text-[#17211D] mt-1.5 leading-relaxed">
-              {exposureStats.summaryText}
+            <p className="text-base font-bold text-[#17211D]">
+              {exposureStats.totalNearby} threats within 25km
             </p>
-          </div>
-          <div className="mt-4 pt-3 border-t border-[#E1E8E4] flex items-center justify-between text-xs text-[#65736C]">
-            <span>Active threats &lt; 25km:</span>
-            <span className="font-extrabold text-[#17211D]">{exposureStats.totalNearby}</span>
+            <p className="text-xs text-[#65736C]">
+              Monitoring {farmCrop} for {farmLocation}
+            </p>
           </div>
         </div>
 
         {/* 2. Microclimate Weather Vector */}
-        <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-5 flex flex-col justify-between">
-          <div>
+        <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-4 flex flex-col justify-between">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#92540C] bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
-                <Thermometer className="w-3.5 h-3.5 text-[#E99B16]" /> Weather Vector
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#92540C] bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+                <Thermometer className="w-3.5 h-3.5 text-[#E99B16]" /> Microclimate
               </span>
-              <span className="text-[11px] font-bold text-[#92540C] bg-amber-50 px-2 py-0.5 rounded-md">
-                High Fungal Favorability
+              <span className="text-[10px] font-bold text-[#92540C] bg-amber-50 px-2 py-0.5 rounded-md">
+                High Dampness
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-3 mt-3">
-              <div className="p-2.5 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4]">
-                <div className="flex items-center gap-1.5 text-xs text-[#65736C]">
-                  <Droplets className="w-3.5 h-3.5 text-[#3B82A0]" /> Humidity
-                </div>
-                <p className="text-base font-extrabold text-[#17211D] mt-0.5">86% RH</p>
-              </div>
-              <div className="p-2.5 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4]">
-                <div className="flex items-center gap-1.5 text-xs text-[#65736C]">
-                  <Thermometer className="w-3.5 h-3.5 text-orange-500" /> Day Temp
-                </div>
-                <p className="text-base font-extrabold text-[#17211D] mt-0.5">28.4°C</p>
-              </div>
-            </div>
+            <p className="text-base font-bold text-[#17211D]">
+              86% RH • 28.4°C
+            </p>
+            <p className="text-xs text-[#65736C]">
+              Persistent leaf dampness favors fungal spores
+            </p>
           </div>
-          <p className="text-xs text-[#65736C] mt-3 pt-2.5 border-t border-[#E1E8E4] leading-relaxed">
-            Persistent leaf dampness elevates blast & hopper multiplication.
-          </p>
         </div>
 
         {/* 3. Spore & Insect Wind Drift */}
-        <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-5 flex flex-col justify-between">
-          <div>
+        <div className="bg-white rounded-2xl border border-[#E1E8E4] shadow-xs p-4 flex flex-col justify-between">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#063F2E] bg-[#DDF5EA] px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
-                <Wind className="w-3.5 h-3.5 text-[#087F5B]" /> Wind Vector Drift
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#063F2E] bg-[#DDF5EA] px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+                <Wind className="w-3.5 h-3.5 text-[#087F5B]" /> Wind Vector
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-wide bg-[#063F2E] text-white px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold uppercase bg-[#063F2E] text-white px-2 py-0.5 rounded-full">
                 12 km/h NW
               </span>
             </div>
-            <h3 className="text-sm font-bold text-[#17211D] mt-2.5 leading-snug">
-              North-West to South-East Swarm Dispersion
-            </h3>
-            <p className="text-xs text-[#65736C] mt-1.5 leading-relaxed">
-              Hopper nymphs and fungal aerosols are drifting along the Chalakudy-Aluva river basin corridor.
+            <p className="text-base font-bold text-[#17211D]">
+              North-West to South-East
             </p>
-          </div>
-          <div className="mt-4 pt-3 border-t border-[#E1E8E4] flex items-center gap-2 text-xs font-semibold text-[#087F5B]">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Northern Flank Monitored</span>
+            <p className="text-xs text-[#65736C]">
+              Spore drift along river basin corridor
+            </p>
           </div>
         </div>
       </div>
@@ -958,68 +942,89 @@ export default function OutbreakRadar() {
             </div>
 
             {/* Modal Scrollable Body */}
-            <div className="p-5 sm:p-6 space-y-5 overflow-y-auto">
-              {/* Field Symptoms */}
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[#063F2E] mb-1.5">
-                  Observed Symptoms & Field Spread
-                </h4>
-                <p className="text-xs text-[#17211D] leading-relaxed bg-[#F6F8F5] p-3 rounded-xl border border-[#E1E8E4]">
-                  {selectedAlert.description}
-                </p>
-              </div>
-
-              {/* Weather & Microclimate Trigger */}
+            <div className="p-5 sm:p-6 space-y-4 overflow-y-auto">
+              {/* Field Symptoms & Microclimate Trigger */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
-                  <span className="font-bold text-amber-900 block mb-0.5">Weather Trigger:</span>
-                  <span className="text-amber-800">{selectedAlert.weather_trigger}</span>
+                <div className="p-3 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4]">
+                  <span className="font-bold text-[#17211D] block mb-0.5">Symptoms:</span>
+                  <span className="text-[#65736C]">{selectedAlert.description}</span>
                 </div>
-                <div className="p-3 rounded-xl bg-blue-50 border border-blue-200">
-                  <span className="font-bold text-blue-900 block mb-0.5">Dispersal Vector:</span>
-                  <span className="text-blue-800">{selectedAlert.spread_vector}</span>
-                </div>
-              </div>
-
-              {/* 1. Cultural Countermeasures */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[#17211D] flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-[#063F2E]" />
-                  Immediate Cultural & Field Containment Steps
-                </h4>
-                <ul className="space-y-1.5">
-                  {selectedAlert.cultural_actions.map((act, i) => (
-                    <li key={i} className="text-xs text-[#17211D] flex items-start gap-2 bg-[#F6F8F5] p-2.5 rounded-xl border border-[#E1E8E4]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#063F2E] mt-1.5 shrink-0" />
-                      <span>{act}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* 2. Biological & Organic Remedies */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[#17211D] flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-[#16A36F]" />
-                  Recommended Organic & Bio-Control Formulations
-                </h4>
-                <div className="space-y-1.5">
-                  {selectedAlert.bio_remedies.map((bio, i) => (
-                    <div key={i} className="text-xs text-[#063F2E] bg-[#DDF5EA] p-2.5 rounded-xl border border-[#063F2E]/20 font-medium flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#087F5B] shrink-0" />
-                      <span>{bio}</span>
-                    </div>
-                  ))}
+                <div className="p-3 rounded-xl bg-[#F6F8F5] border border-[#E1E8E4]">
+                  <span className="font-bold text-[#17211D] block mb-0.5">Vector Drift:</span>
+                  <span className="text-[#65736C]">{selectedAlert.spread_vector}</span>
                 </div>
               </div>
 
-              {/* 3. Chemical IPM Option */}
-              {selectedAlert.chemical_ipm && (
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
-                  <h4 className="font-bold text-slate-900 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                    <AlertTriangle className="w-4 h-4 text-amber-600" />
-                    Targeted Chemical IPM (Use Only If Threshold Exceeded)
-                  </h4>
+              {/* Segmented Advisory Tabs */}
+              <div className="flex items-center gap-1 bg-[#F6F8F5] p-1 rounded-xl border border-[#E1E8E4] text-xs">
+                <button
+                  type="button"
+                  onClick={() => setAdvisoryTab("containment")}
+                  className={`flex-1 py-1.5 px-2.5 rounded-lg font-bold transition-all cursor-pointer ${
+                    advisoryTab === "containment"
+                      ? "bg-white text-[#063F2E] shadow-xs"
+                      : "text-[#65736C] hover:text-[#17211D]"
+                  }`}
+                >
+                  Containment
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAdvisoryTab("organic")}
+                  className={`flex-1 py-1.5 px-2.5 rounded-lg font-bold transition-all cursor-pointer ${
+                    advisoryTab === "organic"
+                      ? "bg-white text-[#063F2E] shadow-xs"
+                      : "text-[#65736C] hover:text-[#17211D]"
+                  }`}
+                >
+                  Bio-Control
+                </button>
+                {selectedAlert.chemical_ipm && (
+                  <button
+                    type="button"
+                    onClick={() => setAdvisoryTab("chemical")}
+                    className={`flex-1 py-1.5 px-2.5 rounded-lg font-bold transition-all cursor-pointer ${
+                      advisoryTab === "chemical"
+                        ? "bg-white text-[#063F2E] shadow-xs"
+                        : "text-[#65736C] hover:text-[#17211D]"
+                    }`}
+                  >
+                    Chemical IPM
+                  </button>
+                )}
+              </div>
+
+              {/* TAB 1: Cultural Containment */}
+              {advisoryTab === "containment" && (
+                <div className="space-y-2 animate-in fade-in">
+                  <ul className="space-y-1.5">
+                    {selectedAlert.cultural_actions.map((act, i) => (
+                      <li key={i} className="text-xs text-[#17211D] flex items-start gap-2 bg-[#F6F8F5] p-2.5 rounded-xl border border-[#E1E8E4]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#063F2E] mt-1.5 shrink-0" />
+                        <span>{act}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* TAB 2: Organic & Bio-Control */}
+              {advisoryTab === "organic" && (
+                <div className="space-y-2 animate-in fade-in">
+                  <div className="space-y-1.5">
+                    {selectedAlert.bio_remedies.map((bio, i) => (
+                      <div key={i} className="text-xs text-[#063F2E] bg-[#DDF5EA] p-2.5 rounded-xl border border-[#063F2E]/20 font-medium flex items-center gap-2">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#087F5B] shrink-0" />
+                        <span>{bio}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: Chemical IPM */}
+              {advisoryTab === "chemical" && selectedAlert.chemical_ipm && (
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs animate-in fade-in">
                   <p className="font-bold text-[#17211D]">
                     Active Molecule: <span className="font-normal text-slate-800">{selectedAlert.chemical_ipm.molecule}</span>
                   </p>
